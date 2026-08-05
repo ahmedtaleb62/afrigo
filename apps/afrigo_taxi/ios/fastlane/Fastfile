@@ -45,6 +45,7 @@ platform :ios do
       scheme: "Runner",
       export_method: "app-store",
       output_directory: "build",
+      xcodebuild_formatter: "",
     )
 
     upload_to_testflight(
