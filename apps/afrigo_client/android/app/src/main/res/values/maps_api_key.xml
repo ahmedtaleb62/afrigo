@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Google Maps needs a real Android API key here to render actual map tiles
+  (Google Cloud Console → APIs & Services → Credentials → Create API key,
+  then enable "Maps SDK for Android" for it, and restrict it to this app's
+  package name `com.example.afrigo_client` + your debug/release SHA-1).
+  Until a real key replaces the placeholder below, the map widgets still
+  render (no crash) but tiles show blank/watermarked — see
+  apps/afrigo_client/README.md.
+-->
+<resources>
+    <string name="google_maps_api_key" translatable="false">AIzaSyBswXjlPqP3Zc6i6gSJQURN-gW4d3C6Ibw</string>
+</resources>

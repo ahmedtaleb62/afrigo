@@ -1,0 +1,35 @@
+name: afrigo_client
+description: "Afrigo Client — rider/customer app for the Afrigo platform."
+publish_to: 'none'
+resolution: workspace
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  supabase_flutter: ^2.8.0
+  permission_handler: ^11.3.1
+  url_launcher: ^6.3.1
+  google_maps_flutter: ^2.9.0
+  geolocator: ^13.0.2
+  geocoding: ^3.0.0
+  firebase_core: ^3.6.0
+  firebase_messaging: ^15.1.3
+  afrigo_core:
+    path: ../../packages/afrigo_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true

@@ -1,0 +1,32 @@
+{
+  "@@locale": "fr",
+
+  "commonRetry": "Réessayer",
+  "commonCancel": "Annuler",
+  "commonSave": "Enregistrer",
+  "commonConfirm": "Confirmer",
+  "commonLoading": "Chargement...",
+  "commonChangesSaved": "Modifications enregistrées",
+  "commonErrorGeneric": "Une erreur est survenue, veuillez réessayer",
+
+  "emptyStateTitle": "Aucun résultat pour l'instant",
+  "emptyStateMessage": "Nous n'avons trouvé aucun élément correspondant",
+
+  "confirmCancelOrderTitle": "Confirmer l'annulation",
+  "confirmCancelOrderMessage": "Voulez-vous vraiment annuler cette course ? Des frais d'annulation peuvent s'appliquer.",
+  "confirmCancelOrderConfirm": "Oui, annuler",
+
+  "statusOnline": "En ligne",
+  "statusOffline": "Hors ligne",
+
+  "badgePending": "En cours de vérification",
+  "badgeVerified": "Vérifié",
+  "badgeRejected": "Rejeté",
+  "badgeLowBalance": "Solde faible",
+  "badgeStopped": "Arrêté",
+
+  "navHome": "Accueil",
+  "navOrders": "Commandes",
+  "navWallet": "Portefeuille",
+  "navAccount": "Compte"
+}

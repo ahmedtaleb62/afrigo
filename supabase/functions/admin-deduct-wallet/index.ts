@@ -1,0 +1,61 @@
+// admin-deduct-wallet (admin only)
+// Counterpart to admin-topup-wallet — for when the admin has already paid a
+// provider out-of-band (cash withdrawal, bank transfer, etc.) and needs to
+// deduct that amount from their recorded `wallets.balance`. Same
+// service-role-only path, since `wallets.balance` has no UPDATE policy for
+// anyone (see 20260731230005_wallets.sql).
+import { withHandler } from '../_shared/handler.ts';
+import { requireAdmin, serviceClient, HttpError } from '../_shared/clients.ts';
+import { createNotification } from '../_shared/notify.ts';
+
+interface Body {
+  wallet_id: string;
+  amount: number;
+  note?: string;
+}
+
+Deno.serve(
+  withHandler<Body>(async (req, body) => {
+    const admin_user = await requireAdmin(req);
+    const admin = serviceClient();
+
+    if (!body.wallet_id) throw new HttpError(400, 'معرّف المحفظة مطلوب');
+    const amount = Number(body.amount);
+    if (!Number.isFinite(amount) || amount <= 0) throw new HttpError(400, 'المبلغ يجب أن يكون رقمًا موجبًا');
+
+    const { data: wallet } = await admin.from('wallets').select('id, owner_id, balance').eq('id', body.wallet_id).maybeSingle();
+    if (!wallet) throw new HttpError(404, 'المحفظة غير موجودة');
+    if (amount > wallet.balance) throw new HttpError(400, 'المبلغ أكبر من الرصيد الحالي');
+
+    const { data: newBalance, error: rpcError } = await admin.rpc('increment_wallet_balance', {
+      p_wallet_id: wallet.id,
+      p_delta: -amount,
+    });
+    if (rpcError) throw new HttpError(500, rpcError.message);
+
+    await admin.from('wallet_transactions').insert({
+      wallet_id: wallet.id,
+      amount: -amount,
+      type: 'admin_withdrawal',
+      note: body.note?.trim() || 'سحب رصيد يدوي',
+      created_by: admin_user.id,
+    });
+
+    await admin.from('admin_audit_log').insert({
+      admin_id: admin_user.id,
+      action: 'withdraw_wallet',
+      target_table: 'wallets',
+      target_id: wallet.id,
+      details: { amount, note: body.note ?? null },
+    });
+
+    await createNotification(admin, {
+      userId: wallet.owner_id,
+      title: 'تم سحب رصيد من محفظتك',
+      body: `تم سحب ${amount} أوقية من محفظتك.`,
+      data: { wallet_id: wallet.id, amount },
+    });
+
+    return { balance: newBalance };
+  }),
+);

@@ -1,0 +1,33 @@
+name: afrigo
+
+packages:
+  - apps/afrigo_client
+  - apps/afrigo_taxi
+  - apps/afrigo_food
+  - apps/afrigo_livreur
+  - packages/afrigo_core
+
+command:
+  bootstrap:
+    usePubspecOverrides: true
+
+scripts:
+  analyze:
+    run: melos exec -- "flutter analyze"
+    description: Run flutter analyze in every Flutter package.
+
+  test:
+    run: melos exec -- "flutter test"
+    description: Run flutter test in every Flutter package that has tests.
+    packageFilters:
+      dirExists: test
+
+  format:
+    run: melos exec -- "dart format ."
+    description: Format all Dart code.
+
+  gen:
+    run: melos exec -- "dart run build_runner build --delete-conflicting-outputs"
+    description: Run code generation (Freezed/json_serializable) in every package.
+    packageFilters:
+      dependsOn: build_runner

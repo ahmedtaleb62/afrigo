@@ -1,0 +1,32 @@
+{
+  "@@locale": "ar",
+
+  "commonRetry": "إعادة المحاولة",
+  "commonCancel": "تراجع",
+  "commonSave": "حفظ",
+  "commonConfirm": "تأكيد",
+  "commonLoading": "جارٍ التحميل...",
+  "commonChangesSaved": "تم حفظ التغييرات بنجاح",
+  "commonErrorGeneric": "حدث خطأ ما، حاول مرة أخرى",
+
+  "emptyStateTitle": "لا توجد نتائج بعد",
+  "emptyStateMessage": "لم نجد أي عنصر مطابق حاليًا",
+
+  "confirmCancelOrderTitle": "تأكيد إلغاء الرحلة",
+  "confirmCancelOrderMessage": "هل أنت متأكد أنك تريد إلغاء هذه الرحلة؟ قد تُطبّق رسوم إلغاء.",
+  "confirmCancelOrderConfirm": "نعم، إلغاء",
+
+  "statusOnline": "متصل",
+  "statusOffline": "غير متصل",
+
+  "badgePending": "قيد المراجعة",
+  "badgeVerified": "موثّق",
+  "badgeRejected": "مرفوض",
+  "badgeLowBalance": "رصيد منخفض",
+  "badgeStopped": "متوقف",
+
+  "navHome": "الرئيسية",
+  "navOrders": "الطلبات",
+  "navWallet": "المحفظة",
+  "navAccount": "الحساب"
+}

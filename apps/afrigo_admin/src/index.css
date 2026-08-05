@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+/* Class-based dark mode (driven by a `.dark` class on <html>, e.g. via
+   next-themes) instead of Tailwind v4's default media-query strategy — the
+   admin panel needs a manual toggle (section 92 of the design system). */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-tajawal: 'Tajawal', ui-sans-serif, system-ui, sans-serif;
+  --font-manrope: 'Manrope', ui-sans-serif, system-ui, sans-serif;
+
+  /* Primary / Green — أخضر أفريغو */
+  --color-green-50: #effbf3;
+  --color-green-100: #d8f3e1;
+  --color-green-200: #b3e7c4;
+  --color-green-300: #82d6a0;
+  --color-green-400: #4fbe7a;
+  --color-green-500: #2aa35c;
+  --color-green-600: #1e8b4b;
+  --color-green-700: #176f3d;
+  --color-green-800: #145931;
+  --color-green-900: #0f3f23;
+
+  /* Secondary / Yellow — أصفر أفريغو */
+  --color-yellow-50: #fffbeb;
+  --color-yellow-100: #fff3c4;
+  --color-yellow-200: #fce588;
+  --color-yellow-300: #fad34d;
+  --color-yellow-400: #f5c518;
+  --color-yellow-500: #e0a800;
+  --color-yellow-600: #b8850a;
+  --color-yellow-700: #8f660c;
+  --color-yellow-800: #6b4d0e;
+  --color-yellow-900: #4a3609;
+
+  /* Neutral / White — أبيض ورمادي محايد */
+  --color-neutral-0: #ffffff;
+  --color-neutral-50: #f8f9f8;
+  --color-neutral-100: #f0f2ef;
+  --color-neutral-200: #e1e5df;
+  --color-neutral-300: #c7cdc3;
+  --color-neutral-400: #a3ab9c;
+  --color-neutral-500: #7c8574;
+  --color-neutral-600: #5c6455;
+  --color-neutral-700: #454b3e;
+  --color-neutral-800: #2e332a;
+  --color-neutral-900: #1a1d16;
+
+  /* Semantic — ألوان دلالية */
+  --color-success: #1e8b4b;
+  --color-warning: #e0a800;
+  --color-error: #dc2626;
+  --color-error-surface: #fef2f2;
+  --color-error-surface-strong: #fee2e2;
+  --color-info: #1d7a9c;
+
+  --radius-input: 10px;
+  --radius-button: 12px;
+  --radius-card: 14px;
+  --radius-card-lg: 18px;
+  --radius-sheet: 20px;
+}
+
+@layer base {
+  html {
+    color-scheme: light dark;
+  }
+
+  html[dir='rtl'] body {
+    font-family: var(--font-tajawal);
+  }
+
+  html[dir='ltr'] body {
+    font-family: var(--font-manrope);
+  }
+
+  body {
+    margin: 0;
+    @apply bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-900 dark:text-neutral-50;
+  }
+
+  ::selection {
+    @apply bg-green-200;
+  }
+}

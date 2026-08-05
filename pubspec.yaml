@@ -1,0 +1,15 @@
+name: afrigo_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.10.0
+
+# Melos/Dart workspace root. This file has no dependencies of its own; it only
+# declares the packages that belong to the pub workspace so `flutter pub get`
+# and `melos bootstrap` can resolve them together with a single lockfile.
+workspace:
+  - apps/afrigo_client
+  - apps/afrigo_taxi
+  - apps/afrigo_food
+  - apps/afrigo_livreur
+  - packages/afrigo_core

@@ -1,0 +1,131 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../state/food_flow_controller.dart';
+import '../widgets/back_circle_button.dart';
+
+/// Screen 69 — Order detail. Real `food_orders` row, resolved from
+/// `FoodFlowState.selectedOrder` (set by `openOrderDetail`, kept live by
+/// `watchOrders`'s Realtime stream — this screen updates automatically if
+/// the order's status changes while it's open).
+class OrderDetailScreen extends ConsumerWidget {
+  const OrderDetailScreen({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(foodFlowControllerProvider.notifier);
+    final order = ref.watch(foodFlowControllerProvider.select((s) => s.selectedOrder));
+
+    Widget line(String label, String price) => Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF0F2EF)))),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(label, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
+              Text(price, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
+            ],
+          ),
+        );
+
+    if (order == null) {
+      return Container(
+        color: Colors.white,
+        padding: const EdgeInsets.fromLTRB(20, 54, 20, 20),
+        child: Column(
+          children: [
+            Row(children: [BackCircleButton(onTap: controller.back), const SizedBox(width: 12)]),
+            const Expanded(child: Center(child: Text('الطلب غير متاح', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF7C8574))))),
+          ],
+        ),
+      );
+    }
+
+    final id = order['id'] as String;
+    final shortId = '#${id.substring(0, 8)}';
+    final items = (order['items'] as List?)?.cast<Map<String, dynamic>>() ?? const [];
+    final subtotal = (order['subtotal'] as num?)?.toStringAsFixed(0) ?? '0';
+    final deliveryFee = (order['delivery_fee'] as num?)?.toStringAsFixed(0) ?? '0';
+    final total = (order['total'] as num?)?.toStringAsFixed(0) ?? '0';
+    final note = order['client_note'] as String?;
+    final address = order['delivery_address'] as String?;
+    final status = order['status'] as String? ?? '';
+
+    return Container(
+      color: Colors.white,
+      padding: const EdgeInsets.fromLTRB(20, 54, 20, 20),
+      child: ListView(
+        children: [
+          Row(
+            children: [
+              BackCircleButton(onTap: controller.back),
+              const SizedBox(width: 12),
+              Text('طلب $shortId', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          if (address != null) Text('التوصيل إلى: $address', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+          const SizedBox(height: 6),
+          for (final item in items) line('${item['name']} ×${item['qty']}', '${((item['price'] as num) * (item['qty'] as num)).toStringAsFixed(0)} أوقية'),
+          const SizedBox(height: 10),
+          if (note != null && note.isNotEmpty) Text('ملاحظة: $note', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+          const SizedBox(height: 10),
+          line('المجموع الفرعي', '$subtotal أوقية'),
+          line('رسوم التوصيل', '$deliveryFee أوقية'),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text('الإجمالي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15)),
+              Text('$total أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF176F3D))),
+            ],
+          ),
+          const SizedBox(height: 20),
+          if (status == 'pending_restaurant')
+            Row(
+              children: [
+                Expanded(
+                  child: OutlinedButton(
+                    onPressed: () {
+                      controller.rejectOrder(id);
+                      controller.back();
+                    },
+                    style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(14)),
+                    child: const Text('رفض', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626))),
+                  ),
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: ElevatedButton(
+                    onPressed: () {
+                      controller.acceptOrder(id);
+                      controller.back();
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                    child: const Text('قبول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            )
+          else if (status == 'accepted')
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => controller.markOrderPreparing(id),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                child: const Text('بدء التحضير', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
+              ),
+            )
+          else if (status == 'preparing')
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => controller.markOrderReady(id),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                child: const Text('الطلب جاهز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
