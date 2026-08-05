@@ -1,11 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../state/taxi_flow_controller.dart';
 import '../widgets/taxi_primary_button.dart';
 import '../widgets/taxi_text_field.dart';
 
 const _carTypes = ['Dacia Logan', 'Renault Symbol', 'Hyundai Accent', 'Peugeot 301', 'أخرى'];
+
+Future<void> _pickLicenseSource(BuildContext context, TaxiFlowController controller) async {
+  final source = await showModalBottomSheet<ImageSource>(
+    context: context,
+    builder: (ctx) => SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          ListTile(leading: const Icon(Icons.camera_alt_outlined), title: const Text('التقاط صورة', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
+          ListTile(leading: const Icon(Icons.photo_library_outlined), title: const Text('اختيار من المعرض', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+        ],
+      ),
+    ),
+  );
+  if (source != null) await controller.pickAndUploadLicense(source);
+}
 
 /// Screen 48 — Vehicle verification docs.
 class VehicleDocsScreen extends ConsumerStatefulWidget {
@@ -69,15 +86,21 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
           TaxiTextField(controller: _address, hint: 'العنوان'),
           const SizedBox(height: 10),
           InkWell(
-            onTap: controller.toggleLicensePhoto,
+            onTap: s.licenseUploading ? null : () => _pickLicenseSource(context, controller),
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(border: Border.all(color: const Color(0xFFD6D3D1), width: 1.5, style: BorderStyle.solid), borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
-                  Text(s.licensePhoto ? '✅' : '📷', style: const TextStyle(fontSize: 20)),
+                  if (s.licenseUploading)
+                    const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  else
+                    Text(s.licensePhoto ? '✅' : '📷', style: const TextStyle(fontSize: 20)),
                   const SizedBox(height: 4),
-                  Text(s.licensePhoto ? 'تم رفع صورة رخصة القيادة' : 'رفع صورة رخصة القيادة', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
+                  Text(
+                    s.licenseUploading ? 'جارٍ الرفع...' : (s.licensePhoto ? 'تم رفع صورة رخصة القيادة — اضغط للتغيير' : 'رفع صورة رخصة القيادة'),
+                    style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C)),
+                  ),
                 ],
               ),
             ),

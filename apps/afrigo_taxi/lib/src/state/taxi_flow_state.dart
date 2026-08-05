@@ -111,6 +111,7 @@ class TaxiFlowState {
     this.confirmPassword = '',
     this.fullName = '',
     this.licensePhoto = false,
+    this.licenseUploading = false,
     this.online = false,
     this.balance,
     this.walletLoaded = false,
@@ -145,6 +146,7 @@ class TaxiFlowState {
   final String confirmPassword;
   final String fullName;
   final bool licensePhoto;
+  final bool licenseUploading;
 
   final bool online;
 
@@ -218,6 +220,7 @@ class TaxiFlowState {
     String? confirmPassword,
     String? fullName,
     bool? licensePhoto,
+    bool? licenseUploading,
     bool? online,
     Object? balance = _unset,
     bool? walletLoaded,
@@ -251,6 +254,7 @@ class TaxiFlowState {
       confirmPassword: confirmPassword ?? this.confirmPassword,
       fullName: fullName ?? this.fullName,
       licensePhoto: licensePhoto ?? this.licensePhoto,
+      licenseUploading: licenseUploading ?? this.licenseUploading,
       online: online ?? this.online,
       balance: identical(balance, _unset) ? this.balance : balance as double?,
       walletLoaded: walletLoaded ?? this.walletLoaded,

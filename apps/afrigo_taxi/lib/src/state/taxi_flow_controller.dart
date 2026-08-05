@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/push_notifications.dart';
@@ -254,9 +255,31 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   // ---------------------------------------------------------------------
   // Vehicle verification — real insert + Realtime watch
   // ---------------------------------------------------------------------
-  void toggleLicensePhoto() => state = state.copyWith(licensePhoto: !state.licensePhoto);
-
   void setLicensePhoto(bool value) => state = state.copyWith(licensePhoto: value);
+
+  /// Was previously just a boolean toggle with no real file behind it —
+  /// `submitVehicleDocs` always wrote the literal string 'pending-upload',
+  /// so admin review had no actual photo to look at. Uploads to a fixed
+  /// path per driver (`{uid}/license.jpg`, upsert) so re-uploading just
+  /// replaces the old file rather than accumulating orphans.
+  Future<void> pickAndUploadLicense(ImageSource source) async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+    state = state.copyWith(licenseUploading: true, authError: null);
+    try {
+      final bytes = await picked.readAsBytes();
+      await _sb.storage.from('vehicle-docs').uploadBinary(
+            '$uid/license.jpg',
+            bytes,
+            fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      state = state.copyWith(licenseUploading: false, licensePhoto: true);
+    } catch (_) {
+      state = state.copyWith(licenseUploading: false, authError: 'تعذّر رفع الصورة، حاول مجددًا');
+    }
+  }
 
   /// Lets `VehicleDocsScreen` pre-fill its fields when opened for an edit
   /// (from Profile) instead of always starting blank — without this,
@@ -317,7 +340,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
         'service_type': 'taxi',
         'vehicle_name': vehicleName,
         'address': address,
-        'driving_license_url': state.licensePhoto ? 'pending-upload' : '',
+        'driving_license_url': state.licensePhoto ? '$uid/license.jpg' : '',
         'car_type': carType,
         'plate_number': plateNumber,
         'notes': notes,
