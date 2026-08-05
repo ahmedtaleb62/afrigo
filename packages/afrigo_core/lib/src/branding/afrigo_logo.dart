@@ -31,11 +31,11 @@ const _taxiSvg = '''
 ''';
 
 const _foodSvg = '''
-<svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-<circle cx="36" cy="36" r="32" fill="#F5C518"/>
-<circle cx="36" cy="38" r="16" fill="#fff"/>
-<path d="M28 38 h16 M28 38 a8 5 0 0 0 16 0" stroke="#2AA35C" stroke-width="3" fill="none" stroke-linecap="round"/>
-<path d="M22 20 v8 M26 20 v8 M30 20 v8" stroke="#2AA35C" stroke-width="3" stroke-linecap="round"/>
+<svg width="72" height="72" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+<circle cx="28" cy="28" r="22" fill="none" stroke="#fff" stroke-width="5"/>
+<circle cx="25" cy="28" r="9" fill="none" stroke="#fff" stroke-width="3"/>
+<rect x="35" y="18" width="3" height="20" fill="#FACC15"/>
+<rect x="40" y="18" width="3" height="9" fill="#FACC15"/>
 </svg>
 ''';
 

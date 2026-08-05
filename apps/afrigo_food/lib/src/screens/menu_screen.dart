@@ -42,7 +42,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     final s = ref.watch(foodFlowControllerProvider);
 
     return Container(
-      color: const Color(0xFFF8F9F8),
+      color: const Color(0xFFF5F5F4),
       child: Column(
         children: [
           Container(
@@ -57,7 +57,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                 InkWell(
                   onTap: controller.toggleAddDish,
                   customBorder: const CircleBorder(),
-                  child: Container(width: 34, height: 34, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFF2AA35C), shape: BoxShape.circle), child: const Text('+', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white))),
+                  child: Container(width: 34, height: 34, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFF16A34A), shape: BoxShape.circle), child: const Text('+', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16, color: Colors.white))),
                 ),
               ],
             ),
@@ -77,7 +77,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () => controller.addDish(_newDishName.text, num.tryParse(_newDishPrice.text) ?? 0),
-                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+                      style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                       child: const Text('حفظ الطبق', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
                     ),
                   ),
@@ -86,16 +86,16 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             ),
           Container(
             width: double.infinity,
-            color: const Color(0xFFEFFBF3),
+            color: const Color(0xFFF0FDF4),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFB3E7C4)))),
+            decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFDCFCE7)))),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('🚚 التوصيل: ${s.deliveryMethodLabel}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF176F3D))),
+                Text('🚚 التوصيل: ${s.deliveryMethodLabel}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
                 InkWell(
                   onTap: () => controller.goTo(FoodScreen.deliverySettings),
-                  child: const Text('تعديل ›', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF176F3D))),
+                  child: const Text('تعديل ›', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF166534))),
                 ),
               ],
             ),
@@ -107,7 +107,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     ? const Center(
                         child: Padding(
                           padding: EdgeInsets.all(24),
-                          child: Text('لا توجد أطباق بعد — اضغط + لإضافة أول طبق', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF7C8574))),
+                          child: Text('لا توجد أطباق بعد — اضغط + لإضافة أول طبق', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
                         ),
                       )
                     : ListView(
@@ -117,11 +117,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(category.name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF176F3D))),
+                                Text(category.name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
                                 if (category == s.categories.first)
                                   InkWell(
-                                    onTap: controller.addCategoryDemo,
-                                    child: const Text('+ تصنيف جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF7C8574))),
+                                    onTap: () => _promptNewCategory(context, controller),
+                                    child: const Text('+ تصنيف جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF78716C))),
                                   ),
                               ],
                             ),
@@ -136,6 +136,22 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
       ),
     );
   }
+}
+
+Future<void> _promptNewCategory(BuildContext context, FoodFlowController controller) async {
+  final nameController = TextEditingController();
+  final name = await showDialog<String>(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      title: const Text('تصنيف جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800)),
+      content: TextField(controller: nameController, autofocus: true, decoration: const InputDecoration(hintText: 'مثال: مشروبات')),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal'))),
+        TextButton(onPressed: () => Navigator.pop(ctx, nameController.text), child: const Text('إضافة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700))),
+      ],
+    ),
+  );
+  if (name != null && name.trim().isNotEmpty) await controller.addCategory(name);
 }
 
 class _DishCard extends StatelessWidget {
@@ -155,7 +171,7 @@ class _DishCard extends StatelessWidget {
             height: 20,
             padding: const EdgeInsets.all(2),
             alignment: value ? Alignment.centerLeft : Alignment.centerRight,
-            decoration: BoxDecoration(color: value ? const Color(0xFF2AA35C) : const Color(0xFFE1E5DF), borderRadius: BorderRadius.circular(11)),
+            decoration: BoxDecoration(color: value ? const Color(0xFF16A34A) : const Color(0xFFE7E5E4), borderRadius: BorderRadius.circular(11)),
             child: Container(width: 16, height: 16, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
           ),
         );
@@ -167,7 +183,7 @@ class _DishCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(width: 52, height: 52, alignment: Alignment.center, decoration: BoxDecoration(color: const Color(0xFFFFF3C4), borderRadius: BorderRadius.circular(10)), child: Text(dish.emoji, style: const TextStyle(fontSize: 22))),
+          Container(width: 52, height: 52, alignment: Alignment.center, decoration: BoxDecoration(color: const Color(0xFFFEF9C3), borderRadius: BorderRadius.circular(10)), child: Text(dish.emoji, style: const TextStyle(fontSize: 22))),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -177,13 +193,13 @@ class _DishCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Expanded(child: Text(dish.name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13))),
-                    Text('${dish.price} أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF176F3D))),
+                    Text('${dish.price} أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
                   ],
                 ),
                 if (dish.description.isNotEmpty)
                   Padding(
                     padding: const EdgeInsets.only(top: 2, bottom: 8),
-                    child: Text(dish.description, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF7C8574))),
+                    child: Text(dish.description, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
                   )
                 else
                   const SizedBox(height: 8),
@@ -195,17 +211,17 @@ class _DishCard extends StatelessWidget {
                       child: Text(badgeLabel, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 10, color: Color(badgeFg))),
                     ),
                     const SizedBox(width: 10),
-                    InkWell(onTap: () => controller.changeStock(dish, -1), child: Container(width: 20, height: 20, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF0F2EF), shape: BoxShape.circle), child: const Text('−', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 12)))),
+                    InkWell(onTap: () => controller.changeStock(dish, -1), child: Container(width: 20, height: 20, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle), child: const Text('−', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 12)))),
                     SizedBox(width: 24, child: Text('${dish.stock}', textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11))),
-                    InkWell(onTap: () => controller.changeStock(dish, 1), child: Container(width: 20, height: 20, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF0F2EF), shape: BoxShape.circle), child: const Text('+', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 12)))),
+                    InkWell(onTap: () => controller.changeStock(dish, 1), child: Container(width: 20, height: 20, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle), child: const Text('+', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 12)))),
                   ],
                 ),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    Row(children: [const Text('متاح', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 10, color: Color(0xFF7C8574))), const SizedBox(width: 6), miniSwitch(dish.isAvailable, () => controller.toggleDishAvailable(dish))]),
+                    Row(children: [const Text('متاح', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 10, color: Color(0xFF78716C))), const SizedBox(width: 6), miniSwitch(dish.isAvailable, () => controller.toggleDishAvailable(dish))]),
                     const SizedBox(width: 14),
-                    Row(children: [const Text('🛵 للتوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 10, color: Color(0xFF7C8574))), const SizedBox(width: 6), miniSwitch(dish.availableForDelivery, () => controller.toggleDishDelivery(dish))]),
+                    Row(children: [const Text('🛵 للتوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 10, color: Color(0xFF78716C))), const SizedBox(width: 6), miniSwitch(dish.availableForDelivery, () => controller.toggleDishDelivery(dish))]),
                   ],
                 ),
               ],

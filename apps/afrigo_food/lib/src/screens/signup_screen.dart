@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/food_flow_controller.dart';
+import '../state/food_screen.dart';
+import '../widgets/back_circle_button.dart';
 import '../widgets/food_primary_button.dart';
 import '../widgets/food_text_field.dart';
 
@@ -16,9 +18,11 @@ class SignupScreen extends ConsumerWidget {
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+      padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 20, 24, 24),
       child: ListView(
         children: [
+          Row(children: [BackCircleButton(onTap: () => controller.goTo(FoodScreen.login))]),
+          const SizedBox(height: 14),
           const Text('إنشاء حساب مطعم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 24)),
           const SizedBox(height: 24),
           FoodTextField(label: 'اسم صاحب الحساب', hint: 'مثال: كريم عبابسة', onChanged: controller.setFullName),

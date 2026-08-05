@@ -51,7 +51,7 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
         child: Container(
           padding: const EdgeInsets.all(14),
           margin: const EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(border: Border.all(color: selected ? const Color(0xFF2AA35C) : const Color(0xFFE1E5DF), width: 2), color: selected ? const Color(0xFFEFFBF3) : Colors.white, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(border: Border.all(color: selected ? const Color(0xFF16A34A) : const Color(0xFFE7E5E4), width: 2), color: selected ? const Color(0xFFF0FDF4) : Colors.white, borderRadius: BorderRadius.circular(12)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -59,7 +59,7 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('$emoji $title', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
-                  Text(subtitle, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF7C8574))),
+                  Text(subtitle, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
                 ],
               ),
               Text(selected ? '✅' : '', style: const TextStyle(fontSize: 18)),
@@ -82,7 +82,7 @@ class _DeliverySettingsScreenState extends ConsumerState<DeliverySettingsScreen>
             ],
           ),
           const SizedBox(height: 20),
-          const Text('طريقة التوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('طريقة التوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
           option(emoji: '🛵', title: 'عبر مندوبي Afrigo', subtitle: 'نتكفّل نحن بالتوصيل لزبائنك', value: DeliveryMethod.afrigo),
           option(emoji: '🏍️', title: 'توصيل خاص بالمطعم', subtitle: 'لديك عمّال توصيل خاصون بك', value: DeliveryMethod.own),

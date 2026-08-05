@@ -18,7 +18,7 @@ class OrderDetailScreen extends ConsumerWidget {
 
     Widget line(String label, String price) => Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF0F2EF)))),
+          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF5F5F4)))),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -35,7 +35,7 @@ class OrderDetailScreen extends ConsumerWidget {
         child: Column(
           children: [
             Row(children: [BackCircleButton(onTap: controller.back), const SizedBox(width: 12)]),
-            const Expanded(child: Center(child: Text('الطلب غير متاح', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF7C8574))))),
+            const Expanded(child: Center(child: Text('الطلب غير متاح', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))))),
           ],
         ),
       );
@@ -64,11 +64,11 @@ class OrderDetailScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (address != null) Text('التوصيل إلى: $address', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+          if (address != null) Text('التوصيل إلى: $address', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 6),
           for (final item in items) line('${item['name']} ×${item['qty']}', '${((item['price'] as num) * (item['qty'] as num)).toStringAsFixed(0)} أوقية'),
           const SizedBox(height: 10),
-          if (note != null && note.isNotEmpty) Text('ملاحظة: $note', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+          if (note != null && note.isNotEmpty) Text('ملاحظة: $note', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
           line('المجموع الفرعي', '$subtotal أوقية'),
           line('رسوم التوصيل', '$deliveryFee أوقية'),
@@ -76,7 +76,7 @@ class OrderDetailScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text('الإجمالي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15)),
-              Text('$total أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF176F3D))),
+              Text('$total أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF166534))),
             ],
           ),
           const SizedBox(height: 20),
@@ -100,7 +100,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       controller.acceptOrder(id);
                       controller.back();
                     },
-                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                    style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
                     child: const Text('قبول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
                   ),
                 ),
@@ -111,7 +111,7 @@ class OrderDetailScreen extends ConsumerWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => controller.markOrderPreparing(id),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
                 child: const Text('بدء التحضير', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
               ),
             )
@@ -120,7 +120,7 @@ class OrderDetailScreen extends ConsumerWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () => controller.markOrderReady(id),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
                 child: const Text('الطلب جاهز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
               ),
             ),

@@ -25,12 +25,6 @@ class OrdersScreen extends ConsumerWidget {
     final s = ref.watch(foodFlowControllerProvider);
     final tab = s.orderTab;
 
-    ref.listen(foodFlowControllerProvider.select((s) => s.actionError), (prev, next) {
-      if (next == null) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
-      controller.clearActionError();
-    });
-
     Widget tabChip(String label, OrderTab value, int count) {
       final selected = tab == value;
       return InkWell(
@@ -38,10 +32,10 @@ class OrdersScreen extends ConsumerWidget {
         borderRadius: BorderRadius.circular(999),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-          decoration: BoxDecoration(color: selected ? const Color(0xFF0F3F23) : const Color(0xFFF0F2EF), borderRadius: BorderRadius.circular(999)),
+          decoration: BoxDecoration(color: selected ? const Color(0xFF16A34A) : const Color(0xFFF5F5F4), borderRadius: BorderRadius.circular(999)),
           child: Text(
             count > 0 ? '$label ($count)' : label,
-            style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: selected ? Colors.white : const Color(0xFF7C8574)),
+            style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: selected ? Colors.white : const Color(0xFF78716C)),
           ),
         ),
       );
@@ -57,12 +51,12 @@ class OrdersScreen extends ConsumerWidget {
     Widget body = orders.isEmpty
         ? const Padding(
             padding: EdgeInsets.only(top: 40),
-            child: Center(child: Text('لا توجد طلبات هنا الآن', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF7C8574)))),
+            child: Center(child: Text('لا توجد طلبات هنا الآن', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)))),
           )
         : Column(children: [for (final order in orders) _OrderCard(order: order, tab: tab)]);
 
     return Container(
-      color: const Color(0xFFF8F9F8),
+      color: const Color(0xFFF5F5F4),
       child: Column(
         children: [
           Container(
@@ -135,11 +129,11 @@ class _OrderCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text('طلب $shortId', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14)),
-                  Text('$total أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF176F3D))),
+                  Text('$total أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
                 ],
               ),
               const SizedBox(height: 6),
-              Text(itemsSummary, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+              Text(itemsSummary, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
               const SizedBox(height: 10),
               if (tab == OrderTab.newOrder)
                 Row(
@@ -162,7 +156,7 @@ class _OrderCard extends ConsumerWidget {
                         child: Container(
                           alignment: Alignment.center,
                           padding: const EdgeInsets.all(10),
-                          decoration: BoxDecoration(color: const Color(0xFF2AA35C), borderRadius: BorderRadius.circular(10)),
+                          decoration: BoxDecoration(color: const Color(0xFF16A34A), borderRadius: BorderRadius.circular(10)),
                           child: const Text('قبول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
                         ),
                       ),
@@ -176,7 +170,7 @@ class _OrderCard extends ConsumerWidget {
               else
                 Text(
                   tab == OrderTab.done ? 'تم التسليم' : (_readyStatusLabels[status] ?? status),
-                  style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF176F3D)),
+                  style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF166534)),
                 ),
             ],
           ),
@@ -201,7 +195,7 @@ class _ActionButton extends StatelessWidget {
         child: Container(
           alignment: Alignment.center,
           padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(color: const Color(0xFF2AA35C), borderRadius: BorderRadius.circular(10)),
+          decoration: BoxDecoration(color: const Color(0xFF16A34A), borderRadius: BorderRadius.circular(10)),
           child: Text(label, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
         ),
       ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-/// Plain text input matching this design doc's own input style (12px
-/// radius, `#F8F9F8` fill, 1.5px `#E1E5DF` border).
+/// Plain text input matching the design doc's own input style (12px
+/// radius, `#FAFAF9` fill, 1.5px `#E7E5E4` border).
 class FoodTextField extends StatelessWidget {
   const FoodTextField({
     super.key,
@@ -29,16 +29,16 @@ class FoodTextField extends StatelessWidget {
       obscureText: obscureText,
       keyboardType: keyboardType,
       onChanged: onChanged,
-      style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF1A1D16)),
+      style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF1C1917)),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFFA3AB9C)),
+        hintStyle: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFFA8A29E)),
         filled: true,
-        fillColor: const Color(0xFFF8F9F8),
+        fillColor: const Color(0xFFFAFAF9),
         contentPadding: EdgeInsets.all(small ? 11 : 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(small ? 10 : 12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(small ? 10 : 12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(small ? 10 : 12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(small ? 10 : 12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(small ? 10 : 12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(small ? 10 : 12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
       ),
     );
 
@@ -46,7 +46,7 @@ class FoodTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF454B3E))),
+        Text(label!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF57534E))),
         const SizedBox(height: 6),
         field,
       ],

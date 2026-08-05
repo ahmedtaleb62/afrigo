@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/food_flow_controller.dart';
+import '../widgets/back_circle_button.dart';
 import '../widgets/food_primary_button.dart';
 import '../widgets/food_text_field.dart';
 
@@ -38,12 +39,14 @@ class _BikeDocsScreenState extends ConsumerState<BikeDocsScreen> {
 
     return Container(
       color: Colors.white,
-      padding: const EdgeInsets.fromLTRB(20, 54, 20, 20),
+      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 20, 20, 20),
       child: ListView(
         children: [
+          Row(children: [BackCircleButton(onTap: controller.back)]),
+          const SizedBox(height: 14),
           const Text('توثيق دراجة التوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 6),
-          const Text('بيانات مركبة/دراجة التوصيل الخاصة بالمطعم', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('بيانات مركبة/دراجة التوصيل الخاصة بالمطعم', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 20),
           FoodTextField(controller: _vehicleName, hint: 'اسم المركبة', small: true),
           const SizedBox(height: 10),
@@ -53,12 +56,12 @@ class _BikeDocsScreenState extends ConsumerState<BikeDocsScreen> {
             onTap: controller.toggleDoc2,
             child: Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC7CDC3), width: 1.5), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(border: Border.all(color: const Color(0xFFD6D3D1), width: 1.5), borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
                   Text(s.doc2 ? '✅' : '📷', style: const TextStyle(fontSize: 20)),
                   const SizedBox(height: 4),
-                  Text(s.doc2 ? 'تم رفع رخصة القيادة' : 'رفع صورة رخصة القيادة', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF7C8574))),
+                  Text(s.doc2 ? 'تم رفع رخصة القيادة' : 'رفع صورة رخصة القيادة', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
                 ],
               ),
             ),
@@ -66,12 +69,12 @@ class _BikeDocsScreenState extends ConsumerState<BikeDocsScreen> {
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(color: const Color(0xFFF8F9F8), border: Border.all(color: const Color(0xFFE1E5DF), width: 1.5), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(color: const Color(0xFFF5F5F4), border: Border.all(color: const Color(0xFFE7E5E4), width: 1.5), borderRadius: BorderRadius.circular(12)),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _bikeType,
                 isExpanded: true,
-                style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF1A1D16)),
+                style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF1C1917)),
                 items: _bikeTypes.map((t) => DropdownMenuItem(value: t, child: Text('نوع الدراجة: $t'))).toList(),
                 onChanged: (v) => setState(() => _bikeType = v ?? _bikeType),
               ),

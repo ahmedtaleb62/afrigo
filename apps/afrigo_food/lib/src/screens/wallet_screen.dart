@@ -23,21 +23,22 @@ class WalletScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(foodFlowControllerProvider.notifier);
-    final balance = ref.watch(foodFlowControllerProvider.select((s) => s.resolvedBalance));
+    final s = ref.watch(foodFlowControllerProvider);
+    final balance = s.resolvedBalance;
 
     Widget walletAction(String emoji, String label, VoidCallback onTap) => Expanded(
           child: InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(10),
             child: Container(
               padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(emoji, style: const TextStyle(fontSize: 18)),
                   const SizedBox(height: 4),
-                  Text(label, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
+                  Text(label, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
                 ],
               ),
             ),
@@ -47,7 +48,7 @@ class WalletScreen extends ConsumerWidget {
     Widget txn(String title, String time, String amount, {required bool positive}) => Container(
           padding: const EdgeInsets.all(14),
           margin: const EdgeInsets.only(bottom: 10),
-          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12)),
+          decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(12)),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -55,58 +56,55 @@ class WalletScreen extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(title, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
-                  Text(time, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF7C8574))),
+                  Text(time, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
                 ],
               ),
-              Text(amount, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: positive ? const Color(0xFF176F3D) : const Color(0xFFDC2626))),
+              Text(amount, style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 13, color: positive ? const Color(0xFF166534) : const Color(0xFFDC2626))),
             ],
           ),
         );
 
     return Column(
       children: [
-        Container(
-          width: double.infinity,
-          color: const Color(0xFF0F3F23),
-          padding: const EdgeInsets.fromLTRB(20, 54, 20, 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+        Padding(
+          padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 14, 20, 6),
+          child: Row(
             children: [
-              Row(
-                children: [
-                  BackCircleButton(onTap: controller.back, onDark: true),
-                  const SizedBox(width: 12),
-                  const Text('المحفظة والعمولة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17, color: Colors.white)),
-                ],
-              ),
-              const SizedBox(height: 16),
-              const Text('الرصيد الحالي', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFFB3E7C4))),
-              Text('${balance.toStringAsFixed(0)} أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 28, color: Colors.white)),
-              const SizedBox(height: 6),
-              const Text('نسبة العمولة: 12%', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFFB3E7C4))),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  walletAction('💰', 'شحن رصيد', () => _openWhatsapp('شحن')),
-                  const SizedBox(width: 10),
-                  walletAction('🏧', 'سحب رصيد', () => _openWhatsapp('سحب')),
-                ],
-              ),
+              BackCircleButton(onTap: controller.back),
+              const SizedBox(width: 12),
+              const Text('المحفظة والعمولة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17, color: Color(0xFF1C1917))),
             ],
           ),
         ),
         Expanded(
-          child: Container(
-            color: const Color(0xFFF8F9F8),
-            padding: const EdgeInsets.all(20),
-            child: ListView(
-              children: [
-                const Text('سجل الحركات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF7C8574))),
-                const SizedBox(height: 10),
-                txn('عمولة طلب #2051', 'اليوم 13:10', '-148 أوقية', positive: false),
-                txn('شحن رصيد', 'أمس', '+2,000 أوقية', positive: true),
-              ],
-            ),
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(20, 6, 20, 20),
+            children: [
+              Container(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(16)),
+                child: Column(
+                  children: [
+                    const Text('الرصيد الحالي', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF166534))),
+                    Text('${balance.toStringAsFixed(0)} أوقية', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 26, color: Color(0xFF166534))),
+                    Text('نسبة العمولة: ${s.commissionPct?.toStringAsFixed(0) ?? '...'}%', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF57534E))),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        walletAction('💰', 'شحن رصيد', () => _openWhatsapp('شحن')),
+                        const SizedBox(width: 10),
+                        walletAction('🏧', 'سحب رصيد', () => _openWhatsapp('سحب')),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              const Text('سجل الحركات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+              const SizedBox(height: 10),
+              txn('عمولة طلب #2051', 'اليوم 13:10', '-148 أوقية', positive: false),
+              txn('شحن رصيد', 'أمس', '+2,000 أوقية', positive: true),
+            ],
           ),
         ),
         const FoodBottomNav(current: FoodScreen.wallet),

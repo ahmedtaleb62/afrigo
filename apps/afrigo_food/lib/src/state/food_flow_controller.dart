@@ -25,9 +25,10 @@ final foodFlowControllerProvider = StateNotifierProvider<FoodFlowController, Foo
 ///  - **Delivery settings** (screen: طريقة التوصيل) persists to the new
 ///    `restaurants.delivery_method/delivery_fee/min_order/prep_time_minutes`
 ///    columns (see supabase/migrations/20260801130001_...).
-/// Incoming orders / order detail / reports stay simulated — they need
-/// `request-food-order`/`respond-to-order` (Section 2, not built) to ever
-/// have real rows to show.
+///  - **Incoming orders / order detail** (screens 68-69) are real too —
+///    `watchOrders()` streams `food_orders` live, bucketed by status.
+/// Reports (screen: التقارير) still shows demo numbers — no aggregation
+/// query/RPC exists yet for real revenue/order-count analytics.
 class FoodFlowController extends StateNotifier<FoodFlowState> {
   FoodFlowController() : super(const FoodFlowState());
 
@@ -251,6 +252,8 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       final restaurantId = latest['id'] as String;
       state = state.copyWith(
         restaurantId: restaurantId,
+        restaurantName: latest['name'] as String?,
+        restaurantCuisineType: latest['cuisine_type'] as String?,
         restaurantStatus: status,
         restaurantRejectionReason: latest['rejection_reason'] as String?,
       );
@@ -262,10 +265,6 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       }
     });
   }
-
-  /// Design-only preview button (screen 64) — the real transition happens
-  /// automatically via `watchRestaurantStatus` once an admin actually rejects.
-  void simulateRejected() => goTo(FoodScreen.rejected);
 
   // ---------------------------------------------------------------------
   // Wallet — real read + Realtime watch
@@ -374,10 +373,25 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
     state = state.copyWith(dishes: [for (final d in state.dishes) if (d.id == updated.id) updated else d]);
   }
 
-  /// The design's own "+ تصنيف جديد" is a no-op stub (no input form was
-  /// designed for it either) — kept as-is rather than inventing a UI the
-  /// design doesn't specify.
-  void addCategoryDemo() {}
+  /// Was a literal no-op stub — "+ تصنيف جديد" did nothing when tapped, a
+  /// real dead button in a screen that's otherwise fully wired to real
+  /// menu CRUD. Inserts into the same `restaurant_dish_categories` table
+  /// `loadMenu()`/`addDish()` already use.
+  Future<void> addCategory(String name) async {
+    final restaurantId = state.restaurantId;
+    final trimmed = name.trim();
+    if (restaurantId == null || trimmed.isEmpty) return;
+    try {
+      final row = await _sb
+          .from('restaurant_dish_categories')
+          .insert({'restaurant_id': restaurantId, 'name': trimmed, 'sort_order': state.categories.length})
+          .select()
+          .single();
+      state = state.copyWith(categories: [...state.categories, DishCategory.fromRow(row)]);
+    } catch (e) {
+      state = state.copyWith(actionError: 'تعذّر إضافة التصنيف، حاول مجددًا');
+    }
+  }
 
   // ---------------------------------------------------------------------
   // Delivery settings — real update
@@ -396,6 +410,54 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
         'min_order': num.tryParse(state.minOrder) ?? 0,
         'prep_time_minutes': state.prepTime,
       }).eq('id', restaurantId);
+    }
+    back();
+  }
+
+  // ---------------------------------------------------------------------
+  // Working hours — real read/write against restaurants.opening_hours (jsonb)
+  // ---------------------------------------------------------------------
+  static const _dayKeys = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
+  static const _dayLabels = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+
+  Future<void> loadWorkingHours() async {
+    final restaurantId = state.restaurantId;
+    if (restaurantId == null) return;
+    try {
+      final row = await _sb.from('restaurants').select('opening_hours').eq('id', restaurantId).single();
+      final raw = (row['opening_hours'] as Map?) ?? {};
+      state = state.copyWith(
+        workingHours: [
+          for (var i = 0; i < _dayKeys.length; i++)
+            switch (raw[_dayKeys[i]]) {
+              final Map d => {'day': _dayLabels[i], 'key': _dayKeys[i], 'open': d['open'] ?? true, 'from': d['from'] ?? '10:00', 'to': d['to'] ?? '23:00'},
+              _ => {'day': _dayLabels[i], 'key': _dayKeys[i], 'open': true, 'from': '10:00', 'to': '23:00'},
+            },
+        ],
+      );
+    } catch (_) {
+      // Falls back to the default all-open week already set above.
+    }
+  }
+
+  void toggleWorkingHoursDay(int index) {
+    final hours = [...state.workingHours];
+    hours[index] = {...hours[index], 'open': !(hours[index]['open'] as bool)};
+    state = state.copyWith(workingHours: hours);
+  }
+
+  Future<void> saveWorkingHours() async {
+    final restaurantId = state.restaurantId;
+    if (restaurantId != null) {
+      final json = {
+        for (final d in state.workingHours) d['key'] as String: {'open': d['open'], 'from': d['from'], 'to': d['to']},
+      };
+      try {
+        await _sb.from('restaurants').update({'opening_hours': json}).eq('id', restaurantId);
+      } catch (_) {
+        state = state.copyWith(actionError: 'تعذّر حفظ أوقات العمل، حاول مجددًا');
+        return;
+      }
     }
     back();
   }

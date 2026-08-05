@@ -15,6 +15,8 @@ class FoodFlowState {
     this.lowBalanceDemo = false,
     this.balance,
     this.restaurantId,
+    this.restaurantName,
+    this.restaurantCuisineType,
     this.restaurantStatus,
     this.restaurantRejectionReason,
     this.categories = const [],
@@ -32,6 +34,7 @@ class FoodFlowState {
     this.doneOrders = const [],
     this.selectedOrderId,
     this.commissionPct,
+    this.workingHours = const [],
     this.isSubmitting = false,
     this.authError,
     this.actionError,
@@ -52,6 +55,8 @@ class FoodFlowState {
   final double? balance;
 
   final String? restaurantId;
+  final String? restaurantName;
+  final String? restaurantCuisineType;
   final String? restaurantStatus;
   final String? restaurantRejectionReason;
 
@@ -81,6 +86,11 @@ class FoodFlowState {
 
   /// `commission_settings.percentage` for `food` — display only.
   final double? commissionPct;
+
+  /// One entry per day: `{day, key, open, from, to}`. Loaded from/saved to
+  /// `restaurants.opening_hours` (jsonb) by `loadWorkingHours`/
+  /// `saveWorkingHours`.
+  final List<Map<String, dynamic>> workingHours;
 
   final bool isSubmitting;
   final String? authError;
@@ -118,6 +128,8 @@ class FoodFlowState {
     bool? lowBalanceDemo,
     Object? balance = _unset,
     Object? restaurantId = _unset,
+    Object? restaurantName = _unset,
+    Object? restaurantCuisineType = _unset,
     Object? restaurantStatus = _unset,
     Object? restaurantRejectionReason = _unset,
     List<DishCategory>? categories,
@@ -135,6 +147,7 @@ class FoodFlowState {
     List<Map<String, dynamic>>? doneOrders,
     Object? selectedOrderId = _unset,
     Object? commissionPct = _unset,
+    List<Map<String, dynamic>>? workingHours,
     bool? isSubmitting,
     Object? authError = _unset,
     Object? actionError = _unset,
@@ -152,6 +165,8 @@ class FoodFlowState {
       lowBalanceDemo: lowBalanceDemo ?? this.lowBalanceDemo,
       balance: identical(balance, _unset) ? this.balance : balance as double?,
       restaurantId: identical(restaurantId, _unset) ? this.restaurantId : restaurantId as String?,
+      restaurantName: identical(restaurantName, _unset) ? this.restaurantName : restaurantName as String?,
+      restaurantCuisineType: identical(restaurantCuisineType, _unset) ? this.restaurantCuisineType : restaurantCuisineType as String?,
       restaurantStatus: identical(restaurantStatus, _unset) ? this.restaurantStatus : restaurantStatus as String?,
       restaurantRejectionReason: identical(restaurantRejectionReason, _unset)
           ? this.restaurantRejectionReason
@@ -171,6 +186,7 @@ class FoodFlowState {
       doneOrders: doneOrders ?? this.doneOrders,
       selectedOrderId: identical(selectedOrderId, _unset) ? this.selectedOrderId : selectedOrderId as String?,
       commissionPct: identical(commissionPct, _unset) ? this.commissionPct : commissionPct as double?,
+      workingHours: workingHours ?? this.workingHours,
       isSubmitting: isSubmitting ?? this.isSubmitting,
       authError: identical(authError, _unset) ? this.authError : authError as String?,
       actionError: identical(actionError, _unset) ? this.actionError : actionError as String?,

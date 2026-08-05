@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
-/// Full-width primary button matching this design doc's literal spec
-/// (14px radius, 16px padding, 700/15px label).
+/// Full-width primary button matching the design doc's spec (14px radius,
+/// 16px padding, 700/15px label).
 class FoodPrimaryButton extends StatelessWidget {
   const FoodPrimaryButton({
     super.key,
     required this.label,
     required this.onPressed,
     this.isLoading = false,
-    this.color = const Color(0xFF2AA35C),
+    this.color = const Color(0xFF16A34A),
     this.textColor = Colors.white,
   });
 

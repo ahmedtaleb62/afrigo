@@ -17,6 +17,7 @@ import 'screens/restaurant_docs_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/wallet_screen.dart';
+import 'screens/working_hours_screen.dart';
 import 'state/food_flow_controller.dart';
 import 'state/food_screen.dart';
 
@@ -33,6 +34,15 @@ class AppRoot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final screen = ref.watch(foodFlowControllerProvider.select((s) => s.screen));
+
+    // Was previously only listened to inside OrdersScreen, so a failed
+    // action anywhere else (menu, delivery settings, wallet, ...) never
+    // surfaced to the owner at all.
+    ref.listen(foodFlowControllerProvider.select((s) => s.actionError), (prev, next) {
+      if (next == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
+      ref.read(foodFlowControllerProvider.notifier).clearActionError();
+    });
 
     final body = switch (screen) {
       FoodScreen.splash => const SplashScreen(),
@@ -51,6 +61,7 @@ class AppRoot extends ConsumerWidget {
       FoodScreen.wallet => const WalletScreen(),
       FoodScreen.reports => const ReportsScreen(),
       FoodScreen.profile => const ProfileScreen(),
+      FoodScreen.workingHours => const WorkingHoursScreen(),
     };
 
     return Scaffold(

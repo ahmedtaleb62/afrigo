@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 /// The rotating ring spinner used on loading screens.
 class SpinningRing extends StatefulWidget {
-  const SpinningRing({super.key, this.size = 64, this.trackColor = const Color(0xFFE1E5DF), this.activeColor = const Color(0xFF2AA35C)});
+  const SpinningRing({super.key, this.size = 64, this.trackColor = const Color(0xFFE7E5E4), this.activeColor = const Color(0xFF16A34A)});
 
   final double size;
   final Color trackColor;

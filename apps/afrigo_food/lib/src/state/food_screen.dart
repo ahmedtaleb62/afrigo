@@ -17,6 +17,7 @@ enum FoodScreen {
   wallet,
   reports,
   profile,
+  workingHours,
 }
 
 enum OrderTab { newOrder, prep, ready, done }

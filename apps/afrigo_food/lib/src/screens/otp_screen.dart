@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/food_flow_controller.dart';
+import '../widgets/back_circle_button.dart';
 import '../widgets/food_primary_button.dart';
 
 /// Screen — OTP confirmation.
@@ -30,13 +31,15 @@ class _OtpScreenState extends State<OtpScreen> {
         final controller = ref.read(foodFlowControllerProvider.notifier);
         return Container(
           color: Colors.white,
-          padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
+          padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 20, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Row(children: [BackCircleButton(onTap: controller.back)]),
+              const SizedBox(height: 14),
               const Text('تأكيد الرمز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
               const SizedBox(height: 8),
-              const Text('أدخل الرمز المرسل إلى بريدك الإلكتروني', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF7C8574))),
+              const Text('أدخل الرمز المرسل إلى بريدك الإلكتروني', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
               const SizedBox(height: 28),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -55,10 +58,10 @@ class _OtpScreenState extends State<OtpScreen> {
                         decoration: InputDecoration(
                           counterText: '',
                           filled: true,
-                          fillColor: const Color(0xFFF8F9F8),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2AA35C), width: 1.5)),
+                          fillColor: const Color(0xFFF5F5F4),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF16A34A), width: 1.5)),
                         ),
                       ),
                     ),

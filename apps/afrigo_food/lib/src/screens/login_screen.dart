@@ -22,7 +22,7 @@ class LoginScreen extends ConsumerWidget {
         children: [
           const Text('تسجيل دخول المطعم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 26)),
           const SizedBox(height: 6),
-          const Text('أهلًا بعودتك إلى Afrigo Food', style: TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF7C8574))),
+          const Text('أهلًا بعودتك إلى Afrigo Food', style: TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF78716C))),
           const SizedBox(height: 28),
           FoodTextField(label: 'البريد الإلكتروني', hint: 'restaurant@afrigo.com', onChanged: controller.setEmail),
           const SizedBox(height: 14),
@@ -37,10 +37,10 @@ class LoginScreen extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('مطعم جديد؟ ', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF7C8574))),
+              const Text('مطعم جديد؟ ', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
               InkWell(
                 onTap: () => controller.goTo(FoodScreen.signup),
-                child: const Text('إنشاء حساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF176F3D))),
+                child: const Text('إنشاء حساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
               ),
             ],
           ),

@@ -67,7 +67,7 @@ class Dish {
 
   (String label, int bg, int fg) get stockBadge => switch (stock) {
         0 => ('نفذ المخزون', 0xFFFEE2E2, 0xFFDC2626),
-        <= 5 => ('كمية منخفضة', 0xFFFFF3C4, 0xFF8F660C),
-        _ => ('متوفر', 0xFFD8F3E1, 0xFF176F3D),
+        <= 5 => ('كمية منخفضة', 0xFFFEF9C3, 0xFF854D0E),
+        _ => ('متوفر', 0xFFDCFCE7, 0xFF166534),
       };
 }

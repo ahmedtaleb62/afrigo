@@ -16,7 +16,7 @@ class ReportsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(foodFlowControllerProvider.notifier);
 
-    Widget statCard(String label, String value, {Color bg = const Color(0xFFF8F9F8), Color labelColor = const Color(0xFF7C8574), Color valueColor = const Color(0xFF1A1D16)}) => Expanded(
+    Widget statCard(String label, String value, {Color bg = const Color(0xFFF5F5F4), Color labelColor = const Color(0xFF78716C), Color valueColor = const Color(0xFF1C1917)}) => Expanded(
           child: Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: bg, borderRadius: BorderRadius.circular(12)),
@@ -31,12 +31,12 @@ class ReportsScreen extends ConsumerWidget {
 
     Widget dishRow(String name, String count) => Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF0F2EF)))),
+          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF5F5F4)))),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
-              Text(count, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF176F3D))),
+              Text(count, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
             ],
           ),
         );
@@ -56,7 +56,7 @@ class ReportsScreen extends ConsumerWidget {
 
     Widget inventoryRow(String emoji, String name, String meta, String badge, Color badgeBg, Color badgeFg) => Container(
           padding: const EdgeInsets.symmetric(vertical: 10),
-          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF0F2EF)))),
+          decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF5F5F4)))),
           child: Row(
             children: [
               Text(emoji, style: const TextStyle(fontSize: 18)),
@@ -66,7 +66,7 @@ class ReportsScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
-                    Text(meta, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF7C8574))),
+                    Text(meta, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
                   ],
                 ),
               ),
@@ -92,7 +92,7 @@ class ReportsScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          const Text('المبيعات والأرباح', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('المبيعات والأرباح', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
           Row(
             children: [
@@ -100,11 +100,11 @@ class ReportsScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               statCard('التكلفة التقديرية', '59,904 أوقية', valueColor: const Color(0xFFDC2626)),
               const SizedBox(width: 8),
-              statCard('صافي الربح', '90,704 أوقية', bg: const Color(0xFFEFFBF3), labelColor: const Color(0xFF176F3D), valueColor: const Color(0xFF176F3D)),
+              statCard('صافي الربح', '90,704 أوقية', bg: const Color(0xFFF0FDF4), labelColor: const Color(0xFF166534), valueColor: const Color(0xFF166534)),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('المبيعات (آخر 7 أيام)', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('المبيعات (آخر 7 أيام)', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
           SizedBox(
             height: 140,
@@ -112,28 +112,28 @@ class ReportsScreen extends ConsumerWidget {
             child: CustomPaint(painter: _BarsPainter()),
           ),
           const SizedBox(height: 14),
-          const Text('الأطباق الأكثر مبيعًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('الأطباق الأكثر مبيعًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 4),
           dishRow('بيتزا مارغريتا', '142 طلب'),
           dishRow('باستا بولونيز', '98 طلب'),
           dishRow('تيراميسو', '64 طلب'),
           const SizedBox(height: 20),
-          const Text('حالة المخزون', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('حالة المخزون', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
           Row(
             children: [
-              inventoryStat('2', 'متوفر', const Color(0xFFD8F3E1), const Color(0xFF176F3D)),
+              inventoryStat('2', 'متوفر', const Color(0xFFDCFCE7), const Color(0xFF166534)),
               const SizedBox(width: 8),
-              inventoryStat('1', 'كمية منخفضة', const Color(0xFFFFF3C4), const Color(0xFF8F660C)),
+              inventoryStat('1', 'كمية منخفضة', const Color(0xFFFEF9C3), const Color(0xFF854D0E)),
               const SizedBox(width: 8),
               inventoryStat('1', 'نفذ المخزون', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
             ],
           ),
           const SizedBox(height: 4),
-          inventoryRow('🍕', 'بيتزا مارغريتا', 'الكمية المتبقية: 24 · بِيع منها 142', 'متوفر', const Color(0xFFD8F3E1), const Color(0xFF176F3D)),
-          inventoryRow('🍝', 'باستا بولونيز', 'الكمية المتبقية: 6 · بِيع منها 98', 'كمية منخفضة', const Color(0xFFFFF3C4), const Color(0xFF8F660C)),
+          inventoryRow('🍕', 'بيتزا مارغريتا', 'الكمية المتبقية: 24 · بِيع منها 142', 'متوفر', const Color(0xFFDCFCE7), const Color(0xFF166534)),
+          inventoryRow('🍝', 'باستا بولونيز', 'الكمية المتبقية: 6 · بِيع منها 98', 'كمية منخفضة', const Color(0xFFFEF9C3), const Color(0xFF854D0E)),
           inventoryRow('🍲', 'شوربة العدس', 'الكمية المتبقية: 0 · بِيع منها 37', 'نفذ المخزون', const Color(0xFFFEE2E2), const Color(0xFFDC2626)),
-          inventoryRow('🍰', 'تيراميسو', 'الكمية المتبقية: 12 · بِيع منها 64', 'متوفر', const Color(0xFFD8F3E1), const Color(0xFF176F3D)),
+          inventoryRow('🍰', 'تيراميسو', 'الكمية المتبقية: 12 · بِيع منها 64', 'متوفر', const Color(0xFFDCFCE7), const Color(0xFF166534)),
         ],
       ),
     );
@@ -143,13 +143,13 @@ class ReportsScreen extends ConsumerWidget {
 class _BarsPainter extends CustomPainter {
   static const _heights = [60.0, 90.0, 75.0, 110.0, 70.0, 95.0, 120.0];
   static const _colors = [
-    Color(0xFFB3E7C4),
-    Color(0xFF82D6A0),
-    Color(0xFF82D6A0),
-    Color(0xFF2AA35C),
-    Color(0xFF82D6A0),
-    Color(0xFF2AA35C),
-    Color(0xFF176F3D),
+    Color(0xFF16A34A),
+    Color(0xFF16A34A),
+    Color(0xFF16A34A),
+    Color(0xFF16A34A),
+    Color(0xFF16A34A),
+    Color(0xFF16A34A),
+    Color(0xFF16A34A),
   ];
 
   @override
