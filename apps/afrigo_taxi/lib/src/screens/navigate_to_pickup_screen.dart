@@ -79,6 +79,11 @@ class NavigateToPickupScreen extends ConsumerWidget {
                     child: const Text('وصلت / بدء الرحلة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
                   ),
                 ),
+                const SizedBox(height: 10),
+                TextButton(
+                  onPressed: controller.cancelRide,
+                  child: const Text('إلغاء الرحلة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                ),
               ],
             ),
           ),

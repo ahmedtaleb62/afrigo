@@ -66,6 +66,7 @@ async function advanceRide(admin: ReturnType<typeof serviceClient>, userId: stri
   if (!isDriver && !isClient) throw new HttpError(403, 'لا يمكنك تعديل هذه الرحلة');
 
   const ALLOWED: Record<string, string[]> = {
+    searching: ['cancelled_by_client'],
     accepted: ['driver_arriving', 'cancelled_by_driver', 'cancelled_by_client'],
     driver_arriving: ['in_progress', 'cancelled_by_driver', 'cancelled_by_client'],
     in_progress: ['completed'],
@@ -217,24 +218,34 @@ async function markFoodOrderReadyAndSearchLivreur(
 const DELIVERY_MESSAGES: Record<string, string> = {
   picked_up: 'استلم المندوب طردك وهو في طريقه',
   delivered: 'تم تسليم الطرد بنجاح',
+  cancelled_by_client: 'ألغى العميل طلب التوصيل',
 };
 
 async function advanceDelivery(admin: ReturnType<typeof serviceClient>, userId: string, body: Body) {
   const { data: delivery } = await admin.from('delivery_requests').select('id, client_id, livreur_id, status').eq('id', body.order_id).maybeSingle();
   if (!delivery) throw new HttpError(404, 'طلب التوصيل غير موجود');
-  if (delivery.livreur_id !== userId) throw new HttpError(403, 'لا يمكنك تعديل هذا الطلب');
+
+  const isLivreur = delivery.livreur_id === userId;
+  const isClient = delivery.client_id === userId;
+  if (!isLivreur && !isClient) throw new HttpError(403, 'لا يمكنك تعديل هذا الطلب');
 
   const ALLOWED: Record<string, string[]> = {
+    searching: ['cancelled_by_client'],
     accepted: ['picked_up', 'cancelled'],
     picked_up: ['delivered'],
   };
   const allowedNext = ALLOWED[delivery.status] ?? [];
   if (!allowedNext.includes(body.next_status)) throw new HttpError(400, `لا يمكن الانتقال من "${delivery.status}" إلى "${body.next_status}"`);
 
+  if (body.next_status === 'cancelled_by_client' && !isClient) throw new HttpError(403, 'فقط العميل يمكنه هذا الإلغاء');
+  if (['picked_up', 'delivered', 'cancelled'].includes(body.next_status) && !isLivreur) {
+    throw new HttpError(403, 'فقط مندوب التوصيل يمكنه تحديث حالة الطلب');
+  }
+
   const patch: Record<string, unknown> = { status: body.next_status };
   if (body.next_status === 'picked_up') patch.picked_up_at = new Date().toISOString();
   if (body.next_status === 'delivered') patch.delivered_at = new Date().toISOString();
-  if (body.next_status === 'cancelled') patch.cancelled_at = new Date().toISOString();
+  if (body.next_status.startsWith('cancelled')) patch.cancelled_at = new Date().toISOString();
 
   const { data: updated, error } = await admin
     .from('delivery_requests')

@@ -115,12 +115,30 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
             if (!isActive) ...[
               const SizedBox(height: 6),
               InkWell(
-                onTap: () => o['order_type'] == 'food_order'
-                    ? controller.goToFoodList()
-                    : controller.goTo(
-                        ClientScreen.rideConfirm,
-                        patch: (s) => s.copyWith(flowType: o['order_type'] == 'delivery_request' ? ClientFlowType.delivery : ClientFlowType.taxi),
+                onTap: () {
+                  if (o['order_type'] == 'food_order') {
+                    controller.goToFoodList();
+                  } else if (o['order_type'] == 'delivery_request') {
+                    // Delivery needs pickup/dropoff/recipient re-entered — a
+                    // past order's fare and recipient details don't carry
+                    // over, so this starts a fresh parcel request rather
+                    // than jumping straight to a confirm screen that
+                    // (wrongly) reused the taxi fare and blank recipient
+                    // fields.
+                    controller.goTo(
+                      ClientScreen.parcelPickup,
+                      patch: (s) => s.copyWith(
+                        flowType: ClientFlowType.delivery,
+                        pickupLat: null,
+                        pickupLng: null,
+                        pickupAddress: null,
+                        pickupIsUserSet: false,
                       ),
+                    );
+                  } else {
+                    controller.goTo(ClientScreen.rideConfirm, patch: (s) => s.copyWith(flowType: ClientFlowType.taxi));
+                  }
+                },
                 child: const Text('إعادة الطلب ›', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
               ),
             ],

@@ -25,6 +25,15 @@ Deno.serve(
     const { error } = await admin.from('profiles').update({ is_suspended: body.suspended }).eq('id', body.user_id);
     if (error) throw new HttpError(500, error.message);
 
+    // Suspending must take effect immediately, not just block the next
+    // toggle-online-status call — otherwise a driver/restaurant already
+    // online keeps matching new orders until they happen to toggle
+    // themselves offline and back on.
+    if (body.suspended) {
+      await admin.from('vehicles').update({ is_online: false }).eq('owner_id', body.user_id);
+      await admin.from('restaurants').update({ is_open: false }).eq('owner_id', body.user_id);
+    }
+
     await admin.from('admin_audit_log').insert({
       admin_id: admin_user.id,
       action: body.suspended ? 'suspend_user' : 'activate_user',

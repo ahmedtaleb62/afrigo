@@ -95,11 +95,97 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       unawaited(PushNotifications.register());
       unawaited(loadTripHistory());
       unawaited(loadNotifications());
-      goTo(TaxiScreen.home);
+      await _routeAfterAuth();
     } on AuthException catch (e) {
       state = state.copyWith(isSubmitting: false, authError: e.message);
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
+    }
+  }
+
+  /// Splash's "متابعة" used to always go to the login screen, even with a
+  /// persisted Supabase session — forcing a full re-login on every process
+  /// restart. If a session already exists, skip straight to the same
+  /// post-auth routing `doLogin()` uses instead.
+  Future<void> continueFromSplash() async {
+    if (_sb.auth.currentSession != null) {
+      unawaited(_ensureProfile());
+      ensureLiveSubscriptions();
+      unawaited(PushNotifications.register());
+      unawaited(loadTripHistory());
+      unawaited(loadNotifications());
+      await _routeAfterAuth();
+    } else {
+      goTo(TaxiScreen.login);
+    }
+  }
+
+  /// Single source of truth for "where does this driver belong right now",
+  /// used by both a fresh login and a resumed session. Previously `doLogin`
+  /// always went straight to Home regardless of vehicle status — a pending
+  /// or rejected driver who logged out and back in (or just relaunched the
+  /// app once session-restore existed) landed on the full Home screen with
+  /// no explanation. And nothing anywhere re-attached an in-progress ride
+  /// after a restart, so a driver who force-closed mid-ride lost all trace
+  /// of owing a client a ride.
+  Future<void> _routeAfterAuth() async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) {
+      goTo(TaxiScreen.login);
+      return;
+    }
+    try {
+      final vehicle = await _sb
+          .from('vehicles')
+          .select('status, rejection_reason')
+          .eq('owner_id', uid)
+          .eq('service_type', 'taxi')
+          .maybeSingle();
+      if (vehicle == null) {
+        goTo(TaxiScreen.vehicleDocs);
+        return;
+      }
+      final status = vehicle['status'] as String?;
+      state = state.copyWith(vehicleStatus: status, vehicleRejectionReason: vehicle['rejection_reason'] as String?);
+      if (status == 'pending') {
+        watchVehicleStatus(uid);
+        goTo(TaxiScreen.pendingApproval);
+        return;
+      }
+      if (status == 'rejected') {
+        goTo(TaxiScreen.rejected);
+        return;
+      }
+      await _resumeActiveRide();
+    } catch (_) {
+      goTo(TaxiScreen.home);
+    }
+  }
+
+  /// Re-attaches an in-progress ride after login/resume so a driver who
+  /// force-closed the app mid-ride (crash, OS kill, battery) lands back on
+  /// the right screen instead of Home with zero awareness they still owe a
+  /// client a ride.
+  Future<void> _resumeActiveRide() async {
+    try {
+      final rows = await _sb
+          .from('rides')
+          .select()
+          .eq('driver_id', _sb.auth.currentUser!.id)
+          .inFilter('status', ['accepted', 'driver_arriving', 'in_progress'])
+          .order('accepted_at', ascending: false)
+          .limit(1);
+      if (rows.isEmpty) {
+        goTo(TaxiScreen.home);
+        return;
+      }
+      final ride = ActiveRide.fromRow(rows.first);
+      state = state.copyWith(activeRide: ride);
+      unawaited(_fetchClientContact(ride.id));
+      _startBroadcastingLocation(ride.id);
+      goTo(ride.status == 'in_progress' ? TaxiScreen.tripOngoing : TaxiScreen.navigateToPickup);
+    } catch (_) {
+      goTo(TaxiScreen.home);
     }
   }
 
@@ -169,6 +255,43 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   // Vehicle verification — real insert + Realtime watch
   // ---------------------------------------------------------------------
   void toggleLicensePhoto() => state = state.copyWith(licensePhoto: !state.licensePhoto);
+
+  void setLicensePhoto(bool value) => state = state.copyWith(licensePhoto: value);
+
+  /// Lets `VehicleDocsScreen` pre-fill its fields when opened for an edit
+  /// (from Profile) instead of always starting blank — without this,
+  /// submitting after only fixing one field (e.g. the plate number)
+  /// silently overwrote every other already-approved field with an empty
+  /// string, since `submitVehicleDocs` always upserts the full row.
+  Future<Map<String, dynamic>?> fetchMyVehicle() async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return null;
+    try {
+      return await _sb.from('vehicles').select().eq('owner_id', uid).eq('service_type', 'taxi').maybeSingle();
+    } catch (_) {
+      return null;
+    }
+  }
+
+  /// `ProfileScreen` used to show a hardcoded fake name/rating for every
+  /// driver ("مراد بلحاج", "4.8 · 312 رحلة"). Name comes straight from the
+  /// auth session (set at signup); rating is averaged from `ratings` rows
+  /// where this driver is the rated entity — `ratings_select_involved_or_admin`
+  /// (`rated_entity_id = auth.uid()`) already permits a driver to read their
+  /// own ratings directly.
+  Future<({String name, double avgRating, int ratingCount})> fetchMyProfileSummary() async {
+    final uid = _sb.auth.currentUser?.id;
+    final name = _sb.auth.currentUser?.userMetadata?['full_name'] as String? ?? 'سائق';
+    if (uid == null) return (name: name, avgRating: 0.0, ratingCount: 0);
+    try {
+      final rows = await _sb.from('ratings').select('rating').eq('rated_entity_id', uid).eq('rated_entity_type', 'driver');
+      if (rows.isEmpty) return (name: name, avgRating: 0.0, ratingCount: 0);
+      final total = rows.fold<int>(0, (sum, r) => sum + (r['rating'] as int));
+      return (name: name, avgRating: total / rows.length, ratingCount: rows.length);
+    } catch (_) {
+      return (name: name, avgRating: 0.0, ratingCount: 0);
+    }
+  }
 
   Future<void> submitVehicleDocs({
     required String vehicleName,
@@ -589,10 +712,38 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   /// `driver_arriving` and `in_progress` steps of the state machine — there
   /// is no separate "confirm arrival" tap in this design, so this makes
   /// both transitions back to back rather than skipping a required step.
+  ///
+  /// Skips the first transition if the ride is already `driver_arriving` —
+  /// without this, a driver retrying after the first call succeeded but the
+  /// second one failed (network blip) would resend `driver_arriving` from
+  /// `driver_arriving`, which the server correctly rejects as an invalid
+  /// transition, permanently stranding them with no way to proceed.
   Future<void> startTripOngoing() async {
-    if (!await _advanceRide('driver_arriving')) return;
+    if (state.activeRide?.status != 'driver_arriving') {
+      if (!await _advanceRide('driver_arriving')) return;
+    }
     if (!await _advanceRide('in_progress')) return;
     goTo(TaxiScreen.tripOngoing);
+  }
+
+  /// Only valid while the ride hasn't started yet (`accepted`/
+  /// `driver_arriving` — enforced server-side too); once `in_progress`
+  /// there is no cancel, only completing the trip.
+  Future<void> cancelRide() async {
+    final ride = state.activeRide;
+    if (ride == null) return;
+    try {
+      await _sb.functions.invoke(
+        'update-order-status',
+        body: {'order_type': 'ride', 'order_id': ride.id, 'next_status': 'cancelled_by_driver'},
+      );
+    } catch (e) {
+      state = state.copyWith(actionError: _functionErrorMessage(e));
+      return;
+    }
+    _stopBroadcastingLocation();
+    state = state.copyWith(activeRide: null, clientName: null, clientPhone: null);
+    goTo(TaxiScreen.home);
   }
 
   Future<void> endTripDriver() async {

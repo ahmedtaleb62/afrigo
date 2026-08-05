@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/taxi_flow_controller.dart';
-import '../state/taxi_screen.dart';
 
 /// Screen 45 — Splash.
 class SplashScreen extends ConsumerWidget {
@@ -40,7 +39,7 @@ class SplashScreen extends ConsumerWidget {
                 right: 0,
                 child: Center(
                   child: OutlinedButton(
-                    onPressed: () => ref.read(taxiFlowControllerProvider.notifier).goTo(TaxiScreen.login),
+                    onPressed: () => ref.read(taxiFlowControllerProvider.notifier).continueFromSplash(),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0x80FFFFFF), width: 1.5),
                       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),

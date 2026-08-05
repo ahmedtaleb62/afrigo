@@ -23,6 +23,25 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
   String _carType = _carTypes.first;
 
   @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      final vehicle = await ref.read(taxiFlowControllerProvider.notifier).fetchMyVehicle();
+      if (vehicle == null || !mounted) return;
+      _vehicleName.text = vehicle['vehicle_name'] as String? ?? '';
+      _address.text = vehicle['address'] as String? ?? '';
+      _plateNumber.text = vehicle['plate_number'] as String? ?? '';
+      _notes.text = vehicle['notes'] as String? ?? '';
+      final carType = vehicle['car_type'] as String?;
+      final licenseUrl = vehicle['driving_license_url'] as String?;
+      setState(() {
+        if (carType != null && _carTypes.contains(carType)) _carType = carType;
+      });
+      ref.read(taxiFlowControllerProvider.notifier).setLicensePhoto(licenseUrl != null && licenseUrl.isNotEmpty);
+    });
+  }
+
+  @override
   void dispose() {
     _vehicleName.dispose();
     _address.dispose();

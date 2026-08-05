@@ -4,7 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/client_flow_controller.dart';
-import '../state/client_screen.dart';
 
 /// Screen 1 — Splash.
 class SplashScreen extends ConsumerWidget {
@@ -35,7 +34,7 @@ class SplashScreen extends ConsumerWidget {
               right: 0,
               child: Center(
                 child: OutlinedButton(
-                  onPressed: () => ref.read(clientFlowControllerProvider.notifier).goTo(ClientScreen.langSelect),
+                  onPressed: () => ref.read(clientFlowControllerProvider.notifier).continueFromSplash(),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0x80FFFFFF), width: 1.5),
                     padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),

@@ -18,8 +18,9 @@ Deno.serve(
     const user = await requireUser(req);
     const admin = serviceClient();
 
-    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).maybeSingle();
+    const { data: profile } = await admin.from('profiles').select('role, is_suspended').eq('id', user.id).maybeSingle();
     if (!profile) throw new HttpError(404, 'الملف الشخصي غير موجود');
+    if (body.online && profile.is_suspended) throw new HttpError(403, 'تم تعليق حسابك، يرجى التواصل مع الدعم');
 
     const { data: wallet } = await admin
       .from('wallets')

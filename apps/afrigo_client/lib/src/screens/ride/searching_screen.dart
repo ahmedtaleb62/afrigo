@@ -15,12 +15,6 @@ class SearchingScreen extends ConsumerWidget {
     final flowType = ref.watch(clientFlowControllerProvider.select((s) => s.flowType));
     final isTaxi = flowType == ClientFlowType.taxi;
 
-    ref.listen(clientFlowControllerProvider.select((s) => s.requestError), (prev, next) {
-      if (next == null) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
-      controller.clearRequestError();
-    });
-
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(begin: Alignment(-0.5, -1), end: Alignment(0.5, 1), colors: [Color(0xFF14532D), Color(0xFF166534)]),

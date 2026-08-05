@@ -41,12 +41,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final s = ref.watch(clientFlowControllerProvider);
     final firstName = (s.profileFullName ?? '').trim().split(RegExp(r'\s+')).first;
 
-    ref.listen(clientFlowControllerProvider.select((s) => s.requestError), (prev, next) {
-      if (next == null) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
-      controller.clearRequestError();
-    });
-
     return Container(
       // The new design has no distinct app-bar chrome anywhere — every
       // screen is one continuous flat surface from the status bar down to
@@ -157,8 +151,15 @@ class _ServiceGrid extends StatelessWidget {
             iconFg: const Color(0xFF57534E),
             title: 'توصيل',
             subtitle: 'أرسل طردك بسرعة وأمان',
-            onTap: () => ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('خدمة التوصيل — قريبًا في هذا العرض')),
+            onTap: () => controller.goTo(
+              ClientScreen.parcelPickup,
+              patch: (s) => s.copyWith(
+                flowType: ClientFlowType.delivery,
+                pickupLat: null,
+                pickupLng: null,
+                pickupAddress: null,
+                pickupIsUserSet: false,
+              ),
             ),
           ),
           const SizedBox(height: 18),

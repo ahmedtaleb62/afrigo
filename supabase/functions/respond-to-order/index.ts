@@ -25,6 +25,11 @@ Deno.serve(
     if (!['ride', 'food_order', 'delivery_request'].includes(body.order_type)) throw new HttpError(400, 'نوع الطلب غير صالح');
     if (!body.order_id) throw new HttpError(400, 'معرّف الطلب مطلوب');
 
+    if (body.decision === 'accept') {
+      const { data: profile } = await admin.from('profiles').select('is_suspended').eq('id', user.id).maybeSingle();
+      if (profile?.is_suspended) throw new HttpError(403, 'تم تعليق حسابك، يرجى التواصل مع الدعم');
+    }
+
     if (body.order_type === 'ride') return respondRide(admin, user.id, body);
     if (body.order_type === 'delivery_request') return respondDelivery(admin, user.id, body);
     return respondFoodOrder(admin, user.id, body);

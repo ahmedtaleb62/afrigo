@@ -173,11 +173,96 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       unawaited(PushNotifications.register());
-      goTo(ClientScreen.home);
+      await _routeAfterAuth();
     } on AuthException catch (e) {
       state = state.copyWith(isSubmitting: false, authError: e.message);
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
+    }
+  }
+
+  /// Splash's "متابعة" used to always go to language-select, even with a
+  /// persisted Supabase session — forcing a returning, already-logged-in
+  /// user back through langSelect/onboarding/login every time the app
+  /// process restarted. If a session already exists, skip straight to the
+  /// same post-auth routing `doLogin()` uses.
+  Future<void> continueFromSplash() async {
+    if (_sb.auth.currentSession != null) {
+      unawaited(_ensureProfile());
+      unawaited(PushNotifications.register());
+      await _routeAfterAuth();
+    } else {
+      goTo(ClientScreen.langSelect);
+    }
+  }
+
+  /// Re-attaches an active ride/delivery after login/resume — without this,
+  /// a client who force-closed the app mid-ride (crash, OS kill, battery)
+  /// lost all trace of it: no tracking, no driver contact, no way back in
+  /// except waiting for it to just resolve with zero visibility. Food
+  /// orders aren't covered by this resume path yet (separate screens/
+  /// subscription, out of scope for this pass).
+  Future<void> _routeAfterAuth() async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) {
+      goTo(ClientScreen.langSelect);
+      return;
+    }
+    try {
+      final rideRows = await _sb
+          .from('rides')
+          .select()
+          .eq('client_id', uid)
+          .inFilter('status', ['searching', 'accepted', 'driver_arriving', 'in_progress'])
+          .order('created_at', ascending: false)
+          .limit(1);
+      if (rideRows.isNotEmpty) {
+        await _resumeActiveOrder(rideRows.first, 'rides', 'ride', ClientFlowType.taxi);
+        return;
+      }
+      final deliveryRows = await _sb
+          .from('delivery_requests')
+          .select()
+          .eq('client_id', uid)
+          .inFilter('status', ['searching', 'accepted', 'picked_up'])
+          .order('created_at', ascending: false)
+          .limit(1);
+      if (deliveryRows.isNotEmpty) {
+        await _resumeActiveOrder(deliveryRows.first, 'delivery_requests', 'delivery_request', ClientFlowType.delivery);
+        return;
+      }
+    } catch (_) {
+      // Falls through to Home below — same as finding nothing active.
+    }
+    goTo(ClientScreen.home);
+  }
+
+  Future<void> _resumeActiveOrder(
+    Map<String, dynamic> row,
+    String table,
+    String orderType,
+    ClientFlowType flowType,
+  ) async {
+    final id = row['id'] as String;
+    final status = row['status'] as String;
+    state = state.copyWith(
+      flowType: flowType,
+      activeOrderId: id,
+      activeOrderStatus: status,
+      orderDistanceKm: (row['distance_km'] as num?)?.toDouble(),
+      orderDurationMin: (row['duration_min'] as num?)?.toDouble(),
+      orderPrice: (row['price'] as num?)?.toDouble(),
+    );
+    _subscribeOrderTracking(table, id, orderType);
+    if (status == 'searching') {
+      goTo(ClientScreen.searching);
+      _armSearchTimeout();
+    } else {
+      final providerId = (row['driver_id'] ?? row['livreur_id']) as String?;
+      state = state.copyWith(providerId: providerId);
+      unawaited(_fetchProviderContact(orderType, id));
+      _subscribeDriverLocation(orderType, id);
+      goTo(ClientScreen.providerFound);
     }
   }
 
@@ -501,14 +586,38 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     _searchTimeoutTimer = Timer(const Duration(seconds: 45), () {
       if (state.screen != ClientScreen.searching) return;
       _orderSub?.cancel();
+      unawaited(_cancelActiveOrderOnServer());
       state = state.copyWith(activeOrderId: null, activeOrderStatus: null);
       goTo(ClientScreen.noProvider);
     });
   }
 
+  /// `rides`/`delivery_requests` never expire a `searching` row on their
+  /// own — nothing server-side ever marks it failed — so giving up
+  /// client-side (timeout or manual cancel) previously only hid the order
+  /// locally while it stayed `searching` forever in the DB, still fully
+  /// matchable by a delayed driver push. `update-order-status` now allows
+  /// `searching -> cancelled_by_client`; call it so the row actually stops
+  /// being live. Best-effort: the local UI gives up on this order either
+  /// way, so a network failure here shouldn't block that.
+  Future<void> _cancelActiveOrderOnServer() async {
+    final orderId = state.activeOrderId;
+    if (orderId == null) return;
+    final orderType = state.flowType == ClientFlowType.taxi ? 'ride' : 'delivery_request';
+    try {
+      await _sb.functions.invoke(
+        'update-order-status',
+        body: {'order_type': orderType, 'order_id': orderId, 'next_status': 'cancelled_by_client'},
+      );
+    } catch (_) {
+      // Non-fatal — see doc comment above.
+    }
+  }
+
   void cancelSearch() {
     _searchTimeoutTimer?.cancel();
     _orderSub?.cancel();
+    unawaited(_cancelActiveOrderOnServer());
     state = state.copyWith(activeOrderId: null, activeOrderStatus: null);
     // `startSearch()` reached this screen via `goTo(ClientScreen.searching)`,
     // which already pushed the confirm screen onto history — using `goTo`
@@ -593,7 +702,13 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         body: {'order_type': orderType, 'order_id': orderId, 'next_status': 'cancelled_by_client'},
       );
     } catch (e) {
+      // Must not clear local state or navigate away on failure — the order
+      // is still live server-side (e.g. the driver already advanced past
+      // a cancellable status), so pretending it was cancelled would leave
+      // the client thinking they're done while the driver keeps heading
+      // to pickup with no way for either side to find out.
       state = state.copyWith(requestError: _functionErrorMessage(e));
+      return;
     }
     _orderSub?.cancel();
     _unsubscribeDriverLocation();

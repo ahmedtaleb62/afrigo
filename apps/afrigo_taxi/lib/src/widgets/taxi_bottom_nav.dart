@@ -26,7 +26,7 @@ class TaxiBottomNav extends ConsumerWidget {
         AfrigoNavItem(icon: Icons.account_balance_wallet_rounded, label: 'المحفظة'),
         AfrigoNavItem(icon: Icons.person_rounded, label: 'الحساب'),
       ],
-      onTap: (i) => controller.goTo(_screens[i]),
+      onTap: (i) => _screens[i] == current ? null : controller.goTo(_screens[i]),
     );
   }
 }

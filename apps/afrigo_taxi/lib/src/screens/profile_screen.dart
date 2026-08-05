@@ -6,11 +6,34 @@ import '../state/taxi_screen.dart';
 import '../widgets/taxi_bottom_nav.dart';
 
 /// Screen 60 — Profile/Settings.
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  String _name = '...';
+  double _avgRating = 0;
+  int _ratingCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() async {
+      final summary = await ref.read(taxiFlowControllerProvider.notifier).fetchMyProfileSummary();
+      if (!mounted) return;
+      setState(() {
+        _name = summary.name;
+        _avgRating = summary.avgRating;
+        _ratingCount = summary.ratingCount;
+      });
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
 
     Widget menuRow(String label, {VoidCallback? onTap, String trailing = '›', bool divider = true}) => InkWell(
@@ -40,8 +63,11 @@ class ProfileScreen extends ConsumerWidget {
                   children: [
                     Container(width: 76, height: 76, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF0FDF4), shape: BoxShape.circle), child: const Text('🧔', style: TextStyle(fontSize: 30))),
                     const SizedBox(height: 10),
-                    const Text('مراد بلحاج', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
-                    const Text('⭐ 4.8 · 312 رحلة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+                    Text(_name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                    Text(
+                      _ratingCount == 0 ? 'لا يوجد تقييمات بعد' : '⭐ ${_avgRating.toStringAsFixed(1)} · $_ratingCount رحلة مقيَّمة',
+                      style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C)),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),

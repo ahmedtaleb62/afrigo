@@ -60,6 +60,16 @@ class AppRoot extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final screen = ref.watch(clientFlowControllerProvider.select((s) => s.screen));
 
+    // Was previously only listened to inside HomeScreen/SearchingScreen, so
+    // an error set while on e.g. ProviderFoundScreen, CartScreen, or
+    // FoodCheckoutScreen (cancelActiveOrder, placeFoodOrder failures) never
+    // surfaced to the user at all.
+    ref.listen(clientFlowControllerProvider.select((s) => s.requestError), (prev, next) {
+      if (next == null) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(next)));
+      ref.read(clientFlowControllerProvider.notifier).clearRequestError();
+    });
+
     final body = switch (screen) {
       ClientScreen.splash => const SplashScreen(),
       ClientScreen.langSelect => const LangSelectScreen(),
