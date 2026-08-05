@@ -136,6 +136,7 @@ class TaxiFlowState {
     this.actionError,
     this.currentLat,
     this.currentLng,
+    this.platformSettings = const {},
   });
 
   final TaxiScreen screen;
@@ -209,6 +210,15 @@ class TaxiFlowState {
   final double? currentLat;
   final double? currentLng;
 
+  /// Raw `platform_settings` key→value map (support phone, legal text —
+  /// admin-editable, no app release needed to change). Empty until
+  /// `loadPlatformSettings()` runs (after login).
+  final Map<String, dynamic> platformSettings;
+  String get supportPhone => (platformSettings['support_phone'] as String?)?.trim().isNotEmpty == true ? platformSettings['support_phone'] as String : '+22245000000';
+  String get aboutText => (platformSettings['about_ar'] as String?) ?? '';
+  String get termsText => (platformSettings['terms_and_conditions_ar'] as String?) ?? '';
+  String get privacyText => (platformSettings['privacy_policy_ar'] as String?) ?? '';
+
   double get resolvedBalance => balance ?? 0;
   bool get lowBalance => resolvedBalance <= 0;
 
@@ -245,6 +255,7 @@ class TaxiFlowState {
     Object? actionError = _unset,
     Object? currentLat = _unset,
     Object? currentLng = _unset,
+    Map<String, dynamic>? platformSettings,
   }) {
     return TaxiFlowState(
       screen: screen ?? this.screen,
@@ -280,6 +291,7 @@ class TaxiFlowState {
       actionError: identical(actionError, _unset) ? this.actionError : actionError as String?,
       currentLat: identical(currentLat, _unset) ? this.currentLat : currentLat as double?,
       currentLng: identical(currentLng, _unset) ? this.currentLng : currentLng as double?,
+      platformSettings: platformSettings ?? this.platformSettings,
     );
   }
 }

@@ -32,6 +32,33 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     });
   }
 
+  Future<void> _confirmDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+        content: const Text('سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal'))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('حذف نهائيًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626)))),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final ok = await ref.read(taxiFlowControllerProvider.notifier).deleteAccount();
+    if (!ok && mounted) {
+      final error = ref.read(taxiFlowControllerProvider).actionError;
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('تعذّر الحذف', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+          content: Text(error ?? 'حاول مجددًا', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13)),
+          actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('حسنًا', style: TextStyle(fontFamily: 'Tajawal')))],
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
@@ -86,14 +113,30 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                   clipBehavior: Clip.antiAlias,
-                  child: const Column(children: [_StaticRow('الإشعارات'), _StaticRow('الدعم والمساعدة', divider: false)]),
+                  child: Column(
+                    children: [
+                      menuRow('الدعم والمساعدة', onTap: () => controller.goTo(TaxiScreen.support)),
+                      menuRow('عن التطبيق', onTap: () => controller.goTo(TaxiScreen.about)),
+                      menuRow('الشروط والأحكام', onTap: () => controller.goTo(TaxiScreen.terms)),
+                      menuRow('سياسة الخصوصية', onTap: () => controller.goTo(TaxiScreen.privacy), divider: false),
+                    ],
+                  ),
                 ),
                 InkWell(
                   onTap: controller.signOut,
                   child: Container(
+                    margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.all(16),
                     child: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                  ),
+                ),
+                InkWell(
+                  onTap: _confirmDeleteAccount,
+                  child: Container(
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.all(16),
+                    child: const Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFA8A29E))),
                   ),
                 ),
               ],
@@ -102,27 +145,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
         ),
         const TaxiBottomNav(current: TaxiScreen.profile),
       ],
-    );
-  }
-}
-
-class _StaticRow extends StatelessWidget {
-  const _StaticRow(this.label, {this.divider = true});
-  final String label;
-  final bool divider;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(border: divider ? const Border(bottom: BorderSide(color: Color(0xFFF5F5F4))) : null),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(label, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
-          const Text('›', style: TextStyle(color: Color(0xFFA8A29E))),
-        ],
-      ),
     );
   }
 }

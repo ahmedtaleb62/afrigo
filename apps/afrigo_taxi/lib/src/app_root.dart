@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'screens/account_creating_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/legal_text_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/navigate_to_pickup_screen.dart';
 import 'screens/notifications_list_screen.dart';
@@ -13,6 +14,7 @@ import 'screens/rate_customer_screen.dart';
 import 'screens/rejected_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/splash_screen.dart';
+import 'screens/support_screen.dart';
 import 'screens/trip_end_summary_screen.dart';
 import 'screens/trip_history_screen.dart';
 import 'screens/trip_ongoing_screen.dart';
@@ -63,6 +65,22 @@ class AppRoot extends ConsumerWidget {
       TaxiScreen.tripHistory => const TripHistoryScreen(),
       TaxiScreen.profile => const ProfileScreen(),
       TaxiScreen.notificationsList => const NotificationsListScreen(),
+      TaxiScreen.support => const SupportScreen(),
+      TaxiScreen.about => LegalTextScreen(
+          title: 'عن التطبيق',
+          body: ref.watch(taxiFlowControllerProvider.select((s) => s.aboutText)),
+          onBack: () => ref.read(taxiFlowControllerProvider.notifier).back(),
+        ),
+      TaxiScreen.terms => LegalTextScreen(
+          title: 'الشروط والأحكام',
+          body: ref.watch(taxiFlowControllerProvider.select((s) => s.termsText)),
+          onBack: () => ref.read(taxiFlowControllerProvider.notifier).back(),
+        ),
+      TaxiScreen.privacy => LegalTextScreen(
+          title: 'سياسة الخصوصية',
+          body: ref.watch(taxiFlowControllerProvider.select((s) => s.privacyText)),
+          onBack: () => ref.read(taxiFlowControllerProvider.notifier).back(),
+        ),
     };
 
     return Scaffold(

@@ -48,6 +48,9 @@ enum ClientScreen {
   settings,
   notificationsList,
   support,
+  about,
+  terms,
+  privacy,
 }
 
 /// `flowType` in the original design — which service the searching/tracking

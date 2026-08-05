@@ -13,6 +13,7 @@ import 'screens/food/food_waiting_screen.dart';
 import 'screens/food/restaurant_detail_screen.dart';
 import 'screens/forgot_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/legal_text_screen.dart';
 import 'screens/lang_select_screen.dart';
 import 'screens/location_permission_screen.dart';
 import 'screens/login_screen.dart';
@@ -118,6 +119,21 @@ class AppRoot extends ConsumerWidget {
       ClientScreen.settings => const SettingsScreen(),
       ClientScreen.notificationsList => const NotificationsListScreen(),
       ClientScreen.support => const SupportScreen(),
+      ClientScreen.about => LegalTextScreen(
+          title: 'عن التطبيق',
+          body: ref.watch(clientFlowControllerProvider.select((s) => s.aboutText)),
+          onBack: () => ref.read(clientFlowControllerProvider.notifier).back(),
+        ),
+      ClientScreen.terms => LegalTextScreen(
+          title: 'الشروط والأحكام',
+          body: ref.watch(clientFlowControllerProvider.select((s) => s.termsText)),
+          onBack: () => ref.read(clientFlowControllerProvider.notifier).back(),
+        ),
+      ClientScreen.privacy => LegalTextScreen(
+          title: 'سياسة الخصوصية',
+          body: ref.watch(clientFlowControllerProvider.select((s) => s.privacyText)),
+          onBack: () => ref.read(clientFlowControllerProvider.notifier).back(),
+        ),
     };
 
     return Scaffold(

@@ -6,7 +6,6 @@ import '../state/taxi_flow_controller.dart';
 import '../state/taxi_screen.dart';
 import '../widgets/back_circle_button.dart';
 import '../widgets/taxi_bottom_nav.dart';
-import '../core/env.dart';
 
 /// Screen 53 — Wallet. Balance (`watchWallet`) and transaction list
 /// (`loadWalletTransactions`, real `wallet_transactions` rows) are both
@@ -14,9 +13,9 @@ import '../core/env.dart';
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
-  void _openWhatsapp(String reason) {
+  void _openWhatsapp(String supportPhone, String reason) {
     final text = Uri.encodeComponent('مرحبًا، أريد $reason رصيد محفظتي في تطبيق Afrigo Taxi.');
-    launchUrl(Uri.parse('https://wa.me/${Env.supportPhone.replaceAll('+', '')}?text=$text'), mode: LaunchMode.externalApplication);
+    launchUrl(Uri.parse('https://wa.me/${supportPhone.replaceAll('+', '')}?text=$text'), mode: LaunchMode.externalApplication);
   }
 
   static const _typeLabel = {'topup': 'شحن رصيد', 'commission_deduction': 'عمولة رحلة', 'admin_withdrawal': 'سحب رصيد'};
@@ -37,6 +36,7 @@ class WalletScreen extends ConsumerWidget {
     final commissionPct = ref.watch(taxiFlowControllerProvider.select((s) => s.commissionPct));
     final txns = ref.watch(taxiFlowControllerProvider.select((s) => s.walletTransactions));
     final txnsLoading = ref.watch(taxiFlowControllerProvider.select((s) => s.walletTransactionsLoading));
+    final supportPhone = ref.watch(taxiFlowControllerProvider.select((s) => s.supportPhone));
 
     Widget walletAction(String emoji, String label, VoidCallback onTap) => Expanded(
           child: InkWell(
@@ -110,9 +110,9 @@ class WalletScreen extends ConsumerWidget {
                 const SizedBox(height: 14),
                 Row(
                   children: [
-                    walletAction('💰', 'شحن رصيد', () => _openWhatsapp('شحن')),
+                    walletAction('💰', 'شحن رصيد', () => _openWhatsapp(supportPhone, 'شحن')),
                     const SizedBox(width: 10),
-                    walletAction('🏧', 'سحب رصيد', () => _openWhatsapp('سحب')),
+                    walletAction('🏧', 'سحب رصيد', () => _openWhatsapp(supportPhone, 'سحب')),
                   ],
                 ),
                 const SizedBox(height: 20),

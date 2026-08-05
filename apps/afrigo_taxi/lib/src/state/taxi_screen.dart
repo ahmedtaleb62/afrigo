@@ -18,4 +18,8 @@ enum TaxiScreen {
   tripHistory,
   profile,
   notificationsList,
+  support,
+  about,
+  terms,
+  privacy,
 }

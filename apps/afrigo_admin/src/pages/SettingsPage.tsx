@@ -29,6 +29,8 @@ export function SettingsPage() {
   const { show } = useToast()
   const [supportPhone, setSupportPhone] = useState('')
   const [terms, setTerms] = useState('')
+  const [privacy, setPrivacy] = useState('')
+  const [about, setAbout] = useState('')
   const [saving, setSaving] = useState(false)
 
   const { data: admins } = useQuery({
@@ -56,7 +58,10 @@ export function SettingsPage() {
   const { data: settings } = useQuery({
     queryKey: ['platform-settings'],
     queryFn: async () => {
-      const { data, error } = await supabase.from('platform_settings').select('key, value').in('key', ['support_phone', 'terms_and_conditions_ar'])
+      const { data, error } = await supabase
+        .from('platform_settings')
+        .select('key, value')
+        .in('key', ['support_phone', 'terms_and_conditions_ar', 'privacy_policy_ar', 'about_ar'])
       if (error) throw error
       return Object.fromEntries(data.map((r) => [r.key, r.value])) as Record<string, string>
     },
@@ -66,6 +71,8 @@ export function SettingsPage() {
     if (settings) {
       setSupportPhone(settings.support_phone ?? '')
       setTerms(settings.terms_and_conditions_ar ?? '')
+      setPrivacy(settings.privacy_policy_ar ?? '')
+      setAbout(settings.about_ar ?? '')
     }
   }, [settings])
 
@@ -75,6 +82,8 @@ export function SettingsPage() {
       await Promise.all([
         supabase.from('platform_settings').update({ value: supportPhone }).eq('key', 'support_phone'),
         supabase.from('platform_settings').update({ value: terms }).eq('key', 'terms_and_conditions_ar'),
+        supabase.from('platform_settings').update({ value: privacy }).eq('key', 'privacy_policy_ar'),
+        supabase.from('platform_settings').update({ value: about }).eq('key', 'about_ar'),
       ])
       show('تم حفظ التغييرات بنجاح')
     } catch {
@@ -131,6 +140,18 @@ export function SettingsPage() {
         <textarea
           value={terms}
           onChange={(e) => setTerms(e.target.value)}
+          className="mb-3.5 min-h-25 w-full rounded-[10px] border border-neutral-200 bg-neutral-50 px-2.5 py-2.5 text-[13px] dark:border-neutral-700 dark:bg-neutral-900"
+        />
+        <label className="mb-1 block text-[11px] font-semibold text-neutral-500 dark:text-neutral-400">نص سياسة الخصوصية</label>
+        <textarea
+          value={privacy}
+          onChange={(e) => setPrivacy(e.target.value)}
+          className="mb-3.5 min-h-25 w-full rounded-[10px] border border-neutral-200 bg-neutral-50 px-2.5 py-2.5 text-[13px] dark:border-neutral-700 dark:bg-neutral-900"
+        />
+        <label className="mb-1 block text-[11px] font-semibold text-neutral-500 dark:text-neutral-400">نص "عن التطبيق"</label>
+        <textarea
+          value={about}
+          onChange={(e) => setAbout(e.target.value)}
           className="min-h-25 w-full rounded-[10px] border border-neutral-200 bg-neutral-50 px-2.5 py-2.5 text-[13px] dark:border-neutral-700 dark:bg-neutral-900"
         />
         <button

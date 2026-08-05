@@ -96,6 +96,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       unawaited(PushNotifications.register());
       unawaited(loadTripHistory());
       unawaited(loadNotifications());
+      unawaited(loadPlatformSettings());
       await _routeAfterAuth();
     } on AuthException catch (e) {
       state = state.copyWith(isSubmitting: false, authError: e.message);
@@ -115,6 +116,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       unawaited(PushNotifications.register());
       unawaited(loadTripHistory());
       unawaited(loadNotifications());
+      unawaited(loadPlatformSettings());
       await _routeAfterAuth();
     } else {
       goTo(TaxiScreen.login);
@@ -250,6 +252,46 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     _stopBroadcastingLocation();
     await _sb.auth.signOut();
     state = const TaxiFlowState();
+  }
+
+  /// `support_phone`/`terms_and_conditions_ar`/`privacy_policy_ar`/`about_ar`
+  /// were already admin-editable in `platform_settings`, but no screen in
+  /// this app ever read them.
+  Future<void> loadPlatformSettings() async {
+    try {
+      final rows = await _sb.from('platform_settings').select('key, value');
+      state = state.copyWith(platformSettings: {for (final r in rows) r['key'] as String: r['value']});
+    } catch (_) {
+      // Non-fatal — screens fall back to placeholder text/number.
+    }
+  }
+
+  /// No delete-account path existed anywhere in this app at all. Blocked
+  /// server-side while a ride is genuinely in progress (as either party —
+  /// see delete-account/index.ts) so this can't orphan a client mid-trip.
+  Future<bool> deleteAccount() async {
+    try {
+      await _sb.functions.invoke('delete-account');
+    } catch (e) {
+      state = state.copyWith(actionError: _functionErrorMessage(e));
+      return false;
+    }
+    await _vehicleSub?.cancel();
+    await _walletSub?.cancel();
+    await _commissionSub?.cancel();
+    _incomingTimer?.cancel();
+    if (_incomingChannel != null) {
+      await _sb.removeChannel(_incomingChannel!);
+      _incomingChannel = null;
+    }
+    _stopBroadcastingLocation();
+    try {
+      await _sb.auth.signOut();
+    } catch (_) {
+      // Best-effort — the server-side account is already gone either way.
+    }
+    state = const TaxiFlowState();
+    return true;
   }
 
   // ---------------------------------------------------------------------

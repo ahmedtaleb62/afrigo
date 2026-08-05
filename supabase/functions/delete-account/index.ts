@@ -26,10 +26,18 @@ Deno.serve(
     const user = await requireUser(req);
     const admin = serviceClient();
 
+    // Checked both as the client AND as the provider (driver/livreur/
+    // restaurant owner) — the original version only checked client_id, so a
+    // driver with a ride genuinely in_progress could delete their account
+    // mid-trip and orphan the client with no driver, no notification, and
+    // no way to ever find out what happened.
+    const { data: restaurant } = await admin.from('restaurants').select('id').eq('owner_id', user.id).maybeSingle();
     const [rides, foodOrders, deliveries] = await Promise.all([
-      admin.from('rides').select('id').eq('client_id', user.id).in('status', ACTIVE_RIDE_STATUSES),
-      admin.from('food_orders').select('id').eq('client_id', user.id).in('status', ACTIVE_FOOD_STATUSES),
-      admin.from('delivery_requests').select('id').eq('client_id', user.id).in('status', ACTIVE_DELIVERY_STATUSES),
+      admin.from('rides').select('id').or(`client_id.eq.${user.id},driver_id.eq.${user.id}`).in('status', ACTIVE_RIDE_STATUSES),
+      restaurant
+        ? admin.from('food_orders').select('id').or(`client_id.eq.${user.id},restaurant_id.eq.${restaurant.id},livreur_id.eq.${user.id}`).in('status', ACTIVE_FOOD_STATUSES)
+        : admin.from('food_orders').select('id').or(`client_id.eq.${user.id},livreur_id.eq.${user.id}`).in('status', ACTIVE_FOOD_STATUSES),
+      admin.from('delivery_requests').select('id').or(`client_id.eq.${user.id},livreur_id.eq.${user.id}`).in('status', ACTIVE_DELIVERY_STATUSES),
     ]);
     if ((rides.data?.length ?? 0) > 0 || (foodOrders.data?.length ?? 0) > 0 || (deliveries.data?.length ?? 0) > 0) {
       throw new HttpError(400, 'لا يمكن حذف الحساب أثناء وجود طلب جارٍ، أكمله أو ألغه أولًا');

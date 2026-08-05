@@ -81,6 +81,7 @@ class ClientFlowState {
     this.orderHistoryLoading = false,
     this.savedAddresses = const [],
     this.savedAddressesLoading = false,
+    this.platformSettings = const {},
     this.fareEstimateDistanceKm,
     this.fareEstimateDurationMin,
     this.fareEstimatePrice,
@@ -242,6 +243,15 @@ class ClientFlowState {
   final List<Map<String, dynamic>> savedAddresses;
   final bool savedAddressesLoading;
 
+  /// Raw `platform_settings` key→value map (support phone, legal text —
+  /// admin-editable, no app release needed to change). Empty until
+  /// `loadPlatformSettings()` runs (after login).
+  final Map<String, dynamic> platformSettings;
+  String get supportPhone => (platformSettings['support_phone'] as String?)?.trim().isNotEmpty == true ? platformSettings['support_phone'] as String : '+22245000000';
+  String get aboutText => (platformSettings['about_ar'] as String?) ?? '';
+  String get termsText => (platformSettings['terms_and_conditions_ar'] as String?) ?? '';
+  String get privacyText => (platformSettings['privacy_policy_ar'] as String?) ?? '';
+
   /// Client-side fare preview for the confirm screens (ride/parcel) — same
   /// haversine + `pricing_settings` formula the server uses in
   /// `_shared/fare.ts`'s `calculateFare`, computed here so the estimate
@@ -345,6 +355,7 @@ class ClientFlowState {
     bool? orderHistoryLoading,
     List<Map<String, dynamic>>? savedAddresses,
     bool? savedAddressesLoading,
+    Map<String, dynamic>? platformSettings,
     Object? fareEstimateDistanceKm = _unset,
     Object? fareEstimateDurationMin = _unset,
     Object? fareEstimatePrice = _unset,
@@ -432,6 +443,7 @@ class ClientFlowState {
       orderHistoryLoading: orderHistoryLoading ?? this.orderHistoryLoading,
       savedAddresses: savedAddresses ?? this.savedAddresses,
       savedAddressesLoading: savedAddressesLoading ?? this.savedAddressesLoading,
+      platformSettings: platformSettings ?? this.platformSettings,
       fareEstimateDistanceKm: identical(fareEstimateDistanceKm, _unset) ? this.fareEstimateDistanceKm : fareEstimateDistanceKm as double?,
       fareEstimateDurationMin: identical(fareEstimateDurationMin, _unset) ? this.fareEstimateDurationMin : fareEstimateDurationMin as double?,
       fareEstimatePrice: identical(fareEstimatePrice, _unset) ? this.fareEstimatePrice : fareEstimatePrice as double?,

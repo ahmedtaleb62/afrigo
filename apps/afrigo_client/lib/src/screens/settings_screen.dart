@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/client_flow_controller.dart';
+import '../state/client_screen.dart';
 import '../widgets/back_circle_button.dart';
 import '../widgets/simple_prompt_dialog.dart';
 import '../core/context_ext.dart';
@@ -144,30 +145,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
-          linkRow(
-            'عن التطبيق',
-            onTap: () => SimplePromptDialog.showInfo(
-              context,
-              title: 'عن Afrigo',
-              body: 'Afrigo منصة جزائرية تجمع خدمات التكسي وتوصيل الطعام والطرود في تطبيق واحد، تربط الركاب والزبائن بسائقين ومطاعم ومندوبي توصيل موثّقين.',
-            ),
-          ),
-          linkRow(
-            'الشروط والأحكام',
-            onTap: () => SimplePromptDialog.showInfo(
-              context,
-              title: 'الشروط والأحكام',
-              body: 'باستخدامك تطبيق Afrigo فإنك توافق على استخدام الخدمة بحسن نية، ودفع مستحقات الرحلات والطلبات المكتملة، وعلى أن التطبيق وسيط بين المستخدم ومقدّمي الخدمة (السائقين والمطاعم ومندوبي التوصيل) دون تحمّل مسؤولية مباشرة عن جودة تنفيذهم.',
-            ),
-          ),
-          linkRow(
-            'سياسة الخصوصية',
-            onTap: () => SimplePromptDialog.showInfo(
-              context,
-              title: 'سياسة الخصوصية',
-              body: 'تُستخدم بياناتك (الاسم، رقم الهاتف، الموقع التقريبي، سجل الطلبات) فقط لتشغيل الخدمة (المطابقة مع مزوّدي الخدمة، حساب الأسعار، التواصل بخصوص الطلب)، ولا تُشارك مع أي جهة خارجية لأغراض تسويقية.',
-            ),
-          ),
+          linkRow('عن التطبيق', onTap: () => controller.goTo(ClientScreen.about)),
+          linkRow('الشروط والأحكام', onTap: () => controller.goTo(ClientScreen.terms)),
+          linkRow('سياسة الخصوصية', onTap: () => controller.goTo(ClientScreen.privacy)),
           InkWell(
             onTap: controller.signOut,
             child: const Padding(

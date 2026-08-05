@@ -173,6 +173,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       unawaited(PushNotifications.register());
+      unawaited(loadPlatformSettings());
       await _routeAfterAuth();
     } on AuthException catch (e) {
       state = state.copyWith(isSubmitting: false, authError: e.message);
@@ -190,9 +191,24 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     if (_sb.auth.currentSession != null) {
       unawaited(_ensureProfile());
       unawaited(PushNotifications.register());
+      unawaited(loadPlatformSettings());
       await _routeAfterAuth();
     } else {
       goTo(ClientScreen.langSelect);
+    }
+  }
+
+  /// `support_phone`/`terms_and_conditions_ar`/`privacy_policy_ar`/`about_ar`
+  /// were already admin-editable in `platform_settings`, but nothing ever
+  /// read them here — every screen still used a hardcoded --dart-define
+  /// support number and hardcoded dialog text that the admin panel's own
+  /// edits had zero effect on.
+  Future<void> loadPlatformSettings() async {
+    try {
+      final rows = await _sb.from('platform_settings').select('key, value');
+      state = state.copyWith(platformSettings: {for (final r in rows) r['key'] as String: r['value']});
+    } catch (_) {
+      // Non-fatal — screens fall back to placeholder text/number.
     }
   }
 

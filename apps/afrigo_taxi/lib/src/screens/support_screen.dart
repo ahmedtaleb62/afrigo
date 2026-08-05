@@ -2,18 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../state/client_flow_controller.dart';
+import '../state/taxi_flow_controller.dart';
 import '../widgets/back_circle_button.dart';
-import '../core/context_ext.dart';
 
-/// Screen 44 — Support & help.
+/// Support & help — did not exist at all in this app before.
 class SupportScreen extends ConsumerWidget {
   const SupportScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final controller = ref.read(clientFlowControllerProvider.notifier);
-    final supportPhone = ref.watch(clientFlowControllerProvider.select((s) => s.supportPhone));
+    final controller = ref.read(taxiFlowControllerProvider.notifier);
+    final supportPhone = ref.watch(taxiFlowControllerProvider.select((s) => s.supportPhone));
 
     Widget faq(String q) => Container(
           width: double.infinity,
@@ -25,7 +24,7 @@ class SupportScreen extends ConsumerWidget {
 
     return Container(
       color: Colors.white,
-      padding: EdgeInsets.fromLTRB(20, context.topGap(30), 20, 20),
+      padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 30, 20, 20),
       child: ListView(
         children: [
           Row(
@@ -38,9 +37,9 @@ class SupportScreen extends ConsumerWidget {
           const SizedBox(height: 20),
           const Text('الأسئلة الشائعة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
-          faq('كيف ألغي رحلة؟'),
-          faq('ماذا لو نسيت غرضًا في السيارة؟'),
-          faq('كيف أستعيد كلمة المرور؟'),
+          faq('كيف أشحن رصيد محفظتي؟'),
+          faq('لماذا لا تصلني طلبات رحلات؟'),
+          faq('كيف أعدّل بيانات مركبتي؟'),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
