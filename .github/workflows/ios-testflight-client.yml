@@ -13,6 +13,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select Xcode 26 (App Store Connect now requires the iOS 26 SDK)
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: "26"
+
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.38.1"
