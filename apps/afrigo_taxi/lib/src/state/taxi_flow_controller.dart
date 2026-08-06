@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -35,7 +36,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   RealtimeChannel? _incomingChannel;
   Timer? _incomingTimer;
   RealtimeChannel? _locationChannel;
-  Timer? _locationTimer;
+  StreamSubscription<Position>? _locationStreamSub;
   Timer? _onlineLocationTimer;
 
   SupabaseClient get _sb => Supabase.instance.client;
@@ -547,24 +548,48 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   /// `accepted`. Sent as a plain Realtime Broadcast (no DB write, no
   /// server round-trip) since nothing needs to persist a full breadcrumb
   /// trail here, just the current position.
+  ///
+  /// Used to poll via a plain `Timer.periodic` + one-shot `getCurrentPosition`
+  /// — Android suspends that Timer the moment the app is backgrounded
+  /// (driver switches to a real navigation app, screen off, ...), silently
+  /// freezing the client's live map with no warning for the rest of the
+  /// trip. `getPositionStream` with `foregroundNotificationConfig` runs
+  /// this as a genuine Android foreground service instead (persistent
+  /// notification while a trip is active), which Android won't suspend.
   void _startBroadcastingLocation(String rideId) {
     _stopBroadcastingLocation();
     _locationChannel = _sb.channel('order_location:ride:$rideId')..subscribe();
-    _locationTimer = Timer.periodic(const Duration(seconds: 5), (_) async {
-      try {
-        final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium));
+    final settings = Platform.isAndroid
+        ? AndroidSettings(
+            accuracy: LocationAccuracy.medium,
+            distanceFilter: 0,
+            intervalDuration: const Duration(seconds: 5),
+            foregroundNotificationConfig: const ForegroundNotificationConfig(
+              notificationTitle: 'Afrigo Taxi',
+              notificationText: 'جارٍ تتبّع رحلتك الحالية',
+              enableWakeLock: true,
+            ),
+          )
+        : const LocationSettings(accuracy: LocationAccuracy.medium, distanceFilter: 0);
+    _locationStreamSub = Geolocator.getPositionStream(locationSettings: settings).listen(
+      (pos) async {
         state = state.copyWith(currentLat: pos.latitude, currentLng: pos.longitude);
-        await _locationChannel?.sendBroadcastMessage(event: 'location', payload: {'lat': pos.latitude, 'lng': pos.longitude});
-      } catch (_) {
-        // Non-fatal — a missed ping just means the client's marker doesn't
-        // move for a beat; the next tick tries again.
-      }
-    });
+        try {
+          await _locationChannel?.sendBroadcastMessage(event: 'location', payload: {'lat': pos.latitude, 'lng': pos.longitude});
+        } catch (_) {
+          // Non-fatal — a missed ping just means the client's marker doesn't
+          // move for a beat; the next update tries again.
+        }
+      },
+      onError: (_) {
+        // Non-fatal — same reasoning as above.
+      },
+    );
   }
 
   void _stopBroadcastingLocation() {
-    _locationTimer?.cancel();
-    _locationTimer = null;
+    _locationStreamSub?.cancel();
+    _locationStreamSub = null;
     if (_locationChannel != null) {
       _sb.removeChannel(_locationChannel!);
       _locationChannel = null;

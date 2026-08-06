@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -14,14 +16,43 @@ const _statusLabels = {
   'picked_up': 'استلم مندوبك طردك، في الطريق للتسليم',
 };
 
+/// Driver location broadcasts normally arrive every ~5s (see the taxi
+/// app's `_startBroadcastingLocation`) — anything quieter than this for a
+/// while means updates have actually stopped (backgrounded app,
+/// connectivity loss), not just a single missed ping.
+const _staleAfter = Duration(seconds: 25);
+
 /// Screen 18 — Live tracking. Status is real, watched via
 /// `ClientFlowController._subscribeOrderTracking` — this screen never
 /// drives its own transitions, it only reflects the provider's app.
-class TrackingScreen extends ConsumerWidget {
+class TrackingScreen extends ConsumerStatefulWidget {
   const TrackingScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<TrackingScreen> createState() => _TrackingScreenState();
+}
+
+class _TrackingScreenState extends ConsumerState<TrackingScreen> {
+  Timer? _staleCheckTicker;
+
+  @override
+  void initState() {
+    super.initState();
+    // Nothing about staleness changes `ClientFlowState` on its own (no new
+    // broadcast = no state change), so without a ticker forcing a rebuild
+    // the "لم يصل تحديث منذ..." banner would only ever appear the instant
+    // a fresh update happens to arrive, defeating its whole purpose.
+    _staleCheckTicker = Timer.periodic(const Duration(seconds: 5), (_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _staleCheckTicker?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final s = ref.watch(clientFlowControllerProvider);
     final isTaxi = s.flowType == ClientFlowType.taxi;
     final avatar = isTaxi ? '🧔' : '🏍️';
@@ -32,6 +63,8 @@ class TrackingScreen extends ConsumerWidget {
     final hasLiveDriver = s.driverLat != null;
     final lat = s.driverLat ?? pickupLat;
     final lng = s.driverLng ?? pickupLng;
+    final updatedAt = s.driverLocationUpdatedAt;
+    final isStale = hasLiveDriver && updatedAt != null && DateTime.now().difference(updatedAt) > _staleAfter;
 
     return Column(
       children: [
@@ -72,6 +105,21 @@ class TrackingScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
+                if (isStale)
+                  Positioned(
+                    top: context.topGap(56),
+                    left: 16,
+                    right: 16,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                      decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFFEE2E2))),
+                      child: Text(
+                        isTaxi ? 'تعذّر تحديث موقع السائق مؤخرًا — قد يكون في نفق أو منطقة ضعيفة التغطية' : 'تعذّر تحديث موقع المندوب مؤخرًا — قد يكون في منطقة ضعيفة التغطية',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF991B1B)),
+                      ),
+                    ),
+                  ),
               ],
             ),
           ),

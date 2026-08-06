@@ -100,7 +100,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         callback: (payload) {
           final lat = (payload['lat'] as num?)?.toDouble();
           final lng = (payload['lng'] as num?)?.toDouble();
-          if (lat != null && lng != null) state = state.copyWith(driverLat: lat, driverLng: lng);
+          if (lat != null && lng != null) state = state.copyWith(driverLat: lat, driverLng: lng, driverLocationUpdatedAt: DateTime.now());
         },
       )
       ..subscribe();
@@ -111,7 +111,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       _sb.removeChannel(_locationChannel!);
       _locationChannel = null;
     }
-    state = state.copyWith(driverLat: null, driverLng: null);
+    state = state.copyWith(driverLat: null, driverLng: null, driverLocationUpdatedAt: null);
   }
 
   void goTo(ClientScreen screen, {ClientFlowState Function(ClientFlowState)? patch}) {

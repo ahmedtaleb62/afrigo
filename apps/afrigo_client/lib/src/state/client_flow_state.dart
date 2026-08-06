@@ -88,6 +88,7 @@ class ClientFlowState {
     this.fareEstimateLoading = false,
     this.driverLat,
     this.driverLng,
+    this.driverLocationUpdatedAt,
   });
 
   final ClientScreen screen;
@@ -272,6 +273,12 @@ class ClientFlowState {
   final double? driverLat;
   final double? driverLng;
 
+  /// Set every time a live location broadcast actually arrives — lets
+  /// `TrackingScreen` warn the user if updates have stopped (driver's app
+  /// backgrounded, connectivity lost, ...) instead of silently showing a
+  /// frozen marker with no indication anything is wrong.
+  final DateTime? driverLocationUpdatedAt;
+
   int get cartCount => cart.fold(0, (a, i) => a + i.qty);
   int get cartSubtotal => cart.fold(0, (a, i) => a + i.qty * i.price);
   int get cartGrandTotal => cartSubtotal + 100;
@@ -362,6 +369,7 @@ class ClientFlowState {
     bool? fareEstimateLoading,
     Object? driverLat = _unset,
     Object? driverLng = _unset,
+    Object? driverLocationUpdatedAt = _unset,
   }) {
     return ClientFlowState(
       screen: screen ?? this.screen,
@@ -450,6 +458,7 @@ class ClientFlowState {
       fareEstimateLoading: fareEstimateLoading ?? this.fareEstimateLoading,
       driverLat: identical(driverLat, _unset) ? this.driverLat : driverLat as double?,
       driverLng: identical(driverLng, _unset) ? this.driverLng : driverLng as double?,
+      driverLocationUpdatedAt: identical(driverLocationUpdatedAt, _unset) ? this.driverLocationUpdatedAt : driverLocationUpdatedAt as DateTime?,
     );
   }
 }
