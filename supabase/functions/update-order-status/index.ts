@@ -231,7 +231,7 @@ async function advanceDelivery(admin: ReturnType<typeof serviceClient>, userId: 
 
   const ALLOWED: Record<string, string[]> = {
     searching: ['cancelled_by_client'],
-    accepted: ['picked_up', 'cancelled'],
+    accepted: ['picked_up', 'cancelled', 'cancelled_by_client'],
     picked_up: ['delivered'],
   };
   const allowedNext = ALLOWED[delivery.status] ?? [];

@@ -48,7 +48,14 @@ Deno.serve(
 
     const { error: banError } = await admin.auth.admin.updateUserById(user.id, { ban_duration: '876000h' });
     if (banError) throw new HttpError(500, banError.message);
-    await admin.from('profiles').update({ full_name: 'مستخدم محذوف', phone: null, email: null }).eq('id', user.id);
+    await admin.from('profiles').update({ full_name: 'مستخدم محذوف', phone: null, email: null, is_suspended: true }).eq('id', user.id);
+
+    // Same reasoning as admin-suspend-user: a banned login can never come
+    // back to toggle itself offline, so a driver/restaurant that was online
+    // at the moment of deletion would otherwise keep matching new orders
+    // forever on an account nobody can ever respond from.
+    await admin.from('vehicles').update({ is_online: false }).eq('owner_id', user.id);
+    await admin.from('restaurants').update({ is_open: false }).eq('owner_id', user.id);
 
     return { deleted: true, anonymized: true };
   }),

@@ -132,6 +132,22 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   /// no explanation. And nothing anywhere re-attached an in-progress ride
   /// after a restart, so a driver who force-closed mid-ride lost all trace
   /// of owing a client a ride.
+  /// A cold-start network blip (very plausible — the app just launched) must
+  /// not be indistinguishable from "no active ride"/"no vehicle": a driver
+  /// genuinely mid-trip who gets bounced to Home on the first failed request
+  /// would silently stop broadcasting location with no error and no way
+  /// back short of manually relaunching again and hoping the network is up.
+  /// One retry after a short delay covers the common transient case; only a
+  /// second failure falls through to the caller's last-resort Home routing.
+  Future<T> _retryOnce<T>(Future<T> Function() op) async {
+    try {
+      return await op();
+    } catch (_) {
+      await Future.delayed(const Duration(seconds: 2));
+      return op();
+    }
+  }
+
   Future<void> _routeAfterAuth() async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) {
@@ -139,12 +155,12 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       return;
     }
     try {
-      final vehicle = await _sb
+      final vehicle = await _retryOnce(() => _sb
           .from('vehicles')
-          .select('status, rejection_reason')
+          .select('status, rejection_reason, is_online')
           .eq('owner_id', uid)
           .eq('service_type', 'taxi')
-          .maybeSingle();
+          .maybeSingle());
       if (vehicle == null) {
         goTo(TaxiScreen.vehicleDocs);
         return;
@@ -160,6 +176,17 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
         goTo(TaxiScreen.rejected);
         return;
       }
+      // The server's `vehicles.is_online` survives an app restart even
+      // though local state doesn't — without re-syncing it here, a driver
+      // who force-closed the app while online (no active ride) comes back
+      // to a UI that says "offline" while the server keeps matching them at
+      // an increasingly stale `current_location` forever, with no visible
+      // sign anything is wrong.
+      final wasOnline = vehicle['is_online'] as bool? ?? false;
+      if (wasOnline) {
+        state = state.copyWith(online: true);
+        _startOnlineLocationUpdates();
+      }
       await _resumeActiveRide();
     } catch (_) {
       goTo(TaxiScreen.home);
@@ -172,13 +199,13 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   /// client a ride.
   Future<void> _resumeActiveRide() async {
     try {
-      final rows = await _sb
+      final rows = await _retryOnce(() => _sb
           .from('rides')
           .select()
           .eq('driver_id', _sb.auth.currentUser!.id)
           .inFilter('status', ['accepted', 'driver_arriving', 'in_progress'])
           .order('accepted_at', ascending: false)
-          .limit(1);
+          .limit(1));
       if (rows.isEmpty) {
         goTo(TaxiScreen.home);
         return;
@@ -270,12 +297,21 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   /// No delete-account path existed anywhere in this app at all. Blocked
   /// server-side while a ride is genuinely in progress (as either party —
   /// see delete-account/index.ts) so this can't orphan a client mid-trip.
-  Future<bool> deleteAccount() async {
+  ///
+  /// Returns the error message on failure (null on success) instead of a
+  /// plain bool — `state.actionError` is still set for the global snackbar,
+  /// but `AppRoot`'s listener reads and clears it synchronously the instant
+  /// it's set, so a caller that re-reads `state.actionError` after this
+  /// `await` returns always finds it already `null`. Returning the message
+  /// directly lets the confirm dialog show the real reason instead of a
+  /// generic fallback.
+  Future<String?> deleteAccount() async {
     try {
       await _sb.functions.invoke('delete-account');
     } catch (e) {
-      state = state.copyWith(actionError: _functionErrorMessage(e));
-      return false;
+      final message = _functionErrorMessage(e);
+      state = state.copyWith(actionError: message);
+      return message;
     }
     await _vehicleSub?.cancel();
     await _walletSub?.cancel();
@@ -292,7 +328,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       // Best-effort — the server-side account is already gone either way.
     }
     state = const TaxiFlowState();
-    return true;
+    return null;
   }
 
   // ---------------------------------------------------------------------

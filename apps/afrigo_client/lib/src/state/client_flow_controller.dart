@@ -467,12 +467,17 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     return 2 * r * asin(sqrt(a));
   }
 
-  /// Client-side mirror of `_shared/fare.ts`'s `calculateFare` (haversine
-  /// distance, 30 km/h average-speed duration estimate, same
-  /// `pricing_settings` row) — lets the confirm screens show a live estimate
-  /// that reacts to the actually-picked pickup/dropoff instead of a fixed
-  /// placeholder number. Still just a preview: the real fare is whatever
-  /// the server computes when the order is placed.
+  /// Calls the same `calculate-fare` function (real Google Distance Matrix
+  /// road distance, haversine fallback — see `_shared/fare.ts`) that
+  /// `request-ride`/`request-delivery` use to compute the actual bill.
+  /// Previously this mirrored the *old*, pre-Google-key haversine formula
+  /// client-side, so once the server switched to real road distance the
+  /// quoted estimate became a systematic underestimate of the real charge —
+  /// straight-line distance is never longer than the real route. Calling the
+  /// real function keeps the preview and the bill computed the same way.
+  /// Falls back to the local haversine estimate only if the function call
+  /// itself fails (offline, cold start) so the screen still shows *a*
+  /// number rather than nothing.
   Future<void> loadFareEstimate({
     required String serviceType,
     required double pickupLat,
@@ -481,6 +486,37 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     required double dropoffLng,
   }) async {
     state = state.copyWith(fareEstimateLoading: true);
+    try {
+      final res = await _sb.functions.invoke('calculate-fare', body: {
+        'service_type': serviceType,
+        'pickup': {'lat': pickupLat, 'lng': pickupLng},
+        'dropoff': {'lat': dropoffLat, 'lng': dropoffLng},
+      });
+      final data = res.data as Map;
+      state = state.copyWith(
+        fareEstimateDistanceKm: (data['distance_km'] as num).toDouble(),
+        fareEstimateDurationMin: (data['duration_min'] as num).toDouble(),
+        fareEstimatePrice: (data['price'] as num).toDouble(),
+        fareEstimateLoading: false,
+      );
+    } catch (_) {
+      await _loadFareEstimateFallback(
+        serviceType: serviceType,
+        pickupLat: pickupLat,
+        pickupLng: pickupLng,
+        dropoffLat: dropoffLat,
+        dropoffLng: dropoffLng,
+      );
+    }
+  }
+
+  Future<void> _loadFareEstimateFallback({
+    required String serviceType,
+    required double pickupLat,
+    required double pickupLng,
+    required double dropoffLat,
+    required double dropoffLng,
+  }) async {
     try {
       final row = await _sb.from('pricing_settings').select('base_fare, price_per_km, price_per_min').eq('service_type', serviceType).single();
       final distanceKm = _haversineKm(pickupLat, pickupLng, dropoffLat, dropoffLng);
@@ -1186,12 +1222,20 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   /// `profiles`/`wallets`/`saved_addresses`/etc. all cascade from it. The
   /// local session is invalid the moment that succeeds, so this also signs
   /// out locally rather than leaving a dangling session.
-  Future<bool> deleteAccount() async {
+  ///
+  /// Returns the error message on failure (null on success) instead of a
+  /// plain bool — `AppRoot`'s global listener reads and clears
+  /// `state.requestError` synchronously the instant it's set, so a caller
+  /// that re-reads it after this `await` returns always finds it already
+  /// `null`. Returning the message directly lets the confirm dialog show the
+  /// real reason instead of a generic fallback.
+  Future<String?> deleteAccount() async {
     try {
       await _sb.functions.invoke('delete-account');
     } catch (e) {
-      state = state.copyWith(requestError: _functionErrorMessage(e));
-      return false;
+      final message = _functionErrorMessage(e);
+      state = state.copyWith(requestError: message);
+      return message;
     }
     await _orderSub?.cancel();
     await _foodOrderSub?.cancel();
@@ -1201,6 +1245,6 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       // Best-effort — the server-side account is already gone either way.
     }
     state = const ClientFlowState();
-    return true;
+    return null;
   }
 }

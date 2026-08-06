@@ -19,10 +19,10 @@ function haversineKm(a: LatLng, b: LatLng): number {
 
 /**
  * Distance/duration from Google's Distance Matrix API when
- * `GOOGLE_MAPS_API_KEY` is set (nobody has provided this key yet — see
- * supabase/README.md). Falls back to haversine distance + a 30 km/h average
- * speed estimate otherwise, so fare calculation stays fully functional
- * (just a rougher estimate) rather than hard-failing on a missing key.
+ * `GOOGLE_MAPS_API_KEY` is set. Falls back to haversine distance + a 30 km/h
+ * average speed estimate if the key is missing, the request fails, or it
+ * times out, so fare calculation stays fully functional (just a rougher
+ * estimate) rather than hard-failing.
  */
 export async function distanceAndDuration(pickup: LatLng, dropoff: LatLng): Promise<{ distanceKm: number; durationMin: number }> {
   if (GOOGLE_MAPS_API_KEY) {
@@ -31,7 +31,11 @@ export async function distanceAndDuration(pickup: LatLng, dropoff: LatLng): Prom
       url.searchParams.set('origins', `${pickup.lat},${pickup.lng}`);
       url.searchParams.set('destinations', `${dropoff.lat},${dropoff.lng}`);
       url.searchParams.set('key', GOOGLE_MAPS_API_KEY);
-      const res = await fetch(url);
+      // Without a timeout, a Google request that just hangs (rather than
+      // erroring) would stall order creation until the platform's own
+      // function wall-clock limit kills it — a hard failure instead of the
+      // graceful haversine degrade this whole try/catch exists for.
+      const res = await fetch(url, { signal: AbortSignal.timeout(5000) });
       const json = await res.json();
       const el = json?.rows?.[0]?.elements?.[0];
       if (el?.status === 'OK') {

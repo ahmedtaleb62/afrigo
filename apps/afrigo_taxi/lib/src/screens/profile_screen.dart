@@ -45,14 +45,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       ),
     );
     if (confirmed != true || !mounted) return;
-    final ok = await ref.read(taxiFlowControllerProvider.notifier).deleteAccount();
-    if (!ok && mounted) {
-      final error = ref.read(taxiFlowControllerProvider).actionError;
+    final error = await ref.read(taxiFlowControllerProvider.notifier).deleteAccount();
+    if (error != null && mounted) {
       showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
           title: const Text('تعذّر الحذف', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
-          content: Text(error ?? 'حاول مجددًا', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13)),
+          content: Text(error, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13)),
           actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('حسنًا', style: TextStyle(fontFamily: 'Tajawal')))],
         ),
       );

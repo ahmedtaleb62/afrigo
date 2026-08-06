@@ -165,9 +165,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 danger: true,
               );
               if (!confirmed || !context.mounted) return;
-              final ok = await controller.deleteAccount();
-              if (!ok && context.mounted) {
-                SimplePromptDialog.showInfo(context, title: 'تعذّر الحذف', body: ref.read(clientFlowControllerProvider).requestError ?? 'حاول مجددًا');
+              final error = await controller.deleteAccount();
+              if (error != null && context.mounted) {
+                SimplePromptDialog.showInfo(context, title: 'تعذّر الحذف', body: error);
               }
             },
             child: const Padding(
