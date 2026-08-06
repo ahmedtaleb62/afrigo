@@ -20,4 +20,7 @@ export 'src/widgets/afrigo_bottom_nav.dart';
 
 export 'src/branding/afrigo_logo.dart';
 
+export 'src/errors/friendly_auth_error.dart';
+export 'src/errors/global_error_handling.dart';
+
 export 'src/l10n/gen/app_localizations.dart';

@@ -112,7 +112,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 ),
                 Container(
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                  child: menuRow('🆘 الدعم والمساعدة', onTap: () => controller.goTo(ClientScreen.support), divider: false),
+                  child: menuRow('🆘 الدعم والمساعدة', onTap: () => controller.goToInfo(ClientScreen.support), divider: false),
                 ),
               ],
             ),

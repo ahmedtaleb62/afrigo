@@ -10,6 +10,7 @@ import 'src/core/env.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  installFriendlyErrorWidget();
   try {
     await Firebase.initializeApp();
   } catch (_) {

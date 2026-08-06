@@ -145,9 +145,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ],
             ),
           ),
-          linkRow('عن التطبيق', onTap: () => controller.goTo(ClientScreen.about)),
-          linkRow('الشروط والأحكام', onTap: () => controller.goTo(ClientScreen.terms)),
-          linkRow('سياسة الخصوصية', onTap: () => controller.goTo(ClientScreen.privacy)),
+          linkRow('عن التطبيق', onTap: () => controller.goToInfo(ClientScreen.about)),
+          linkRow('الشروط والأحكام', onTap: () => controller.goToInfo(ClientScreen.terms)),
+          linkRow('سياسة الخصوصية', onTap: () => controller.goToInfo(ClientScreen.privacy)),
           InkWell(
             onTap: controller.signOut,
             child: const Padding(

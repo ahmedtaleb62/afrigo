@@ -114,10 +114,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      menuRow('الدعم والمساعدة', onTap: () => controller.goTo(TaxiScreen.support)),
-                      menuRow('عن التطبيق', onTap: () => controller.goTo(TaxiScreen.about)),
-                      menuRow('الشروط والأحكام', onTap: () => controller.goTo(TaxiScreen.terms)),
-                      menuRow('سياسة الخصوصية', onTap: () => controller.goTo(TaxiScreen.privacy), divider: false),
+                      menuRow('الدعم والمساعدة', onTap: () => controller.goToInfo(TaxiScreen.support)),
+                      menuRow('عن التطبيق', onTap: () => controller.goToInfo(TaxiScreen.about)),
+                      menuRow('الشروط والأحكام', onTap: () => controller.goToInfo(TaxiScreen.terms)),
+                      menuRow('سياسة الخصوصية', onTap: () => controller.goToInfo(TaxiScreen.privacy), divider: false),
                     ],
                   ),
                 ),

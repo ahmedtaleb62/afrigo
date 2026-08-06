@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 
+import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
@@ -59,6 +60,17 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     state = patch != null ? patch(withHist).copyWith(screen: screen) : withHist.copyWith(screen: screen);
   }
 
+  /// `platformSettings` is only ever fetched once at login — an admin
+  /// editing the support number/legal text while a driver's app is already
+  /// open would otherwise stay invisible to them for the rest of the
+  /// session. Re-fetching every time one of these screens is actually
+  /// opened keeps it fresh without needing a background timer/subscription
+  /// for content that rarely changes.
+  void goToInfo(TaxiScreen screen) {
+    unawaited(loadPlatformSettings());
+    goTo(screen);
+  }
+
   void back() {
     final hist = [...state.hist];
     final prev = hist.isNotEmpty ? hist.removeLast() : TaxiScreen.home;
@@ -88,6 +100,10 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   void setFullName(String v) => state = state.copyWith(fullName: v);
 
   Future<void> doLogin() async {
+    if (state.email.trim().isEmpty || state.password.isEmpty) {
+      state = state.copyWith(authError: 'أدخل البريد الإلكتروني وكلمة المرور');
+      return;
+    }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
       await _sb.auth.signInWithPassword(email: state.email.trim(), password: state.password);
@@ -100,7 +116,10 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       unawaited(loadPlatformSettings());
       await _routeAfterAuth();
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر تسجيل الدخول، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
     }
@@ -221,6 +240,14 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   }
 
   Future<void> doSignup() async {
+    if (state.fullName.trim().isEmpty || state.email.trim().isEmpty || state.password.isEmpty) {
+      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول');
+      return;
+    }
+    if (state.password.length < 6) {
+      state = state.copyWith(authError: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      return;
+    }
     if (state.password != state.confirmPassword) {
       state = state.copyWith(authError: 'كلمتا المرور غير متطابقتين');
       return;
@@ -233,7 +260,10 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
       state = state.copyWith(isSubmitting: false);
       goTo(TaxiScreen.otp);
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر إنشاء الحساب، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر إنشاء الحساب، حاول مجددًا');
     }

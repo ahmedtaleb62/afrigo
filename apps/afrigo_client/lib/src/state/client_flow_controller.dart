@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
@@ -119,6 +120,17 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     state = patch != null ? patch(withHist).copyWith(screen: screen) : withHist.copyWith(screen: screen);
   }
 
+  /// `platformSettings` is only ever fetched once at login — an admin
+  /// editing the support number/legal text while a user's app is already
+  /// open would otherwise stay invisible to them for the rest of the
+  /// session. Re-fetching every time one of these screens is actually
+  /// opened keeps it fresh without needing a background timer/subscription
+  /// for content that rarely changes.
+  void goToInfo(ClientScreen screen) {
+    unawaited(loadPlatformSettings());
+    goTo(screen);
+  }
+
   void back() {
     final hist = [...state.hist];
     final prev = hist.isNotEmpty ? hist.removeLast() : ClientScreen.home;
@@ -167,6 +179,10 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   void togglePass() => state = state.copyWith(showPass: !state.showPass);
 
   Future<void> doLogin() async {
+    if (state.email.trim().isEmpty || state.password.isEmpty) {
+      state = state.copyWith(authError: 'أدخل البريد الإلكتروني وكلمة المرور');
+      return;
+    }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
       await _sb.auth.signInWithPassword(email: state.email.trim(), password: state.password);
@@ -176,7 +192,10 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       unawaited(loadPlatformSettings());
       await _routeAfterAuth();
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر تسجيل الدخول، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
     }
@@ -300,6 +319,14 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   }
 
   Future<void> doSignup() async {
+    if (state.fullName.trim().isEmpty || state.email.trim().isEmpty || state.password.isEmpty) {
+      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول');
+      return;
+    }
+    if (state.password.length < 6) {
+      state = state.copyWith(authError: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل');
+      return;
+    }
     if (state.password != state.confirmPassword) {
       state = state.copyWith(authError: 'كلمتا المرور غير متطابقتين');
       return;
@@ -319,7 +346,10 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       state = state.copyWith(isSubmitting: false);
       goTo(ClientScreen.otp);
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر إنشاء الحساب، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر إنشاء الحساب، حاول مجددًا');
     }
@@ -712,8 +742,16 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         goTo(ClientScreen.tripEnd);
       } else if ((status == 'cancelled_by_driver' || status == 'cancelled_by_client') &&
           state.screen != ClientScreen.home) {
+        // Must cancel `_orderSub` and clear `activeOrderId`/`activeOrderStatus`
+        // here, not just navigate — otherwise `ProviderFoundScreen`'s 4s
+        // auto-advance timer (still alive during `AnimatedSwitcher`'s
+        // crossfade) can fire moments later and re-navigate to
+        // `ClientScreen.tracking` with a stale `activeOrderId`, landing the
+        // client on a screen showing a cancelled order as if it were still
+        // live.
+        _orderSub?.cancel();
         _unsubscribeDriverLocation();
-        goTo(ClientScreen.home);
+        goTo(ClientScreen.home, patch: (s) => s.copyWith(activeOrderId: null, activeOrderStatus: null));
       }
     });
   }

@@ -30,6 +30,13 @@ class _ProviderFoundScreenState extends ConsumerState<ProviderFoundScreen> {
     super.initState();
     _autoAdvance = Timer(const Duration(seconds: 4), () {
       if (!mounted) return;
+      // A cancellation landing during `AnimatedSwitcher`'s crossfade can
+      // fire between this check and the timer being scheduled — `mounted`
+      // alone doesn't catch it, since the old screen stays mounted through
+      // the transition. `activeOrderId` is cleared the instant a
+      // cancellation is processed (see `_subscribeOrderTracking`), so it's
+      // the real signal that there's still an order left to track.
+      if (ref.read(clientFlowControllerProvider).activeOrderId == null) return;
       ref.read(clientFlowControllerProvider.notifier).goTo(ClientScreen.tracking);
     });
   }
