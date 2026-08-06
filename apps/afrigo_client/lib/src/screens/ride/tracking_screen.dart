@@ -151,6 +151,25 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                     ),
                   ],
                 ),
+                // Was previously only reachable from ProviderFoundScreen —
+                // now that clients land here automatically, they need the
+                // same way out. Only shown while the order is genuinely
+                // still cancelable server-side (update-order-status has no
+                // cancel transition once a ride is in_progress/a delivery
+                // is picked_up); tapping it once that's no longer true would
+                // just surface a clear "already too late" error instead of
+                // silently doing nothing.
+                if (s.activeOrderStatus == 'accepted' || s.activeOrderStatus == 'driver_arriving') ...[
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: ref.read(clientFlowControllerProvider.notifier).cancelActiveOrder,
+                      style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.all(14)),
+                      child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                    ),
+                  ),
+                ],
               ],
             ),
           ),

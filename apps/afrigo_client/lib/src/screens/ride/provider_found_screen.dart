@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -8,12 +10,38 @@ import '../../state/client_screen.dart';
 import '../../widgets/bottom_sheet_panel.dart';
 import '../../widgets/real_map.dart';
 
-/// Screen 17 — Provider found.
-class ProviderFoundScreen extends ConsumerWidget {
+/// Screen 17 — Provider found. A brief "matched!" confirmation before the
+/// client moves on to the real live-tracking screen — auto-advances after
+/// a few seconds so a client who doesn't tap "متابعة" still ends up on the
+/// screen that actually shows the driver's live position moving (this one
+/// only shows a static map centered on the pickup point).
+class ProviderFoundScreen extends ConsumerStatefulWidget {
   const ProviderFoundScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProviderFoundScreen> createState() => _ProviderFoundScreenState();
+}
+
+class _ProviderFoundScreenState extends ConsumerState<ProviderFoundScreen> {
+  Timer? _autoAdvance;
+
+  @override
+  void initState() {
+    super.initState();
+    _autoAdvance = Timer(const Duration(seconds: 4), () {
+      if (!mounted) return;
+      ref.read(clientFlowControllerProvider.notifier).goTo(ClientScreen.tracking);
+    });
+  }
+
+  @override
+  void dispose() {
+    _autoAdvance?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     final isTaxi = s.flowType == ClientFlowType.taxi;
@@ -64,14 +92,20 @@ class ProviderFoundScreen extends ConsumerWidget {
                   children: [
                     Expanded(
                       child: TextButton(
-                        onPressed: () => controller.goTo(ClientScreen.tracking),
+                        onPressed: () {
+                          _autoAdvance?.cancel();
+                          controller.goTo(ClientScreen.tracking);
+                        },
                         style: TextButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.all(16)),
                         child: const Text('متابعة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(width: 10),
                     TextButton(
-                      onPressed: controller.cancelActiveOrder,
+                      onPressed: () {
+                        _autoAdvance?.cancel();
+                        controller.cancelActiveOrder();
+                      },
                       style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16)),
                       child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFDC2626))),
                     ),
