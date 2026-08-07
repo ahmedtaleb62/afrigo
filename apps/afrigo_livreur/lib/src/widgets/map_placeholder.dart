@@ -18,7 +18,7 @@ class MapPlaceholder extends StatelessWidget {
       children: [
         DecoratedBox(
           decoration: const BoxDecoration(
-            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFD8F3E1), Color(0xFFEFF1EE)]),
+            gradient: LinearGradient(begin: Alignment.topLeft, end: Alignment.bottomRight, colors: [Color(0xFFDCFCE7), Color(0xFFF0FDF4)]),
           ),
           child: CustomPaint(painter: _GridPainter()),
         ),
@@ -37,7 +37,7 @@ class _GridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = const Color(0xFFC7CDC3).withValues(alpha: 0.4)
+      ..color = const Color(0xFFBBF7D0).withValues(alpha: 0.5)
       ..strokeWidth = 1;
     const step = 26.0;
     for (double x = 0; x < size.width; x += step) {
@@ -64,8 +64,8 @@ class MapCenterPin extends StatelessWidget {
         height: 16,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: const Color(0xFF2AA35C),
-          boxShadow: [BoxShadow(color: const Color(0xFF2AA35C).withValues(alpha: 0.25), blurRadius: 0, spreadRadius: 8)],
+          color: const Color(0xFF16A34A),
+          boxShadow: [BoxShadow(color: const Color(0xFF16A34A).withValues(alpha: 0.25), blurRadius: 0, spreadRadius: 8)],
         ),
       ),
     );

@@ -25,7 +25,7 @@ class NavigateToPickupScreen extends ConsumerWidget {
                   right: 16,
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    decoration: BoxDecoration(color: const Color(0xFF0F3F23), borderRadius: BorderRadius.circular(10)),
+                    decoration: BoxDecoration(color: const Color(0xFF14532D), borderRadius: BorderRadius.circular(10)),
                     child: Text('في الطريق لاستلام الطرد من: $pickup', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
                   ),
                 ),
@@ -43,7 +43,7 @@ class NavigateToPickupScreen extends ConsumerWidget {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: controller.markPickedUp,
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF2AA35C), foregroundColor: Colors.white, padding: const EdgeInsets.all(16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, elevation: 0, padding: const EdgeInsets.all(15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
                 child: const Text('تم الاستلام', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
               ),
             ),

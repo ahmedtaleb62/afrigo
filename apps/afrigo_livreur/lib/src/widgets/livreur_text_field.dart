@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
-/// Plain text input matching this design doc's own input style (12px
-/// radius, `#F8F9F8` fill, 1.5px `#E1E5DF` border).
+/// Plain text input matching the imported design's `.field` spec (10px
+/// radius, 1.5px `#D6D3D1` border, no fill — unlike the old placeholder
+/// style this replaced, the design never fills text fields with a gray
+/// background).
 class LivreurTextField extends StatelessWidget {
   const LivreurTextField({
     super.key,
@@ -22,21 +24,20 @@ class LivreurTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    const border = OutlineInputBorder(borderRadius: BorderRadius.all(Radius.circular(10)), borderSide: BorderSide(color: Color(0xFFD6D3D1), width: 1.5));
     final field = TextField(
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
       onChanged: onChanged,
-      style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF1A1D16)),
+      style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF1C1917)),
       decoration: InputDecoration(
         hintText: hint,
-        hintStyle: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFFA3AB9C)),
-        filled: true,
-        fillColor: const Color(0xFFF8F9F8),
-        contentPadding: const EdgeInsets.all(14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
+        hintStyle: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFFA8A29E)),
+        contentPadding: const EdgeInsets.all(13),
+        border: border,
+        enabledBorder: border,
+        focusedBorder: border.copyWith(borderSide: const BorderSide(color: Color(0xFF16A34A), width: 1.5)),
       ),
     );
 
@@ -44,7 +45,7 @@ class LivreurTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF454B3E))),
+        Text(label!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF57534E))),
         const SizedBox(height: 6),
         field,
       ],

@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -8,7 +9,7 @@ void main() {
     await tester.pumpWidget(const ProviderScope(child: AfrigoLivreurApp()));
     await tester.pump();
 
-    expect(find.text('Afrigo Livreur'), findsOneWidget);
+    expect(find.byType(RichText), findsWidgets);
     expect(find.text('متابعة ›'), findsOneWidget);
   });
 

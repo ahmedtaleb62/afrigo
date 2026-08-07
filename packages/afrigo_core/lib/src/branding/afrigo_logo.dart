@@ -39,12 +39,19 @@ const _foodSvg = '''
 </svg>
 ''';
 
+/// Amber/gold (`AfrigoColors.yellow600`) — the design system's own secondary
+/// brand color, previously never used as an app-tile identity. Chosen for
+/// Livreur specifically because green (client), black (taxi) and blue
+/// (food) were already taken; amber keeps it inside the existing palette
+/// while staying maximally distinct from its 3 siblings.
 const _livreurSvg = '''
 <svg width="72" height="72" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-<circle cx="36" cy="36" r="32" fill="#2AA35C"/>
-<circle cx="24" cy="46" r="9" fill="none" stroke="#F5C518" stroke-width="4"/>
-<circle cx="48" cy="46" r="9" fill="none" stroke="#F5C518" stroke-width="4"/>
-<path d="M24 46 L34 28 L44 46 M34 28 L42 28 M24 46 L48 46" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+<rect x="2" y="2" width="68" height="68" rx="15" fill="#CA8A04"/>
+<circle cx="36" cy="35" r="20" fill="none" stroke="#fff" stroke-width="4.5"/>
+<circle cx="26" cy="46" r="7" fill="none" stroke="#fff" stroke-width="3"/>
+<circle cx="46" cy="46" r="7" fill="none" stroke="#fff" stroke-width="3"/>
+<path d="M26 46 L35 30 L45 46 M31 36 H40" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle cx="49" cy="18" r="5" fill="#166534"/>
 </svg>
 ''';
 

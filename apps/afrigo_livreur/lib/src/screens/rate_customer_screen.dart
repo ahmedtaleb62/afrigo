@@ -20,7 +20,7 @@ class RateCustomerScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(width: 64, height: 64, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF0F2EF), shape: BoxShape.circle), child: const Text('👩', style: TextStyle(fontSize: 26))),
+          Container(width: 64, height: 64, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle), child: const Text('👩', style: TextStyle(fontSize: 26))),
           const SizedBox(height: 14),
           Text('قيّم الزبون${recipientName != null ? ': $recipientName' : ''}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
           const SizedBox(height: 20),

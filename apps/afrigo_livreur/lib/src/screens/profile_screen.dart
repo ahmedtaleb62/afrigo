@@ -13,16 +13,18 @@ class ProfileScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(livreurFlowControllerProvider.notifier);
 
-    Widget menuRow(String label, {VoidCallback? onTap, String trailing = '›', bool divider = true}) => InkWell(
+    Widget menuRow(String label, {VoidCallback? onTap, String trailing = '‹', Color borderColor = const Color(0xFFE7E5E4), Color textColor = const Color(0xFF1C1917)}) => InkWell(
           onTap: onTap,
+          borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(border: divider ? const Border(bottom: BorderSide(color: Color(0xFFF0F2EF))) : null),
+            margin: const EdgeInsets.only(bottom: 8),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(border: Border.all(color: borderColor), borderRadius: BorderRadius.circular(12)),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(label, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
-                Text(trailing, style: const TextStyle(fontFamily: 'Tajawal', color: Color(0xFFA3AB9C))),
+                Text(label, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: textColor)),
+                Text(trailing, style: const TextStyle(fontFamily: 'Tajawal', color: Color(0xFFA8A29E))),
               ],
             ),
           ),
@@ -32,43 +34,33 @@ class ProfileScreen extends ConsumerWidget {
       children: [
         Expanded(
           child: Container(
-            color: const Color(0xFFF8F9F8),
+            color: Colors.white,
             child: ListView(
               padding: const EdgeInsets.fromLTRB(20, 54, 20, 20),
               children: [
                 Column(
                   children: [
-                    Container(width: 76, height: 76, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFEFFBF3), shape: BoxShape.circle), child: const Text('🏍️', style: TextStyle(fontSize: 30))),
+                    Container(width: 76, height: 76, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFDCFCE7), shape: BoxShape.circle), child: const Text('🏍️', style: TextStyle(fontSize: 30))),
                     const SizedBox(height: 10),
                     const Text('ياسين شريف', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
-                    const Text('⭐ 4.9 · 480 توصيلة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(color: const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(999)),
+                      child: const Text('موثّق', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF166534))),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
-                Container(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                  clipBehavior: Clip.antiAlias,
-                  child: Column(
-                    children: [
-                      menuRow('تعديل بيانات المركبة', onTap: () => controller.goTo(LivreurScreen.vehicleDocs)),
-                      menuRow('اللغة', trailing: 'عربي ›', divider: false),
-                    ],
-                  ),
-                ),
-                InkWell(
-                  onTap: controller.signOut,
-                  child: Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                    padding: const EdgeInsets.all(16),
-                    child: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
-                  ),
-                ),
+                menuRow('🏍️ تعديل بيانات المركبة', onTap: () => controller.goTo(LivreurScreen.vehicleDocs)),
+                menuRow('💬 الدعم والمساعدة'),
+                const SizedBox(height: 6),
+                menuRow('تسجيل الخروج', onTap: controller.signOut, trailing: '', borderColor: const Color(0xFFFEE2E2), textColor: const Color(0xFFDC2626)),
               ],
             ),
           ),
         ),
-        const LivreurBottomNav(current: LivreurScreen.profile),
+        LivreurBottomNav(current: LivreurScreen.profile),
       ],
     );
   }

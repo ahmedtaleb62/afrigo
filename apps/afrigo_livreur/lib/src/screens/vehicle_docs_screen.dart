@@ -43,7 +43,7 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
         children: [
           const Text('توثيق الدراجة/المركبة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 6),
-          const Text('أدخل بياناتك لمراجعتها من طرف الإدارة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF7C8574))),
+          const Text('أدخل بياناتك لمراجعتها من طرف الإدارة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 20),
           LivreurTextField(controller: _vehicleName, hint: 'اسم صاحب المركبة'),
           const SizedBox(height: 10),
@@ -53,12 +53,12 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
             onTap: controller.toggleLicensePhoto,
             child: Container(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(border: Border.all(color: const Color(0xFFC7CDC3), width: 1.5), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(border: Border.all(color: const Color(0xFFD6D3D1), width: 2), borderRadius: BorderRadius.circular(12)),
               child: Column(
                 children: [
                   Text(s.licensePhoto ? '✅' : '📷', style: const TextStyle(fontSize: 20)),
                   const SizedBox(height: 4),
-                  Text(s.licensePhoto ? 'تم رفع صورة رخصة القيادة' : 'رفع صورة رخصة القيادة', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF7C8574))),
+                  Text(s.licensePhoto ? 'تم رفع صورة رخصة القيادة' : 'رفع صورة رخصة القيادة', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
                 ],
               ),
             ),
@@ -66,12 +66,12 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
           const SizedBox(height: 10),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 14),
-            decoration: BoxDecoration(color: const Color(0xFFF8F9F8), border: Border.all(color: const Color(0xFFE1E5DF), width: 1.5), borderRadius: BorderRadius.circular(12)),
+            decoration: BoxDecoration(border: Border.all(color: const Color(0xFFD6D3D1), width: 1.5), borderRadius: BorderRadius.circular(10)),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _bikeType,
                 isExpanded: true,
-                style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF1A1D16)),
+                style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF1C1917)),
                 items: _bikeTypes.map((t) => DropdownMenuItem(value: t, child: Text('نوع الدراجة: $t'))).toList(),
                 onChanged: (v) => setState(() => _bikeType = v ?? _bikeType),
               ),

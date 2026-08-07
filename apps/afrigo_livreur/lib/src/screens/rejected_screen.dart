@@ -34,7 +34,7 @@ class RejectedScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(14),
             margin: const EdgeInsets.only(bottom: 24),
             decoration: BoxDecoration(color: const Color(0xFFFEF2F2), border: Border.all(color: const Color(0xFFFEE2E2), width: 1.5), borderRadius: BorderRadius.circular(12)),
-            child: Text('سبب الرفض: $display', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF7C8574))),
+            child: Text('سبب الرفض: $display', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
           ),
           LivreurPrimaryButton(label: 'إعادة تقديم الطلب', onPressed: () => controller.goTo(LivreurScreen.vehicleDocs)),
         ],

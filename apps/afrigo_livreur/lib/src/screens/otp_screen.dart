@@ -36,7 +36,7 @@ class _OtpScreenState extends State<OtpScreen> {
             children: [
               const Text('تأكيد الرمز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
               const SizedBox(height: 8),
-              const Text('أدخل الرمز المرسل إلى بريدك الإلكتروني', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF7C8574))),
+              const Text('أدخل الرمز المرسل إلى بريدك الإلكتروني', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
               const SizedBox(height: 28),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -54,11 +54,9 @@ class _OtpScreenState extends State<OtpScreen> {
                         style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22),
                         decoration: InputDecoration(
                           counterText: '',
-                          filled: true,
-                          fillColor: const Color(0xFFF8F9F8),
-                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE1E5DF), width: 1.5)),
-                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFF2AA35C), width: 1.5)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1.5)),
+                          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFFD6D3D1), width: 1.5)),
+                          focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: Color(0xFF16A34A), width: 1.5)),
                         ),
                       ),
                     ),
