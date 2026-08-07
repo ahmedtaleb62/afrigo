@@ -39,6 +39,9 @@ class ClientFlowState {
     this.restaurantFilter = 'all',
     this.selectedRestaurantId,
     this.selectedRestaurantName,
+    this.selectedRestaurantDeliveryFee,
+    this.selectedRestaurantMinOrder,
+    this.selectedRestaurantIsOpen = true,
     this.restaurantDishes = const [],
     this.selectedDish,
     this.dishQty = 1,
@@ -48,6 +51,7 @@ class ClientFlowState {
     this.foodRatingDelivery = 0,
     this.foodOrderId,
     this.foodOrderTotal,
+    this.foodOrderFailureReason,
     this.parcelType = 'وثائق',
     this.parcelPhoto = false,
     this.recipientName = '',
@@ -163,6 +167,16 @@ class ClientFlowState {
   final String restaurantFilter;
   final String? selectedRestaurantId;
   final String? selectedRestaurantName;
+
+  /// Fetched fresh in `openRestaurant` (not trusted from the possibly-stale
+  /// `restaurants` list) so the cart/checkout total shown to the client
+  /// matches what `request-food-order` will actually charge — previously
+  /// the UI showed a hardcoded flat 100 delivery fee regardless of this
+  /// restaurant's real (often 0) `delivery_fee`, and never checked
+  /// `min_order` before submit.
+  final double? selectedRestaurantDeliveryFee;
+  final double? selectedRestaurantMinOrder;
+  final bool selectedRestaurantIsOpen;
   final List<Map<String, dynamic>> restaurantDishes;
   final Map<String, dynamic>? selectedDish;
   final int dishQty;
@@ -176,6 +190,14 @@ class ClientFlowState {
   /// `request-food-order` succeeds — watched live via Realtime.
   final String? foodOrderId;
   final double? foodOrderTotal;
+
+  /// Set whenever the order lands on a terminal failure the client didn't
+  /// cause themselves (restaurant rejected, no courier found, restaurant
+  /// cancelled) — `FoodRejectedScreen` reads this instead of always showing
+  /// the same "restaurant declined" copy. `no_livreur_found` in particular
+  /// used to be silently rendered identically to "still searching" with no
+  /// indication anything had actually failed.
+  final String? foodOrderFailureReason;
 
   final String parcelType;
   final bool parcelPhoto;
@@ -281,7 +303,9 @@ class ClientFlowState {
 
   int get cartCount => cart.fold(0, (a, i) => a + i.qty);
   int get cartSubtotal => cart.fold(0, (a, i) => a + i.qty * i.price);
-  int get cartGrandTotal => cartSubtotal + 100;
+  int get cartDeliveryFee => (selectedRestaurantDeliveryFee ?? 0).round();
+  int get cartGrandTotal => cartSubtotal + cartDeliveryFee;
+  bool get cartMeetsMinOrder => cartSubtotal >= (selectedRestaurantMinOrder ?? 0);
 
   ClientFlowState copyWith({
     ClientScreen? screen,
@@ -320,6 +344,9 @@ class ClientFlowState {
     String? restaurantFilter,
     Object? selectedRestaurantId = _unset,
     Object? selectedRestaurantName = _unset,
+    Object? selectedRestaurantDeliveryFee = _unset,
+    Object? selectedRestaurantMinOrder = _unset,
+    bool? selectedRestaurantIsOpen,
     List<Map<String, dynamic>>? restaurantDishes,
     Object? selectedDish = _unset,
     int? dishQty,
@@ -329,6 +356,7 @@ class ClientFlowState {
     int? foodRatingDelivery,
     Object? foodOrderId = _unset,
     Object? foodOrderTotal = _unset,
+    Object? foodOrderFailureReason = _unset,
     String? parcelType,
     bool? parcelPhoto,
     String? recipientName,
@@ -409,6 +437,13 @@ class ClientFlowState {
       selectedRestaurantId: identical(selectedRestaurantId, _unset) ? this.selectedRestaurantId : selectedRestaurantId as String?,
       selectedRestaurantName:
           identical(selectedRestaurantName, _unset) ? this.selectedRestaurantName : selectedRestaurantName as String?,
+      selectedRestaurantDeliveryFee: identical(selectedRestaurantDeliveryFee, _unset)
+          ? this.selectedRestaurantDeliveryFee
+          : selectedRestaurantDeliveryFee as double?,
+      selectedRestaurantMinOrder: identical(selectedRestaurantMinOrder, _unset)
+          ? this.selectedRestaurantMinOrder
+          : selectedRestaurantMinOrder as double?,
+      selectedRestaurantIsOpen: selectedRestaurantIsOpen ?? this.selectedRestaurantIsOpen,
       restaurantDishes: restaurantDishes ?? this.restaurantDishes,
       selectedDish: identical(selectedDish, _unset) ? this.selectedDish : selectedDish as Map<String, dynamic>?,
       dishQty: dishQty ?? this.dishQty,
@@ -418,6 +453,8 @@ class ClientFlowState {
       foodRatingDelivery: foodRatingDelivery ?? this.foodRatingDelivery,
       foodOrderId: identical(foodOrderId, _unset) ? this.foodOrderId : foodOrderId as String?,
       foodOrderTotal: identical(foodOrderTotal, _unset) ? this.foodOrderTotal : foodOrderTotal as double?,
+      foodOrderFailureReason:
+          identical(foodOrderFailureReason, _unset) ? this.foodOrderFailureReason : foodOrderFailureReason as String?,
       parcelType: parcelType ?? this.parcelType,
       parcelPhoto: parcelPhoto ?? this.parcelPhoto,
       recipientName: recipientName ?? this.recipientName,

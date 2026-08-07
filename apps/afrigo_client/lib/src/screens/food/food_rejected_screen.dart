@@ -12,6 +12,7 @@ class FoodRejectedScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
+    final reason = ref.watch(clientFlowControllerProvider.select((s) => s.foodOrderFailureReason));
 
     return Container(
       color: Colors.white,
@@ -21,9 +22,13 @@ class FoodRejectedScreen extends ConsumerWidget {
         children: [
           const Text('😔', style: TextStyle(fontSize: 56)),
           const SizedBox(height: 16),
-          const Text('اعتذر المطعم عن قبول طلبك', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+          const Text('لم يكتمل طلبك', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 8),
-          const Text('قد يكون المطعم مشغولًا حاليًا. لن يتم خصم أي مبلغ منك', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
+          Text(
+            reason ?? 'قد يكون المطعم مشغولًا حاليًا. لن يتم خصم أي مبلغ منك',
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C)),
+          ),
           const SizedBox(height: 24),
           ClientPrimaryButton(label: 'اختيار مطعم آخر', onPressed: () => controller.goTo(ClientScreen.foodList)),
         ],

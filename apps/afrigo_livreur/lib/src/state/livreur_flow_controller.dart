@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/push_notifications.dart';
 import 'livreur_flow_state.dart';
 import 'livreur_screen.dart';
 
@@ -78,6 +79,7 @@ class LivreurFlowController extends StateNotifier<LivreurFlowState> {
       unawaited(_ensureProfile());
       watchWallet();
       _subscribeIncomingDeliveries();
+      unawaited(PushNotifications.register());
       goTo(LivreurScreen.home);
     } on AuthException catch (e) {
       state = state.copyWith(isSubmitting: false, authError: e.message);

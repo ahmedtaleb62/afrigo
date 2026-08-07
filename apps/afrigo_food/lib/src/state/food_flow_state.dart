@@ -106,7 +106,10 @@ class FoodFlowState {
     return null;
   }
 
-  double get resolvedBalance => balance ?? 620;
+  // 0, not a fabricated placeholder — `watchWallet()` is subscribed
+  // immediately on login/resume, so this only shows briefly before the
+  // first real balance arrives.
+  double get resolvedBalance => balance ?? 0;
   bool get lowBalance => lowBalanceDemo || resolvedBalance <= 0;
 
   String get deliveryMethodLabel => switch (deliveryMethod) {

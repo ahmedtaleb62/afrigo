@@ -24,7 +24,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
       final desc = dish['description'] as String? ?? '';
       final price = (dish['price'] as num?)?.toInt() ?? 0;
       return InkWell(
-        onTap: () => controller.openDish(dish),
+        onTap: s.selectedRestaurantIsOpen ? () => controller.openDish(dish) : null,
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 12),
           decoration: const BoxDecoration(border: Border(bottom: BorderSide(color: Color(0xFFF5F5F4)))),
@@ -42,7 +42,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
                   ],
                 ),
               ),
-              Container(width: 30, height: 30, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFF16A34A), shape: BoxShape.circle), child: const Text('+', style: TextStyle(color: Colors.white, fontSize: 16))),
+              Container(width: 30, height: 30, alignment: Alignment.center, decoration: BoxDecoration(color: s.selectedRestaurantIsOpen ? const Color(0xFF16A34A) : const Color(0xFFD6D3D1), shape: BoxShape.circle), child: const Text('+', style: TextStyle(color: Colors.white, fontSize: 16))),
             ],
           ),
         ),
@@ -72,6 +72,15 @@ class RestaurantDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(s.selectedRestaurantName ?? '', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 19)),
+                    if (!s.selectedRestaurantIsOpen) ...[
+                      const SizedBox(height: 10),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: const Color(0xFFF5F5F4), borderRadius: BorderRadius.circular(10)),
+                        child: const Text('المطعم مغلق حاليًا ولا يستقبل طلبات جديدة', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+                      ),
+                    ],
                     const SizedBox(height: 16),
                     if (s.restaurantDishes.isEmpty)
                       const Padding(

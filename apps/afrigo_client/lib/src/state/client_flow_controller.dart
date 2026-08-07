@@ -231,12 +231,11 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     }
   }
 
-  /// Re-attaches an active ride/delivery after login/resume — without this,
-  /// a client who force-closed the app mid-ride (crash, OS kill, battery)
-  /// lost all trace of it: no tracking, no driver contact, no way back in
-  /// except waiting for it to just resolve with zero visibility. Food
-  /// orders aren't covered by this resume path yet (separate screens/
-  /// subscription, out of scope for this pass).
+  /// Re-attaches an active ride/delivery/food order after login/resume —
+  /// without this, a client who force-closed the app mid-order (crash, OS
+  /// kill, battery) lost all trace of it: no tracking, no provider contact,
+  /// no way back in except waiting for it to just resolve with zero
+  /// visibility.
   Future<void> _routeAfterAuth() async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) {
@@ -266,10 +265,65 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         await _resumeActiveOrder(deliveryRows.first, 'delivery_requests', 'delivery_request', ClientFlowType.delivery);
         return;
       }
+      final foodRows = await _sb
+          .from('food_orders')
+          .select()
+          .eq('client_id', uid)
+          .inFilter('status', ['pending_restaurant', 'accepted', 'preparing', 'ready', 'searching_livreur', 'out_for_delivery'])
+          .order('created_at', ascending: false)
+          .limit(1);
+      if (foodRows.isNotEmpty) {
+        await _resumeActiveFoodOrder(foodRows.first);
+        return;
+      }
     } catch (_) {
       // Falls through to Home below — same as finding nothing active.
     }
     goTo(ClientScreen.home);
+  }
+
+  Future<void> _resumeActiveFoodOrder(Map<String, dynamic> row) async {
+    final id = row['id'] as String;
+    final status = row['status'] as String;
+    final stage = _statusToFoodStage(status) ?? FoodStage.waiting;
+    state = state.copyWith(
+      foodOrderId: id,
+      foodOrderTotal: (row['total'] as num?)?.toDouble(),
+      foodStage: stage,
+      selectedRestaurantId: row['restaurant_id'] as String?,
+    );
+    _subscribeFoodOrderTracking(id);
+    if (stage == FoodStage.accepted || stage == FoodStage.onway) unawaited(_fetchFoodOrderContact(id));
+    goTo(stage == FoodStage.waiting ? ClientScreen.foodWaiting : ClientScreen.foodTracking);
+  }
+
+  /// The "نشطة" (active) tab on `OrderHistoryScreen` used to have no tap
+  /// handler at all — only the "past" tab's "إعادة الطلب" wiring existed —
+  /// so a client with a live order who'd navigated away from its tracking
+  /// screen (e.g. via `_routeAfterAuth`'s own resume, then Home, then back
+  /// to history) had no way back in short of force-closing the app to
+  /// re-trigger the login-time resume. Re-fetches the full row by id rather
+  /// than trusting the history list's partial `select()` (which is missing
+  /// several columns `_resumeActiveOrder`/`_resumeActiveFoodOrder` read).
+  Future<void> openActiveOrderFromHistory(Map<String, dynamic> o) async {
+    final id = o['id'] as String?;
+    if (id == null) return;
+    try {
+      switch (o['order_type']) {
+        case 'ride':
+          final row = await _sb.from('rides').select().eq('id', id).maybeSingle();
+          if (row != null) await _resumeActiveOrder(row, 'rides', 'ride', ClientFlowType.taxi);
+        case 'delivery_request':
+          final row = await _sb.from('delivery_requests').select().eq('id', id).maybeSingle();
+          if (row != null) await _resumeActiveOrder(row, 'delivery_requests', 'delivery_request', ClientFlowType.delivery);
+        case 'food_order':
+          final row = await _sb.from('food_orders').select().eq('id', id).maybeSingle();
+          if (row != null) await _resumeActiveFoodOrder(row);
+      }
+    } catch (_) {
+      // Non-fatal — the order stays visible in history either way, the tap
+      // just didn't navigate this time.
+    }
   }
 
   Future<void> _resumeActiveOrder(
@@ -882,7 +936,17 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   void setRestaurantFilter(String v) => state = state.copyWith(restaurantFilter: v);
 
   Future<void> openRestaurant(String id, String name) async {
-    goTo(ClientScreen.restaurantDetail, patch: (s) => s.copyWith(selectedRestaurantId: id, selectedRestaurantName: name, cart: const []));
+    goTo(
+      ClientScreen.restaurantDetail,
+      patch: (s) => s.copyWith(
+        selectedRestaurantId: id,
+        selectedRestaurantName: name,
+        selectedRestaurantDeliveryFee: null,
+        selectedRestaurantMinOrder: null,
+        selectedRestaurantIsOpen: true,
+        cart: const [],
+      ),
+    );
     try {
       final rows = await _sb
           .from('restaurant_dishes')
@@ -893,6 +957,22 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       state = state.copyWith(restaurantDishes: List<Map<String, dynamic>>.from(rows));
     } catch (_) {
       state = state.copyWith(restaurantDishes: const []);
+    }
+    // Fetched fresh (not trusted from the possibly-stale `restaurants` list
+    // loaded on the previous screen) so the cart/checkout total always
+    // matches what `request-food-order` will actually charge — see
+    // `ClientFlowState.selectedRestaurantDeliveryFee`'s doc comment.
+    try {
+      final row = await _sb.from('restaurants').select('delivery_fee, min_order, is_open').eq('id', id).single();
+      state = state.copyWith(
+        selectedRestaurantDeliveryFee: (row['delivery_fee'] as num?)?.toDouble() ?? 0,
+        selectedRestaurantMinOrder: (row['min_order'] as num?)?.toDouble() ?? 0,
+        selectedRestaurantIsOpen: row['is_open'] == true,
+      );
+    } catch (_) {
+      // Non-fatal — cart/checkout fall back to a 0 delivery fee/min order,
+      // and the real values are re-validated server-side at submit either
+      // way (`request-food-order` never trusts the client's total).
     }
   }
 
@@ -938,7 +1018,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     final restaurantId = state.selectedRestaurantId;
     if (restaurantId == null || state.cart.isEmpty) return;
     goTo(ClientScreen.foodWaiting);
-    state = state.copyWith(requestError: null);
+    state = state.copyWith(requestError: null, foodOrderFailureReason: null);
     try {
       final res = await _sb.functions.invoke('request-food-order', body: {
         'restaurant_id': restaurantId,
@@ -974,8 +1054,21 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       if (rowLivreurId != null && rowLivreurId != state.livreurId) {
         state = state.copyWith(livreurId: rowLivreurId);
       }
-      if (status == 'rejected_by_restaurant') {
+      // All 3 are terminal, unrecoverable failures server-side (none of
+      // them has any further transition in `advanceFoodOrder`'s ALLOWED
+      // map) — `no_livreur_found` in particular used to fall through to
+      // `_statusToFoodStage` and render identically to "still searching for
+      // a courier", leaving a client watching this exact screen with no
+      // indication the order had actually died.
+      if (status == 'rejected_by_restaurant' || status == 'no_livreur_found' || status == 'cancelled') {
         _foodOrderSub?.cancel();
+        state = state.copyWith(
+          foodOrderFailureReason: switch (status) {
+            'no_livreur_found' => 'تعذّر العثور على مندوب توصيل متاح حاليًا. لن يتم خصم أي مبلغ منك',
+            'cancelled' => 'ألغى المطعم طلبك. لن يتم خصم أي مبلغ منك',
+            _ => null,
+          },
+        );
         goTo(ClientScreen.foodRejected);
         return;
       }
@@ -996,6 +1089,28 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       if (stage == FoodStage.onway) unawaited(_fetchFoodOrderContact(orderId));
       if (wasWaiting && stage != FoodStage.waiting) goTo(ClientScreen.foodTracking);
     });
+  }
+
+  /// Food orders previously had no cancellation path at all, at any stage —
+  /// `update-order-status`'s `advanceFoodOrder` now accepts `cancelled` from
+  /// the client while the restaurant hasn't started delivery yet (see that
+  /// function's own `ALLOWED` map: `pending_restaurant`/`accepted`/
+  /// `preparing` → `cancelled`). Once out_for_delivery, cancellation is no
+  /// longer offered — see the gating on `FoodWaitingScreen`/`FoodTrackingScreen`.
+  Future<void> cancelFoodOrder() async {
+    final orderId = state.foodOrderId;
+    if (orderId == null) return;
+    try {
+      await _sb.functions.invoke(
+        'update-order-status',
+        body: {'order_type': 'food_order', 'order_id': orderId, 'next_status': 'cancelled'},
+      );
+    } catch (e) {
+      state = state.copyWith(requestError: _functionErrorMessage(e));
+      return;
+    }
+    _foodOrderSub?.cancel();
+    goTo(ClientScreen.home, patch: (s) => s.copyWith(foodOrderId: null, foodStage: FoodStage.waiting));
   }
 
   Future<void> _fetchFoodOrderContact(String orderId) async {

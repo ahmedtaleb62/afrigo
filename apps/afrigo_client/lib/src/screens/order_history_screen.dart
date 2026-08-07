@@ -92,7 +92,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     Widget orderCard(Map<String, dynamic> o) {
       final (emoji, label) = emojiAndLabel(o);
       final statusLabel = _statusLabels[o['status']] ?? 'جارية';
-      return Container(
+      final card = Container(
         padding: const EdgeInsets.all(14),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), boxShadow: const [BoxShadow(color: Color(0x0F1C1917), blurRadius: 3)]),
@@ -144,6 +144,12 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
             ],
           ],
         ),
+      );
+      if (!isActive) return card;
+      return InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: () => controller.openActiveOrderFromHistory(o),
+        child: card,
       );
     }
 

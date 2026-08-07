@@ -16,8 +16,10 @@ class FoodTrackingScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     final stage = s.foodStage;
+    final cancelable = const {FoodStage.waiting, FoodStage.accepted, FoodStage.preparing}.contains(stage);
     final lat = s.dropoffLat ?? s.pickupLat ?? s.currentLat ?? 18.0858;
     final lng = s.dropoffLng ?? s.pickupLng ?? s.currentLng ?? -15.9785;
 
@@ -86,16 +88,31 @@ class FoodTrackingScreen extends ConsumerWidget {
           else
             const Spacer(),
           Padding(
-            padding: const EdgeInsets.all(20),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(color: const Color(0xFF1C1917), borderRadius: BorderRadius.circular(14)),
-              child: Text(
-                labels[stage] ?? 'متابعة',
-                textAlign: TextAlign.center,
-                style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
-              ),
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Column(
+              children: [
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(15),
+                  decoration: BoxDecoration(color: const Color(0xFF1C1917), borderRadius: BorderRadius.circular(14)),
+                  child: Text(
+                    labels[stage] ?? 'متابعة',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
+                  ),
+                ),
+                if (cancelable) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: controller.cancelFoodOrder,
+                      style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.all(14)),
+                      child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

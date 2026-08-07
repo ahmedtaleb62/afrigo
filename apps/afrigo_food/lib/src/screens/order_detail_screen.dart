@@ -85,9 +85,8 @@ class OrderDetailScreen extends ConsumerWidget {
               children: [
                 Expanded(
                   child: OutlinedButton(
-                    onPressed: () {
-                      controller.rejectOrder(id);
-                      controller.back();
+                    onPressed: () async {
+                      if (await controller.rejectOrder(id)) controller.back();
                     },
                     style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(14)),
                     child: const Text('رفض', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626))),
@@ -96,9 +95,8 @@ class OrderDetailScreen extends ConsumerWidget {
                 const SizedBox(width: 10),
                 Expanded(
                   child: ElevatedButton(
-                    onPressed: () {
-                      controller.acceptOrder(id);
-                      controller.back();
+                    onPressed: () async {
+                      if (await controller.acceptOrder(id)) controller.back();
                     },
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
                     child: const Text('قبول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
@@ -106,24 +104,27 @@ class OrderDetailScreen extends ConsumerWidget {
                 ),
               ],
             )
-          else if (status == 'accepted')
+          else if (status == 'accepted' || status == 'preparing') ...[
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: () => controller.markOrderPreparing(id),
+                onPressed: () => status == 'accepted' ? controller.markOrderPreparing(id) : controller.markOrderReady(id),
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
-                child: const Text('بدء التحضير', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
-              ),
-            )
-          else if (status == 'preparing')
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => controller.markOrderReady(id),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
-                child: const Text('الطلب جاهز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
+                child: Text(status == 'accepted' ? 'بدء التحضير' : 'الطلب جاهز', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
               ),
             ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () async {
+                  if (await controller.cancelOrder(id)) controller.back();
+                },
+                style: OutlinedButton.styleFrom(padding: const EdgeInsets.all(14), side: const BorderSide(color: Color(0xFFDC2626))),
+                child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626))),
+              ),
+            ),
+          ],
         ],
       ),
     );

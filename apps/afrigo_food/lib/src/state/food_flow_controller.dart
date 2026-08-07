@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../core/push_notifications.dart';
 import 'dish.dart';
 import 'food_flow_state.dart';
 import 'food_screen.dart';
@@ -82,18 +83,83 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       watchWallet();
-      final uid = _sb.auth.currentUser?.id;
-      // A returning (already-verified) owner has no restaurantId yet at
-      // this point — submitRestaurantDocs only sets it during first-time
-      // onboarding. watchRestaurantStatus also back-fills it from the row,
-      // which watchOrders below needs to subscribe to the right channel.
-      if (uid != null) watchRestaurantStatus(uid);
       unawaited(_fetchCommissionPct());
-      goTo(FoodScreen.home);
+      unawaited(PushNotifications.register());
+      await _routeAfterAuth();
     } on AuthException catch (e) {
       state = state.copyWith(isSubmitting: false, authError: e.message);
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
+    }
+  }
+
+  /// Splash's "متابعة" used to always go to Login, even with a persisted
+  /// Supabase session — forcing a full re-login on every process restart.
+  /// If a session already exists, skip straight to the same post-auth
+  /// routing `doLogin()` uses instead.
+  Future<void> continueFromSplash() async {
+    if (_sb.auth.currentSession != null) {
+      unawaited(_ensureProfile());
+      watchWallet();
+      unawaited(_fetchCommissionPct());
+      unawaited(PushNotifications.register());
+      await _routeAfterAuth();
+    } else {
+      goTo(FoodScreen.login);
+    }
+  }
+
+  /// Single source of truth for "where does this restaurant owner belong
+  /// right now", used by both a fresh login and a resumed session.
+  /// Previously `doLogin` always went straight to the fully-operational
+  /// Home screen regardless of verification status — a pending or rejected
+  /// owner who logged back in (or just relaunched the app once
+  /// session-restore existed) landed on Home with the online toggle, menu,
+  /// and orders all live, instead of `PendingApproval`/`Rejected`. Also
+  /// restores `restaurants.is_open` into local state — without this, a
+  /// returning owner who was genuinely open for orders saw a fabricated
+  /// "closed" toggle after every relaunch, exactly the bug already fixed
+  /// for the taxi app's `vehicles.is_online` this session.
+  Future<void> _routeAfterAuth() async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) {
+      goTo(FoodScreen.login);
+      return;
+    }
+    try {
+      final row = await _sb
+          .from('restaurants')
+          .select('id, name, cuisine_type, status, rejection_reason, is_open')
+          .eq('owner_id', uid)
+          .order('created_at')
+          .limit(1)
+          .maybeSingle();
+      if (row == null) {
+        goTo(FoodScreen.restaurantDocs);
+        return;
+      }
+      final restaurantId = row['id'] as String;
+      final status = row['status'] as String?;
+      state = state.copyWith(
+        restaurantId: restaurantId,
+        restaurantName: row['name'] as String?,
+        restaurantCuisineType: row['cuisine_type'] as String?,
+        restaurantStatus: status,
+        restaurantRejectionReason: row['rejection_reason'] as String?,
+        open: row['is_open'] == true,
+      );
+      // Always subscribed (not just for `pending`) — unlike the taxi app's
+      // equivalent, this same stream is also what starts `watchOrders`.
+      watchRestaurantStatus(uid);
+      if (status == 'pending') {
+        goTo(FoodScreen.pendingApproval);
+      } else if (status == 'rejected') {
+        goTo(FoodScreen.rejected);
+      } else {
+        goTo(FoodScreen.home);
+      }
+    } catch (_) {
+      goTo(FoodScreen.home);
     }
   }
 
@@ -154,6 +220,38 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
     state = const FoodFlowState();
   }
 
+  /// No delete-account path existed anywhere in this app, even though the
+  /// server side (`delete-account` Edge Function) already fully supports
+  /// the `restaurant_owner` role — blocked while any `food_orders` row is
+  /// still active (as client, restaurant owner, or livreur), and the
+  /// anonymize/ban fallback already takes `restaurants.is_open` offline.
+  ///
+  /// Returns the error message on failure (null on success) instead of a
+  /// plain bool — `AppRoot`'s global listener reads and clears
+  /// `state.actionError` synchronously the instant it's set, so a caller
+  /// that re-reads it after this `await` returns would always find it
+  /// already `null` (the exact bug this avoids, already hit and fixed in
+  /// the taxi/client apps this session).
+  Future<String?> deleteAccount() async {
+    try {
+      await _sb.functions.invoke('delete-account');
+    } catch (e) {
+      final message = _functionErrorMessage(e);
+      state = state.copyWith(actionError: message);
+      return message;
+    }
+    await _restaurantSub?.cancel();
+    await _walletSub?.cancel();
+    await _ordersSub?.cancel();
+    try {
+      await _sb.auth.signOut();
+    } catch (_) {
+      // Best-effort — the server-side account is already gone either way.
+    }
+    state = const FoodFlowState();
+    return null;
+  }
+
   // ---------------------------------------------------------------------
   // Restaurant + bike verification — real insert + Realtime watch
   // ---------------------------------------------------------------------
@@ -190,7 +288,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
             'location': 'POINT(-15.9785 18.0858)',
             'license_url': state.doc1 ? 'pending-upload' : '',
             'cuisine_type': cuisineType,
-            'opening_hours': {'raw': openingHours},
+            'opening_hours': _parseOpeningHoursToStructured(openingHours),
           }, onConflict: 'owner_id')
           .select()
           .single();
@@ -256,6 +354,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
         restaurantCuisineType: latest['cuisine_type'] as String?,
         restaurantStatus: status,
         restaurantRejectionReason: latest['rejection_reason'] as String?,
+        open: latest['is_open'] == true,
       );
       watchOrders(restaurantId);
       if (status == 'rejected' && state.screen == FoodScreen.pendingApproval) {
@@ -331,42 +430,72 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   Future<void> addDish(String name, num price) async {
     final restaurantId = state.restaurantId;
     if (restaurantId == null || name.trim().isEmpty) return;
+    try {
+      var categoryId = state.categories.isNotEmpty ? state.categories.first.id : null;
+      if (categoryId == null) {
+        final newCat = await _sb
+            .from('restaurant_dish_categories')
+            .insert({'restaurant_id': restaurantId, 'name': 'الطبق الرئيسي', 'sort_order': 0})
+            .select()
+            .single();
+        categoryId = newCat['id'] as String;
+        state = state.copyWith(categories: [...state.categories, DishCategory.fromRow(newCat)]);
+      }
 
-    var categoryId = state.categories.isNotEmpty ? state.categories.first.id : null;
-    if (categoryId == null) {
-      final newCat = await _sb
-          .from('restaurant_dish_categories')
-          .insert({'restaurant_id': restaurantId, 'name': 'الطبق الرئيسي', 'sort_order': 0})
+      final row = await _sb
+          .from('restaurant_dishes')
+          .insert({'restaurant_id': restaurantId, 'category_id': categoryId, 'name': name.trim(), 'price': price})
           .select()
           .single();
-      categoryId = newCat['id'] as String;
-      state = state.copyWith(categories: [...state.categories, DishCategory.fromRow(newCat)]);
+      state = state.copyWith(dishes: [...state.dishes, Dish.fromRow(row)], addDishOpen: false);
+    } catch (_) {
+      // The add-dish panel used to have no try/catch at all — any failure
+      // (network, RLS) threw unhandled, leaving "حفظ الطبق" appearing to do
+      // nothing with zero feedback and the panel stuck open.
+      state = state.copyWith(actionError: 'تعذّر إضافة الطبق، حاول مجددًا');
     }
-
-    final row = await _sb
-        .from('restaurant_dishes')
-        .insert({'restaurant_id': restaurantId, 'category_id': categoryId, 'name': name.trim(), 'price': price})
-        .select()
-        .single();
-    state = state.copyWith(dishes: [...state.dishes, Dish.fromRow(row)], addDishOpen: false);
   }
 
+  /// The 3 toggles below used to flip local state *before* awaiting the
+  /// server write, with no try/catch at all — a failed update (network,
+  /// RLS) left the UI showing a change (e.g. a "sold out" dish still
+  /// marked available) that never actually happened in the database, with
+  /// no error and no way for the owner to know. Now rolls the optimistic
+  /// patch back and surfaces the real error on failure.
   Future<void> toggleDishAvailable(Dish dish) async {
+    final previous = dish;
     final updated = dish.copyWith(isAvailable: !dish.isAvailable);
     _patchDish(updated);
-    await _sb.from('restaurant_dishes').update({'is_available': updated.isAvailable}).eq('id', dish.id);
+    try {
+      await _sb.from('restaurant_dishes').update({'is_available': updated.isAvailable}).eq('id', dish.id);
+    } catch (_) {
+      _patchDish(previous);
+      state = state.copyWith(actionError: 'تعذّر تحديث حالة الطبق، حاول مجددًا');
+    }
   }
 
   Future<void> toggleDishDelivery(Dish dish) async {
+    final previous = dish;
     final updated = dish.copyWith(availableForDelivery: !dish.availableForDelivery);
     _patchDish(updated);
-    await _sb.from('restaurant_dishes').update({'available_for_delivery': updated.availableForDelivery}).eq('id', dish.id);
+    try {
+      await _sb.from('restaurant_dishes').update({'available_for_delivery': updated.availableForDelivery}).eq('id', dish.id);
+    } catch (_) {
+      _patchDish(previous);
+      state = state.copyWith(actionError: 'تعذّر تحديث حالة الطبق، حاول مجددًا');
+    }
   }
 
   Future<void> changeStock(Dish dish, int delta) async {
+    final previous = dish;
     final updated = dish.copyWith(stock: (dish.stock + delta).clamp(0, 1 << 30));
     _patchDish(updated);
-    await _sb.from('restaurant_dishes').update({'stock_quantity': updated.stock}).eq('id', dish.id);
+    try {
+      await _sb.from('restaurant_dishes').update({'stock_quantity': updated.stock}).eq('id', dish.id);
+    } catch (_) {
+      _patchDish(previous);
+      state = state.copyWith(actionError: 'تعذّر تحديث الكمية، حاول مجددًا');
+    }
   }
 
   void _patchDish(Dish updated) {
@@ -403,15 +532,25 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
 
   Future<void> saveDeliverySettings() async {
     final restaurantId = state.restaurantId;
-    if (restaurantId != null) {
+    if (restaurantId == null) {
+      back();
+      return;
+    }
+    try {
       await _sb.from('restaurants').update({
         'delivery_method': state.deliveryMethod.name,
         'delivery_fee': num.tryParse(state.deliveryFee) ?? 0,
         'min_order': num.tryParse(state.minOrder) ?? 0,
         'prep_time_minutes': state.prepTime,
       }).eq('id', restaurantId);
+      back();
+    } catch (_) {
+      // Unlike `saveWorkingHours` right below this, this had no try/catch
+      // at all — a failed update threw before `back()` ever ran, leaving
+      // "حفظ" looking like it just hung, with the settings never actually
+      // saved.
+      state = state.copyWith(actionError: 'تعذّر حفظ إعدادات التوصيل، حاول مجددًا');
     }
-    back();
   }
 
   // ---------------------------------------------------------------------
@@ -419,6 +558,24 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   // ---------------------------------------------------------------------
   static const _dayKeys = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
   static const _dayLabels = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
+
+  /// Onboarding's free-text "ساعات العمل" field used to be written verbatim
+  /// as `{'raw': '10:00 - 23:00'}` — a shape `loadWorkingHours` below
+  /// doesn't understand at all (it only reads `{day: {open, from, to}}`),
+  /// so the very next time the owner opened the real Working Hours screen
+  /// and saved anything, this got silently overwritten with no trace the
+  /// onboarding text had ever mattered. Parses the same "HH:MM - HH:MM"
+  /// format the field's own hint text asks for and applies it to every
+  /// day; on anything unparseable, returns `{}` (the same "not set yet"
+  /// shape `loadWorkingHours` already falls back to sensible defaults for)
+  /// rather than writing something `loadWorkingHours` can't read either.
+  Map<String, dynamic> _parseOpeningHoursToStructured(String raw) {
+    final match = RegExp(r'(\d{1,2}:\d{2}).{0,5}(\d{1,2}:\d{2})').firstMatch(raw);
+    if (match == null) return {};
+    final from = match.group(1)!;
+    final to = match.group(2)!;
+    return {for (final day in _dayKeys) day: {'open': true, 'from': from, 'to': to}};
+  }
 
   Future<void> loadWorkingHours() async {
     final restaurantId = state.restaurantId;
@@ -518,7 +675,12 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
 
   void openOrderDetail(String orderId) => goTo(FoodScreen.orderDetail, patch: (s) => s.copyWith(selectedOrderId: orderId));
 
-  Future<void> acceptOrder(String orderId) async {
+  /// Returns success so the order-detail screen can decide whether to
+  /// navigate back — it used to fire-and-forget this call and navigate away
+  /// immediately regardless, so a 409 ("another device already accepted
+  /// this") left the owner already back on the list with no obvious link
+  /// to the order that actually failed.
+  Future<bool> acceptOrder(String orderId) async {
     try {
       await _sb.functions.invoke(
         'respond-to-order',
@@ -527,19 +689,41 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       // watchOrders' stream picks up the status change and moves the card
       // to the "prep" tab on its own.
       state = state.copyWith(orderTab: OrderTab.prep);
+      return true;
     } catch (e) {
       state = state.copyWith(actionError: _functionErrorMessage(e));
+      return false;
     }
   }
 
-  Future<void> rejectOrder(String orderId) async {
+  Future<bool> rejectOrder(String orderId) async {
     try {
       await _sb.functions.invoke(
         'respond-to-order',
         body: {'order_type': 'food_order', 'order_id': orderId, 'decision': 'reject'},
       );
+      return true;
     } catch (e) {
       state = state.copyWith(actionError: _functionErrorMessage(e));
+      return false;
+    }
+  }
+
+  /// Previously there was no way to cancel an order from this app at all,
+  /// even though `update-order-status`'s `advanceFoodOrder` has always
+  /// allowed the restaurant to cancel from `accepted`/`preparing` (out of
+  /// stock, closing early) — the capability existed server-side with no UI
+  /// ever exposing it.
+  Future<bool> cancelOrder(String orderId) async {
+    try {
+      await _sb.functions.invoke(
+        'update-order-status',
+        body: {'order_type': 'food_order', 'order_id': orderId, 'next_status': 'cancelled'},
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(actionError: _functionErrorMessage(e));
+      return false;
     }
   }
 

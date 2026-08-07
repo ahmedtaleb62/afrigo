@@ -112,7 +112,6 @@ const FOOD_MESSAGES: Record<string, string> = {
   preparing: 'المطعم يحضّر طلبك الآن',
   ready: 'طلبك جاهز، جارٍ البحث عن مندوب توصيل',
   delivered: 'تم تسليم طلبك، بالهناء والشفاء',
-  cancelled: 'ألغى المطعم طلبك',
 };
 
 async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId: string, body: Body) {
@@ -126,9 +125,17 @@ async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId:
   const { data: restaurant } = await admin.from('restaurants').select('id, owner_id').eq('id', order.restaurant_id).maybeSingle();
   const isRestaurant = restaurant?.owner_id === userId;
   const isLivreur = order.livreur_id === userId;
-  if (!isRestaurant && !isLivreur) throw new HttpError(403, 'لا يمكنك تعديل هذا الطلب');
+  const isClient = order.client_id === userId;
+  if (!isRestaurant && !isLivreur && !isClient) throw new HttpError(403, 'لا يمكنك تعديل هذا الطلب');
 
+  // 'cancelled' is reachable by either side — the restaurant (out of stock,
+  // closing early) or the client (changed their mind) — up until the food
+  // is actually out for delivery. Previously the client had no cancel path
+  // at all, at any stage, which also meant they could get permanently stuck
+  // behind delete-account's active-order check if a restaurant never
+  // responded.
   const ALLOWED: Record<string, string[]> = {
+    pending_restaurant: ['cancelled'],
     accepted: ['preparing', 'cancelled'],
     preparing: ['ready', 'cancelled'],
     out_for_delivery: ['delivered'],
@@ -136,7 +143,10 @@ async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId:
   const allowedNext = ALLOWED[order.status] ?? [];
   if (!allowedNext.includes(body.next_status)) throw new HttpError(400, `لا يمكن الانتقال من "${order.status}" إلى "${body.next_status}"`);
 
-  if (['preparing', 'ready', 'cancelled'].includes(body.next_status) && !isRestaurant) {
+  if (body.next_status === 'cancelled' && !isRestaurant && !isClient) {
+    throw new HttpError(403, 'لا يمكنك إلغاء هذا الطلب');
+  }
+  if (['preparing', 'ready'].includes(body.next_status) && !isRestaurant) {
     throw new HttpError(403, 'فقط المطعم يمكنه تحديث هذه الحالة');
   }
   if (body.next_status === 'delivered' && !isLivreur) throw new HttpError(403, 'فقط مندوب التوصيل يمكنه تحديث هذه الحالة');
@@ -158,12 +168,31 @@ async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId:
   if (error) throw new HttpError(500, error.message);
   if (!updated) throw new HttpError(409, 'تم تعديل حالة الطلب بالفعل، أعد المحاولة');
 
-  await createNotification(admin, {
-    userId: order.client_id,
-    title: 'تحديث حالة الطلب',
-    body: FOOD_MESSAGES[body.next_status] ?? body.next_status,
-    data: { order_id: order.id, status: updated.status },
-  });
+  if (body.next_status === 'cancelled') {
+    // Notify whichever side didn't trigger the cancellation.
+    if (isClient && restaurant) {
+      await createNotification(admin, {
+        userId: restaurant.owner_id,
+        title: 'ألغى العميل الطلب',
+        body: 'ألغى العميل طلبه، لا حاجة لتحضيره.',
+        data: { order_id: order.id, status: updated.status },
+      });
+    } else {
+      await createNotification(admin, {
+        userId: order.client_id,
+        title: 'تحديث حالة الطلب',
+        body: 'ألغى المطعم طلبك',
+        data: { order_id: order.id, status: updated.status },
+      });
+    }
+  } else {
+    await createNotification(admin, {
+      userId: order.client_id,
+      title: 'تحديث حالة الطلب',
+      body: FOOD_MESSAGES[body.next_status] ?? body.next_status,
+      data: { order_id: order.id, status: updated.status },
+    });
+  }
 
   return { ok: true, order_id: order.id, status: updated.status };
 }

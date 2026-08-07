@@ -21,6 +21,11 @@ plugins {
     id("dev.flutter.flutter-plugin-loader") version "1.0.0"
     id("com.android.application") version "8.11.1" apply false
     id("org.jetbrains.kotlin.android") version "2.2.20" apply false
+    // Declared (not applied — see app/build.gradle.kts) so the actual
+    // `apply` line there only needs uncommenting once google-services.json
+    // exists; declaring the version here without applying is harmless even
+    // without that file.
+    id("com.google.gms.google-services") version "4.4.2" apply false
 }
 
 include(":app")

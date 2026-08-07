@@ -1,28 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../state/client_flow_controller.dart';
 import '../../widgets/spinning_ring.dart';
 
 /// Screen 27 — Waiting for restaurant to accept.
-class FoodWaitingScreen extends StatelessWidget {
+class FoodWaitingScreen extends ConsumerWidget {
   const FoodWaitingScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final controller = ref.read(clientFlowControllerProvider.notifier);
+
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(begin: Alignment(-0.5, -1), end: Alignment(0.5, 1), colors: [Color(0xFF14532D), Color(0xFF166534)]),
       ),
-      child: const Center(
+      child: Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              SpinningRing(),
-              SizedBox(height: 20),
-              Text('بانتظار قبول المطعم للطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white)),
-              SizedBox(height: 12),
-              Text('سيتم إعلامك فور رد المطعم', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFFBBF7D0))),
+              const SpinningRing(),
+              const SizedBox(height: 20),
+              const Text('بانتظار قبول المطعم للطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white)),
+              const SizedBox(height: 12),
+              const Text('سيتم إعلامك فور رد المطعم', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFFBBF7D0))),
+              const SizedBox(height: 28),
+              TextButton(
+                onPressed: controller.cancelFoodOrder,
+                style: TextButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.12), padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12)),
+                child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
+              ),
             ],
           ),
         ),

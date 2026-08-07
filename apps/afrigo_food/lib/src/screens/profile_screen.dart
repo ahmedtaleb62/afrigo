@@ -6,11 +6,42 @@ import '../state/food_screen.dart';
 import '../widgets/food_bottom_nav.dart';
 
 /// Screen 72 — Profile/Settings.
-class ProfileScreen extends ConsumerWidget {
+class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends ConsumerState<ProfileScreen> {
+  Future<void> _confirmDeleteAccount() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+        content: const Text('سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6)),
+        actions: [
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal'))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('حذف نهائيًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626)))),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    final error = await ref.read(foodFlowControllerProvider.notifier).deleteAccount();
+    if (error != null && mounted) {
+      showDialog<void>(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text('تعذّر الحذف', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+          content: Text(error, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13)),
+          actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('حسنًا', style: TextStyle(fontFamily: 'Tajawal')))],
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(foodFlowControllerProvider.notifier);
     final s = ref.watch(foodFlowControllerProvider);
     final deliveryLabel = s.deliveryMethodLabel;
@@ -71,7 +102,16 @@ class ProfileScreen extends ConsumerWidget {
                   child: Container(
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.all(16),
+                    margin: const EdgeInsets.only(bottom: 10),
                     child: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                  ),
+                ),
+                InkWell(
+                  onTap: _confirmDeleteAccount,
+                  child: Container(
+                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.all(16),
+                    child: const Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFA8A29E))),
                   ),
                 ),
               ],

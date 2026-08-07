@@ -17,6 +17,7 @@ class FoodCheckoutScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final grandTotal = ref.watch(clientFlowControllerProvider.select((s) => s.cartGrandTotal));
+    final meetsMinOrder = ref.watch(clientFlowControllerProvider.select((s) => s.cartMeetsMinOrder));
     final paymentMethod = ref.watch(clientFlowControllerProvider.select((s) => s.paymentMethod));
     final dropoffAddress = ref.watch(clientFlowControllerProvider.select((s) => s.dropoffAddress));
 
@@ -71,7 +72,7 @@ class FoodCheckoutScreen extends ConsumerWidget {
             ),
           ),
           const Spacer(),
-          ClientPrimaryButton(label: 'أرسل الطلب', onPressed: controller.placeFoodOrder),
+          ClientPrimaryButton(label: 'أرسل الطلب', onPressed: meetsMinOrder ? controller.placeFoodOrder : null),
         ],
       ),
     );

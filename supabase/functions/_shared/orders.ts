@@ -201,13 +201,20 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
 
   const { data: restaurant } = await admin
     .from('restaurants')
-    .select('id, status, is_open, delivery_fee, min_order')
+    .select('id, owner_id, status, is_open, delivery_fee, min_order')
     .eq('id', body.restaurant_id)
     .maybeSingle();
   if (!restaurant) throw new HttpError(404, 'المطعم غير موجود');
   if (restaurant.status !== 'verified' || !restaurant.is_open) throw new HttpError(400, 'المطعم غير متاح حاليًا لاستقبال الطلبات');
 
-  const dishIds = body.items.map((i) => i.dish_id);
+  // Merge duplicate dish_id entries before the lookup — `.in('id', dishIds)`
+  // naturally dedupes against restaurant_dishes' primary key, so comparing
+  // raw lengths against an un-deduped cart would wrongly reject a cart with
+  // the same dish listed twice as separate line items ("dish not found")
+  // instead of just summing the quantity.
+  const qtyByDishId = new Map<string, number>();
+  for (const item of body.items) qtyByDishId.set(item.dish_id, (qtyByDishId.get(item.dish_id) ?? 0) + item.qty);
+  const dishIds = [...qtyByDishId.keys()];
   const { data: dishes } = await admin
     .from('restaurant_dishes')
     .select('id, name, price, is_available, available_for_delivery')
@@ -215,11 +222,12 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
     .in('id', dishIds);
   if (!dishes || dishes.length !== dishIds.length) throw new HttpError(400, 'أحد الأطباق غير موجود في هذا المطعم');
 
-  const lineItems = body.items.map((item) => {
-    const dish = dishes.find((d) => d.id === item.dish_id)!;
+  const lineItems = dishIds.map((dishId) => {
+    const dish = dishes.find((d) => d.id === dishId)!;
+    const qty = qtyByDishId.get(dishId)!;
     if (!dish.is_available || !dish.available_for_delivery) throw new HttpError(400, `الطبق "${dish.name}" غير متاح حاليًا`);
-    if (!Number.isInteger(item.qty) || item.qty <= 0) throw new HttpError(400, 'الكمية غير صالحة');
-    return { dish_id: dish.id, name: dish.name, price: dish.price, qty: item.qty };
+    if (!Number.isInteger(qty) || qty <= 0) throw new HttpError(400, 'الكمية غير صالحة');
+    return { dish_id: dish.id, name: dish.name, price: dish.price, qty };
   });
 
   const subtotal = lineItems.reduce((sum, i) => sum + i.price * i.qty, 0);
@@ -246,11 +254,23 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
     .single();
   if (insertError || !order) throw new HttpError(500, insertError?.message ?? 'تعذّر إنشاء الطلب');
 
-  await broadcast(`restaurant:${body.restaurant_id}:incoming_orders`, 'incoming_food_order', {
-    order_id: order.id,
-    total,
-    items_count: lineItems.length,
-  });
+  // Same reasoning as createRide/createDelivery above this function: the
+  // Broadcast alone is lost the instant the restaurant's app is
+  // backgrounded (normal for kitchen staff) — createNotification's real
+  // `notifications` row + FCM push is what actually reaches them otherwise.
+  await Promise.all([
+    broadcast(`restaurant:${body.restaurant_id}:incoming_orders`, 'incoming_food_order', {
+      order_id: order.id,
+      total,
+      items_count: lineItems.length,
+    }),
+    createNotification(admin, {
+      userId: restaurant.owner_id,
+      title: 'طلب طعام جديد',
+      body: `طلب جديد بقيمة ${total.toFixed(0)} أوقية (${lineItems.length} صنف)`,
+      data: { type: 'incoming_food_order', order_id: order.id },
+    }),
+  ]);
 
   return { order_id: order.id, status: 'pending_restaurant', subtotal, delivery_fee: deliveryFee, total };
 }

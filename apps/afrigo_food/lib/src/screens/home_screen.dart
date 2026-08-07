@@ -5,7 +5,9 @@ import '../state/food_flow_controller.dart';
 import '../state/food_screen.dart';
 import '../widgets/food_bottom_nav.dart';
 
-/// Screens 65/66 — Home.
+/// Screens 65/66 — Home. The 2 stat cards below (orders/revenue today) are
+/// demo data, same as `reports_screen.dart` — no aggregation query/RPC
+/// exists yet for real per-day analytics.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
