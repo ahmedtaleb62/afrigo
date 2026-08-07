@@ -3,13 +3,8 @@ plugins {
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
-    // Push notifications (FCM): uncomment once google-services.json is
-    // dropped into this directory — this Android app (com.example.afrigo_livreur)
-    // still needs to be registered under the afrigo-f5601 Firebase project
-    // (Firebase Console → Add app → Android → same package name) and that
-    // file downloaded from there. Applying this plugin without the file
-    // present fails the build immediately, so it stays commented until then.
-    // id("com.google.gms.google-services")
+    // Push notifications (FCM) — google-services.json is now in place.
+    id("com.google.gms.google-services")
 }
 
 android {

@@ -26,6 +26,44 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:877223063837:android:dbc73e2eaf41982176f1f4",
+        "android_client_info": {
+          "package_name": "com.example.afrigo_food"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDVyFxus1Z1CP9fIt7ms3q3f-9_wbdR-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877223063837:android:68ec8ba06425894176f1f4",
+        "android_client_info": {
+          "package_name": "com.example.afrigo_livreur"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDVyFxus1Z1CP9fIt7ms3q3f-9_wbdR-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:877223063837:android:9618fa24b728c54876f1f4",
         "android_client_info": {
           "package_name": "com.example.afrigo_taxi"
