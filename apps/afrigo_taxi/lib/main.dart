@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+
 import 'package:afrigo_core/afrigo_core.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -11,13 +13,21 @@ import 'src/core/env.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   installFriendlyErrorWidget();
-  try {
-    await Firebase.initializeApp();
-  } catch (_) {
-    // Non-fatal — push notifications degrade to "not registered" and every
-    // Realtime-backed feature keeps working regardless (see
-    // `PushNotifications.register`'s doc comment). Keeps a missing/broken
-    // `google-services.json` from ever blocking the app from starting.
+  // iOS only: skip Firebase entirely until GoogleService-Info.plist exists
+  // (Android's google-services.json equivalent — not added yet). This
+  // isn't optional the way the try/catch below implies: on iOS, the native
+  // Firebase SDK calls `fatalError`/raises an uncatchable native exception
+  // when it can't find the plist, which crashes the whole process before
+  // Dart's try/catch ever runs — this exact crash shipped to TestFlight.
+  // Remove this guard once the real plist is added for this app.
+  if (!Platform.isIOS) {
+    try {
+      await Firebase.initializeApp();
+    } catch (_) {
+      // Non-fatal on Android — push notifications degrade to "not
+      // registered" and every Realtime-backed feature keeps working
+      // regardless (see `PushNotifications.register`'s doc comment).
+    }
   }
   await Supabase.initialize(url: Env.supabaseUrl, publishableKey: Env.supabaseAnonKey);
   // The new design has no app-bar chrome anywhere — every screen's own
