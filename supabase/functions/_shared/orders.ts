@@ -217,7 +217,7 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
   const dishIds = [...qtyByDishId.keys()];
   const { data: dishes } = await admin
     .from('restaurant_dishes')
-    .select('id, name, price, is_available, available_for_delivery')
+    .select('id, name, price, is_available, available_for_delivery, stock_quantity')
     .eq('restaurant_id', body.restaurant_id)
     .in('id', dishIds);
   if (!dishes || dishes.length !== dishIds.length) throw new HttpError(400, 'أحد الأطباق غير موجود في هذا المطعم');
@@ -227,6 +227,16 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
     const qty = qtyByDishId.get(dishId)!;
     if (!dish.is_available || !dish.available_for_delivery) throw new HttpError(400, `الطبق "${dish.name}" غير متاح حاليًا`);
     if (!Number.isInteger(qty) || qty <= 0) throw new HttpError(400, 'الكمية غير صالحة');
+    // Nothing checked this before — a client could order more of a dish
+    // than the restaurant's own `stock_quantity` (real case that shipped:
+    // 27 ordered against a stock of 20). `stock_quantity` isn't
+    // auto-decremented on order (the restaurant manages it manually via
+    // the +/- stepper in the app), so this is a per-order cap against
+    // whatever the restaurant has currently set, not a running inventory
+    // reservation system.
+    if (dish.stock_quantity > 0 && qty > dish.stock_quantity) {
+      throw new HttpError(400, `الكمية المطلوبة من "${dish.name}" تتجاوز المخزون المتاح (${dish.stock_quantity})`);
+    }
     return { dish_id: dish.id, name: dish.name, price: dish.price, qty };
   });
 

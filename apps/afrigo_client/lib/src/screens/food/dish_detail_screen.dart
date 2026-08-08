@@ -17,6 +17,7 @@ class DishDetailScreen extends ConsumerWidget {
     final name = dish?['name'] as String? ?? '';
     final description = dish?['description'] as String? ?? '';
     final price = (dish?['price'] as num?)?.toInt() ?? 0;
+    final stock = (dish?['stock_quantity'] as num?)?.toInt();
 
     return Container(
       color: Colors.white,
@@ -63,6 +64,10 @@ class DishDetailScreen extends ConsumerWidget {
                       ),
                     ],
                   ),
+                  if (stock != null && stock > 0 && stock <= 5) ...[
+                    const SizedBox(height: 6),
+                    Text('الكمية المتاحة: $stock فقط', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFFDC2626))),
+                  ],
                 ],
               ),
             ),

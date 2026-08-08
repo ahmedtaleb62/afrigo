@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../state/food_flow_controller.dart';
 import '../state/food_screen.dart';
@@ -40,6 +41,22 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
     }
   }
 
+  Future<void> _pickLogo() async {
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(leading: const Text('📷'), title: const Text('التقاط صورة', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
+            ListTile(leading: const Text('🖼️'), title: const Text('اختيار من المعرض', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+          ],
+        ),
+      ),
+    );
+    if (source != null && mounted) await ref.read(foodFlowControllerProvider.notifier).pickAndUploadLogo(source);
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(foodFlowControllerProvider.notifier);
@@ -71,7 +88,38 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
               children: [
                 Column(
                   children: [
-                    Container(width: 76, height: 76, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFFEF9C3), shape: BoxShape.circle), child: const Text('🍕', style: TextStyle(fontSize: 30))),
+                    InkWell(
+                      onTap: s.logoUploading ? null : _pickLogo,
+                      customBorder: const CircleBorder(),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Container(
+                            width: 76,
+                            height: 76,
+                            alignment: Alignment.center,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: const BoxDecoration(color: Color(0xFFFEF9C3), shape: BoxShape.circle),
+                            child: s.logoUploading
+                                ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2))
+                                : (s.restaurantLogoUrl != null
+                                    ? Image.network(s.restaurantLogoUrl!, fit: BoxFit.cover, width: 76, height: 76, errorBuilder: (context, error, stack) => const Text('🍕', style: TextStyle(fontSize: 30)))
+                                    : const Text('🍕', style: TextStyle(fontSize: 30))),
+                          ),
+                          Positioned(
+                            bottom: 0,
+                            left: 0,
+                            child: Container(
+                              width: 24,
+                              height: 24,
+                              alignment: Alignment.center,
+                              decoration: const BoxDecoration(color: Color(0xFF16A34A), shape: BoxShape.circle, border: Border.fromBorderSide(BorderSide(color: Colors.white, width: 2))),
+                              child: const Text('📷', style: TextStyle(fontSize: 11)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                     const SizedBox(height: 10),
                     Text(s.restaurantName ?? '...', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
                     Text(s.restaurantCuisineType ?? '', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),

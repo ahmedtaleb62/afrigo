@@ -5,6 +5,7 @@ import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -294,7 +295,9 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     );
     _subscribeFoodOrderTracking(id);
     if (stage == FoodStage.accepted || stage == FoodStage.onway) unawaited(_fetchFoodOrderContact(id));
-    goTo(stage == FoodStage.waiting ? ClientScreen.foodWaiting : ClientScreen.foodTracking);
+    // See the identical fix in `_resumeActiveOrder` just above — clears
+    // history so any back-navigation from here lands on Home, not splash.
+    goTo(stage == FoodStage.waiting ? ClientScreen.foodWaiting : ClientScreen.foodTracking, patch: (s) => s.copyWith(hist: const []));
   }
 
   /// The "نشطة" (active) tab on `OrderHistoryScreen` used to have no tap
@@ -343,15 +346,24 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       orderPrice: (row['price'] as num?)?.toDouble(),
     );
     _subscribeOrderTracking(table, id, orderType);
+    // `goTo` always pushes whatever screen we're coming from onto history
+    // — at cold start that's `splash`. Without clearing it here, tapping
+    // "إلغاء" on Searching calls `cancelSearch()` -> `back()`, which pops
+    // back to the splash screen instead of Home. Even when the cancel
+    // itself succeeds server-side, landing back on a screen whose only
+    // action is "متابعة" (which just calls `continueFromSplash()` again)
+    // reads as "stuck" to a real user — and if it ever raced/failed
+    // silently, tapping متابعة would resume right back into Searching,
+    // an actual loop with no visible way out. This was a real, reported bug.
     if (status == 'searching') {
-      goTo(ClientScreen.searching);
+      goTo(ClientScreen.searching, patch: (s) => s.copyWith(hist: const []));
       _armSearchTimeout();
     } else {
       final providerId = (row['driver_id'] ?? row['livreur_id']) as String?;
       state = state.copyWith(providerId: providerId);
       unawaited(_fetchProviderContact(orderType, id));
       _subscribeDriverLocation(orderType, id);
-      goTo(ClientScreen.providerFound);
+      goTo(ClientScreen.providerFound, patch: (s) => s.copyWith(hist: const []));
     }
   }
 
@@ -978,7 +990,22 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
 
   void openDish(Map<String, dynamic> dish) => goTo(ClientScreen.dishDetail, patch: (s) => s.copyWith(selectedDish: dish, dishQty: 1));
 
-  void setDishQty(int qty) => state = state.copyWith(dishQty: max(1, qty));
+  /// A client used to be able to freely order more of a dish than the
+  /// restaurant's own `stock_quantity` (e.g. 27 of something with 20 in
+  /// stock) — nothing anywhere, client or server, ever checked it. This is
+  /// the client-side cap (instant, no round trip); `request-food-order`'s
+  /// own check (see `_shared/orders.ts`) is the authoritative backstop.
+  int? _stockFor(String dishId) {
+    final dish = state.restaurantDishes.firstWhere((d) => d['id'] == dishId, orElse: () => const {});
+    return (dish['stock_quantity'] as num?)?.toInt();
+  }
+
+  void setDishQty(int qty) {
+    final dishId = state.selectedDish?['id'] as String?;
+    final stock = dishId == null ? null : _stockFor(dishId);
+    final capped = (stock != null && stock > 0) ? qty.clamp(1, stock) : max(1, qty);
+    state = state.copyWith(dishQty: capped);
+  }
 
   void addSelectedDishToCart() {
     final dish = state.selectedDish;
@@ -989,17 +1016,21 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
 
   void addToCart(String dishId, String name, int price, int qty) {
     final cart = [...state.cart];
+    final stock = _stockFor(dishId);
     final idx = cart.indexWhere((i) => i.dishId == dishId);
     if (idx >= 0) {
-      cart[idx] = cart[idx].copyWith(qty: cart[idx].qty + qty);
+      final merged = cart[idx].qty + qty;
+      cart[idx] = cart[idx].copyWith(qty: (stock != null && stock > 0) ? merged.clamp(1, stock) : merged);
     } else {
-      cart.add(CartItem(dishId: dishId, name: name, price: price, qty: qty));
+      cart.add(CartItem(dishId: dishId, name: name, price: price, qty: (stock != null && stock > 0) ? qty.clamp(1, stock) : qty));
     }
     state = state.copyWith(cart: cart);
   }
 
   void incCartQty(int i) {
     final cart = [...state.cart];
+    final stock = _stockFor(cart[i].dishId);
+    if (stock != null && stock > 0 && cart[i].qty >= stock) return;
     cart[i] = cart[i].copyWith(qty: cart[i].qty + 1);
     state = state.copyWith(cart: cart);
   }
@@ -1242,15 +1273,47 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     if (uid == null) return;
     state = state.copyWith(profileLoading: true);
     try {
-      final row = await _sb.from('profiles').select('full_name, email, phone').eq('id', uid).maybeSingle();
+      final row = await _sb.from('profiles').select('full_name, email, phone, avatar_url').eq('id', uid).maybeSingle();
       state = state.copyWith(
         profileFullName: row?['full_name'] as String?,
         profileEmail: (row?['email'] as String?) ?? _sb.auth.currentUser?.email,
         profilePhone: row?['phone'] as String?,
+        profileAvatarUrl: row?['avatar_url'] as String?,
         profileLoading: false,
       );
     } catch (_) {
       state = state.copyWith(profileLoading: false);
+    }
+  }
+
+  /// Uploadable any time from "حسابي" — an explicit product request that
+  /// every role (not just providers mid-verification) should be able to
+  /// set/change a profile photo whenever they want, not just during
+  /// onboarding. Public bucket (own profile photo is shown to counterparts —
+  /// e.g. a driver seeing who they're picking up).
+  Future<void> pickAndUploadAvatar(ImageSource source) async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+    state = state.copyWith(profileAvatarUploading: true);
+    try {
+      final bytes = await picked.readAsBytes();
+      final path = '$uid/profile.jpg';
+      await _sb.storage.from('public-images').uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      final url = _sb.storage.from('public-images').getPublicUrl(path);
+      // Cache-bust — `upsert: true` overwrites the same path, so without a
+      // changing query string a previously-cached image (in-app or in any
+      // CDN in front of storage) would keep showing the old photo.
+      final bustedUrl = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+      await _sb.from('profiles').update({'avatar_url': bustedUrl}).eq('id', uid);
+      state = state.copyWith(profileAvatarUrl: bustedUrl, profileAvatarUploading: false);
+    } catch (_) {
+      state = state.copyWith(profileAvatarUploading: false, requestError: 'تعذّر رفع الصورة، حاول مجددًا');
     }
   }
 

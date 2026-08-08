@@ -48,34 +48,82 @@ class _WorkingHoursScreenState extends ConsumerState<WorkingHoursScreen> {
               itemBuilder: (context, i) {
                 final h = hours[i];
                 final isOpen = h['open'] as bool;
+                final is24h = h['from'] == '00:00' && h['to'] == '23:59';
+
+                Future<void> pickTime(bool isFrom) async {
+                  final current = (isFrom ? h['from'] : h['to']) as String;
+                  final parts = current.split(':');
+                  final picked = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay(hour: int.tryParse(parts[0]) ?? 10, minute: int.tryParse(parts.length > 1 ? parts[1] : '0') ?? 0),
+                  );
+                  if (picked == null) return;
+                  final formatted = '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+                  controller.setWorkingHoursTime(i, from: isFrom ? formatted : null, to: isFrom ? null : formatted);
+                }
+
                 return Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(12)),
-                  child: Row(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      InkWell(
-                        onTap: () => controller.toggleWorkingHoursDay(i),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          width: 40,
-                          height: 22,
-                          padding: const EdgeInsets.all(2),
-                          alignment: isOpen ? Alignment.centerLeft : Alignment.centerRight,
-                          decoration: BoxDecoration(color: isOpen ? const Color(0xFF16A34A) : const Color(0xFFD6D3D1), borderRadius: BorderRadius.circular(11)),
-                          child: Container(width: 18, height: 18, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
-                        ),
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () => controller.toggleWorkingHoursDay(i),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              width: 40,
+                              height: 22,
+                              padding: const EdgeInsets.all(2),
+                              alignment: isOpen ? Alignment.centerLeft : Alignment.centerRight,
+                              decoration: BoxDecoration(color: isOpen ? const Color(0xFF16A34A) : const Color(0xFFD6D3D1), borderRadius: BorderRadius.circular(11)),
+                              child: Container(width: 18, height: 18, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle)),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          SizedBox(width: 60, child: Text(h['day'] as String, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13))),
+                          if (!isOpen)
+                            const Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text('مغلق', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFFA8A29E))),
+                              ),
+                            )
+                          else if (is24h)
+                            const Expanded(
+                              child: Align(
+                                alignment: Alignment.centerLeft,
+                                child: Text('مفتوح على مدار الساعة (مرن)', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF166534))),
+                              ),
+                            )
+                          else
+                            Expanded(
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.end,
+                                children: [
+                                  InkWell(onTap: () => pickTime(true), child: Text(h['from'] as String, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF16A34A)))),
+                                  const Padding(padding: EdgeInsets.symmetric(horizontal: 4), child: Text('—', style: TextStyle(color: Color(0xFF78716C)))),
+                                  InkWell(onTap: () => pickTime(false), child: Text(h['to'] as String, style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF16A34A)))),
+                                ],
+                              ),
+                            ),
+                        ],
                       ),
-                      const SizedBox(width: 10),
-                      SizedBox(width: 60, child: Text(h['day'] as String, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13))),
-                      Expanded(
-                        child: Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            isOpen ? '${h['from']} — ${h['to']}' : 'مغلق',
-                            style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w600, fontSize: 12, color: isOpen ? const Color(0xFF57534E) : const Color(0xFFA8A29E)),
+                      if (isOpen) ...[
+                        const SizedBox(height: 8),
+                        InkWell(
+                          onTap: () => controller.toggleWorkingHours24h(i),
+                          child: Row(
+                            children: [
+                              Icon(is24h ? Icons.check_box : Icons.check_box_outline_blank, size: 16, color: is24h ? const Color(0xFF16A34A) : const Color(0xFFA8A29E)),
+                              const SizedBox(width: 6),
+                              const Text('مفتوح على مدار الساعة (بدون وقت محدد)', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
+                            ],
                           ),
                         ),
-                      ),
+                      ],
                     ],
                   ),
                 );

@@ -8,16 +8,26 @@ import '../widgets/back_circle_button.dart';
 import '../widgets/food_bottom_nav.dart';
 import '../core/env.dart';
 
-/// Screen 70 — Wallet & commission.
-///
-/// Balance is real (`watchWallet`). Transaction list stays demo data — see
-/// `apps/afrigo_food/README.md`.
+/// Screen 70 — Wallet & commission. Balance and transaction history are
+/// both real (`watchWallet`/`loadWalletTransactions`).
 class WalletScreen extends ConsumerWidget {
   const WalletScreen({super.key});
 
   void _openWhatsapp(String reason) {
     final text = Uri.encodeComponent('مرحبًا، أريد $reason رصيد محفظتي في تطبيق Afrigo Food.');
     launchUrl(Uri.parse('https://wa.me/${Env.supportPhone.replaceAll('+', '')}?text=$text'), mode: LaunchMode.externalApplication);
+  }
+
+  static String _formatTxnDate(String? iso) {
+    final d = iso == null ? null : DateTime.tryParse(iso)?.toLocal();
+    if (d == null) return '';
+    final now = DateTime.now();
+    final time = '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
+    final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
+    if (isToday) return 'اليوم $time';
+    final yesterday = now.subtract(const Duration(days: 1));
+    if (d.year == yesterday.year && d.month == yesterday.month && d.day == yesterday.day) return 'أمس $time';
+    return '${d.year}/${d.month}/${d.day}';
   }
 
   @override
@@ -102,8 +112,19 @@ class WalletScreen extends ConsumerWidget {
               const SizedBox(height: 16),
               const Text('سجل الحركات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
               const SizedBox(height: 10),
-              txn('عمولة طلب #2051', 'اليوم 13:10', '-148 أوقية', positive: false),
-              txn('شحن رصيد', 'أمس', '+2,000 أوقية', positive: true),
+              if (s.walletTransactions.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: Text('لا توجد حركات بعد', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C)))),
+                )
+              else
+                for (final t in s.walletTransactions)
+                  txn(
+                    (t['note'] as String?)?.trim().isNotEmpty == true ? t['note'] as String : (t['type'] == 'topup' ? 'شحن رصيد' : 'خصم عمولة'),
+                    _formatTxnDate(t['created_at'] as String?),
+                    '${t['type'] == 'topup' ? '+' : '-'}${((t['amount'] as num?) ?? 0).toStringAsFixed(0)} أوقية',
+                    positive: t['type'] == 'topup',
+                  ),
             ],
           ),
         ),

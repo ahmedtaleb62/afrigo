@@ -6,8 +6,8 @@ import '../state/food_screen.dart';
 import '../widgets/food_bottom_nav.dart';
 
 /// Screens 65/66 — Home. The 2 stat cards below (orders/revenue today) are
-/// demo data, same as `reports_screen.dart` — no aggregation query/RPC
-/// exists yet for real per-day analytics.
+/// computed live from `watchOrders`' own stream (`FoodFlowState.ordersToday`/
+/// `revenueToday`) — no separate aggregation query needed.
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
@@ -102,7 +102,7 @@ class HomeScreen extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(12)),
-                  child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('طلبات اليوم', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))), Text('18', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18))]),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('طلبات اليوم', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))), Text('${s.ordersToday}', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18))]),
                 ),
               ),
               const SizedBox(width: 12),
@@ -110,7 +110,7 @@ class HomeScreen extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(12)),
-                  child: const Column(crossAxisAlignment: CrossAxisAlignment.start, children: [Text('إيرادات اليوم (أ.م)', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))), Text('32,400', style: TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18))]),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [const Text('إيرادات اليوم (أوقية)', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))), Text(s.revenueToday.toStringAsFixed(0), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18))]),
                 ),
               ),
             ],

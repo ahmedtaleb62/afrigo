@@ -12,10 +12,7 @@ class DishCategory {
       );
 }
 
-/// Mirrors a `restaurant_dishes` row. The original design shows an emoji per
-/// dish (`d.img`) — real dishes have no image upload UI in this design
-/// (only the restaurant cover/logo do), so `emoji` is a light client-side
-/// placeholder, not persisted separately from `imageUrl`.
+/// Mirrors a `restaurant_dishes` row.
 class Dish {
   const Dish({
     required this.id,
@@ -39,7 +36,7 @@ class Dish {
   final int stock;
   final String? imageUrl;
 
-  String get emoji => (imageUrl != null && imageUrl!.isNotEmpty) ? imageUrl! : '🍽️';
+  bool get hasImage => imageUrl != null && imageUrl!.isNotEmpty;
 
   factory Dish.fromRow(Map<String, dynamic> row) => Dish(
         id: row['id'] as String,

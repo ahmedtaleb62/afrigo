@@ -11,11 +11,20 @@ class FoodFlowState {
     this.fullName = '',
     this.doc1 = false,
     this.doc2 = false,
+    this.licenseUploading = false,
+    this.logoUploaded = false,
+    this.logoUploading = false,
+    this.pickedLat,
+    this.pickedLng,
+    this.pickedAddress,
     this.open = false,
     this.lowBalanceDemo = false,
     this.balance,
+    this.walletId,
+    this.walletTransactions = const [],
     this.restaurantId,
     this.restaurantName,
+    this.restaurantLogoUrl,
     this.restaurantCuisineType,
     this.restaurantStatus,
     this.restaurantRejectionReason,
@@ -49,13 +58,25 @@ class FoodFlowState {
   final String fullName;
   final bool doc1;
   final bool doc2;
+  final bool licenseUploading;
+  final bool logoUploaded;
+  final bool logoUploading;
+
+  /// Set live by the onboarding screen's `LocationPickerMap` — real
+  /// map-tap address selection, replacing the old free-text address field.
+  final double? pickedLat;
+  final double? pickedLng;
+  final String? pickedAddress;
 
   final bool open;
   final bool lowBalanceDemo;
   final double? balance;
+  final String? walletId;
+  final List<Map<String, dynamic>> walletTransactions;
 
   final String? restaurantId;
   final String? restaurantName;
+  final String? restaurantLogoUrl;
   final String? restaurantCuisineType;
   final String? restaurantStatus;
   final String? restaurantRejectionReason;
@@ -112,6 +133,22 @@ class FoodFlowState {
   double get resolvedBalance => balance ?? 0;
   bool get lowBalance => lowBalanceDemo || resolvedBalance <= 0;
 
+  static bool _isToday(Map<String, dynamic> o) {
+    final iso = o['created_at'] as String?;
+    final d = iso == null ? null : DateTime.tryParse(iso)?.toLocal();
+    if (d == null) return false;
+    final now = DateTime.now();
+    return d.year == now.year && d.month == now.month && d.day == now.day;
+  }
+
+  /// Home screen's 2 stat cards used to be hardcoded regardless of reality
+  /// — computed here from the same live `food_orders` rows `watchOrders`
+  /// already streams in for the orders screen, no separate query needed.
+  int get ordersToday => [...newOrders, ...prepOrders, ...readyOrders, ...doneOrders].where(_isToday).length;
+
+  double get revenueToday =>
+      doneOrders.where(_isToday).fold(0.0, (sum, o) => sum + ((o['total'] as num?)?.toDouble() ?? 0));
+
   String get deliveryMethodLabel => switch (deliveryMethod) {
         DeliveryMethod.afrigo => 'عبر مندوبي Afrigo',
         DeliveryMethod.own => 'توصيل خاص بالمطعم',
@@ -127,11 +164,20 @@ class FoodFlowState {
     String? fullName,
     bool? doc1,
     bool? doc2,
+    bool? licenseUploading,
+    bool? logoUploaded,
+    bool? logoUploading,
+    Object? pickedLat = _unset,
+    Object? pickedLng = _unset,
+    Object? pickedAddress = _unset,
     bool? open,
     bool? lowBalanceDemo,
     Object? balance = _unset,
+    Object? walletId = _unset,
+    List<Map<String, dynamic>>? walletTransactions,
     Object? restaurantId = _unset,
     Object? restaurantName = _unset,
+    Object? restaurantLogoUrl = _unset,
     Object? restaurantCuisineType = _unset,
     Object? restaurantStatus = _unset,
     Object? restaurantRejectionReason = _unset,
@@ -164,11 +210,20 @@ class FoodFlowState {
       fullName: fullName ?? this.fullName,
       doc1: doc1 ?? this.doc1,
       doc2: doc2 ?? this.doc2,
+      licenseUploading: licenseUploading ?? this.licenseUploading,
+      logoUploaded: logoUploaded ?? this.logoUploaded,
+      logoUploading: logoUploading ?? this.logoUploading,
+      pickedLat: identical(pickedLat, _unset) ? this.pickedLat : pickedLat as double?,
+      pickedLng: identical(pickedLng, _unset) ? this.pickedLng : pickedLng as double?,
+      pickedAddress: identical(pickedAddress, _unset) ? this.pickedAddress : pickedAddress as String?,
       open: open ?? this.open,
       lowBalanceDemo: lowBalanceDemo ?? this.lowBalanceDemo,
       balance: identical(balance, _unset) ? this.balance : balance as double?,
+      walletId: identical(walletId, _unset) ? this.walletId : walletId as String?,
+      walletTransactions: walletTransactions ?? this.walletTransactions,
       restaurantId: identical(restaurantId, _unset) ? this.restaurantId : restaurantId as String?,
       restaurantName: identical(restaurantName, _unset) ? this.restaurantName : restaurantName as String?,
+      restaurantLogoUrl: identical(restaurantLogoUrl, _unset) ? this.restaurantLogoUrl : restaurantLogoUrl as String?,
       restaurantCuisineType: identical(restaurantCuisineType, _unset) ? this.restaurantCuisineType : restaurantCuisineType as String?,
       restaurantStatus: identical(restaurantStatus, _unset) ? this.restaurantStatus : restaurantStatus as String?,
       restaurantRejectionReason: identical(restaurantRejectionReason, _unset)

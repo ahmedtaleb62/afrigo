@@ -1,16 +1,48 @@
+import 'dart:async';
+
 import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../state/food_flow_controller.dart';
 
-/// Screen 61 — Splash.
-class SplashScreen extends ConsumerWidget {
+/// Screen 61 — Splash. A returning, already-logged-in owner should never
+/// really see this screen — see the identical fix's doc comment in
+/// afrigo_client's splash_screen.dart. The button stays as a manual skip
+/// for anyone who taps before the auto-continue fires.
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  Timer? _autoContinue;
+
+  @override
+  void initState() {
+    super.initState();
+    final hasSession = Supabase.instance.client.auth.currentSession != null;
+    _autoContinue = Timer(hasSession ? Duration.zero : const Duration(milliseconds: 900), _continue);
+  }
+
+  @override
+  void dispose() {
+    _autoContinue?.cancel();
+    super.dispose();
+  }
+
+  void _continue() {
+    _autoContinue?.cancel();
+    if (!mounted) return;
+    ref.read(foodFlowControllerProvider.notifier).continueFromSplash();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
       child: Container(
@@ -39,7 +71,7 @@ class SplashScreen extends ConsumerWidget {
                 right: 0,
                 child: Center(
                   child: OutlinedButton(
-                    onPressed: () => ref.read(foodFlowControllerProvider.notifier).continueFromSplash(),
+                    onPressed: _continue,
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: Color(0x80FFFFFF), width: 1.5),
                       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),

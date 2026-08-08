@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/push_notifications.dart';
@@ -129,7 +131,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
     try {
       final row = await _sb
           .from('restaurants')
-          .select('id, name, cuisine_type, status, rejection_reason, is_open')
+          .select('id, name, logo_url, cuisine_type, status, rejection_reason, is_open')
           .eq('owner_id', uid)
           .order('created_at')
           .limit(1)
@@ -143,6 +145,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       state = state.copyWith(
         restaurantId: restaurantId,
         restaurantName: row['name'] as String?,
+        restaurantLogoUrl: row['logo_url'] as String?,
         restaurantCuisineType: row['cuisine_type'] as String?,
         restaurantStatus: status,
         restaurantRejectionReason: row['rejection_reason'] as String?,
@@ -255,26 +258,101 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   // ---------------------------------------------------------------------
   // Restaurant + bike verification — real insert + Realtime watch
   // ---------------------------------------------------------------------
-  void toggleDoc() => state = state.copyWith(doc1: !state.doc1);
   void toggleDoc2() => state = state.copyWith(doc2: !state.doc2);
 
-  Future<void> submitRestaurantDocs({
-    required String name,
-    required String address,
-    required String cuisineType,
-    required String openingHours,
-  }) async {
+  void setPickedLocation(double lat, double lng, String address) =>
+      state = state.copyWith(pickedLat: lat, pickedLng: lng, pickedAddress: address);
+
+  /// Uploads to the private `restaurant-docs` bucket (admin-only viewing,
+  /// same ownership model as `vehicle-docs` — see that bucket's migration
+  /// comment). Previously "رفع رخصة/وثيقة النشاط" was just a boolean toggle
+  /// with no real file behind it at all — `submitRestaurantDocs` always
+  /// wrote either `''` or the literal string `'pending-upload'`, so admin
+  /// review had no actual document to look at, ever.
+  Future<void> pickAndUploadLicense(ImageSource source) async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+    state = state.copyWith(licenseUploading: true, authError: null);
+    try {
+      final bytes = await picked.readAsBytes();
+      await _sb.storage.from('restaurant-docs').uploadBinary(
+            '$uid/license.jpg',
+            bytes,
+            fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      state = state.copyWith(licenseUploading: false, doc1: true);
+    } catch (_) {
+      state = state.copyWith(licenseUploading: false, authError: 'تعذّر رفع الصورة، حاول مجددًا');
+    }
+  }
+
+  /// Uploads to the public `public-images` bucket — the logo is
+  /// customer-facing (shown in the client app's restaurant list/detail
+  /// screens), unlike the license.
+  /// Also usable after onboarding — tapping the avatar on the Profile
+  /// screen re-uploads and immediately patches the live `restaurants` row
+  /// (during onboarding itself `restaurantId` doesn't exist yet, so that
+  /// part is skipped and `submitRestaurantDocs` writes `logo_url` once the
+  /// row is first created).
+  Future<void> pickAndUploadLogo(ImageSource source) async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+    if (picked == null) return;
+    state = state.copyWith(logoUploading: true, authError: null);
+    try {
+      final bytes = await picked.readAsBytes();
+      final path = '$uid/restaurant-logo.jpg';
+      await _sb.storage.from('public-images').uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      final restaurantId = state.restaurantId;
+      if (restaurantId != null) {
+        final url = _sb.storage.from('public-images').getPublicUrl(path);
+        final bustedUrl = '$url?t=${DateTime.now().millisecondsSinceEpoch}';
+        await _sb.from('restaurants').update({'logo_url': bustedUrl}).eq('id', restaurantId);
+        state = state.copyWith(restaurantLogoUrl: bustedUrl);
+      }
+      state = state.copyWith(logoUploading: false, logoUploaded: true);
+    } catch (_) {
+      state = state.copyWith(logoUploading: false, authError: 'تعذّر رفع الصورة، حاول مجددًا');
+    }
+  }
+
+  /// Onboarding simplified to exactly 4 fields per an explicit product
+  /// request: restaurant name, business license, a real map-tap address
+  /// (was free-text), and a logo — cuisine type and the opening-hours text
+  /// field are gone from here (the dedicated Working Hours screen is the
+  /// real source of truth for hours; cuisine type just wasn't asked for).
+  Future<void> submitRestaurantDocs({required String name}) async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) {
       goTo(FoodScreen.bikeDocs);
       return;
     }
+    if (name.trim().isEmpty) {
+      state = state.copyWith(authError: 'أدخل اسم المطعم');
+      return;
+    }
+    if (state.pickedLat == null || state.pickedLng == null) {
+      state = state.copyWith(authError: 'حدد عنوان المطعم على الخريطة');
+      return;
+    }
+    if (!state.doc1) {
+      state = state.copyWith(authError: 'ارفع رخصة النشاط');
+      return;
+    }
+    if (!state.logoUploaded) {
+      state = state.copyWith(authError: 'ارفع شعار المطعم');
+      return;
+    }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      // No real map picker in this design yet (the field is a free-text
-      // address); placeholder location until Maps SDK is wired in
-      // (Nouakchott city-center coordinates).
-      //
+      final logoUrl = _sb.storage.from('public-images').getPublicUrl('$uid/restaurant-logo.jpg');
       // upsert, not insert — a plain insert let re-submitting silently
       // create a second `restaurants` row for the same owner, which would
       // break any single-row lookup keyed on owner_id the same way it did
@@ -283,12 +361,11 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
           .from('restaurants')
           .upsert({
             'owner_id': uid,
-            'name': name,
-            'address': address,
-            'location': 'POINT(-15.9785 18.0858)',
-            'license_url': state.doc1 ? 'pending-upload' : '',
-            'cuisine_type': cuisineType,
-            'opening_hours': _parseOpeningHoursToStructured(openingHours),
+            'name': name.trim(),
+            'address': state.pickedAddress ?? '',
+            'location': 'POINT(${state.pickedLng} ${state.pickedLat})',
+            'license_url': '$uid/license.jpg',
+            'logo_url': logoUrl,
           }, onConflict: 'owner_id')
           .select()
           .single();
@@ -351,6 +428,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       state = state.copyWith(
         restaurantId: restaurantId,
         restaurantName: latest['name'] as String?,
+        restaurantLogoUrl: latest['logo_url'] as String?,
         restaurantCuisineType: latest['cuisine_type'] as String?,
         restaurantStatus: status,
         restaurantRejectionReason: latest['rejection_reason'] as String?,
@@ -377,8 +455,35 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
         return;
       }
       final balance = (rows.first['balance'] as num?)?.toDouble();
-      state = state.copyWith(balance: balance);
+      final walletId = rows.first['id'] as String?;
+      final isFirstLoad = state.walletId == null;
+      state = state.copyWith(balance: balance, walletId: walletId);
+      // Only need to (re)fetch the transaction list once we first learn the
+      // wallet id — the balance itself already updates live via this same
+      // stream on every subsequent emission.
+      if (isFirstLoad && walletId != null) unawaited(loadWalletTransactions());
     });
+  }
+
+  /// The wallet screen used to show 2 hardcoded transaction rows regardless
+  /// of what actually happened — a real top-up (e.g. from the admin panel)
+  /// never appeared anywhere, which reads exactly like "the balance I added
+  /// didn't show up" even though `wallets.balance` itself (shown just above
+  /// this list) was already updating correctly live.
+  Future<void> loadWalletTransactions() async {
+    final walletId = state.walletId;
+    if (walletId == null) return;
+    try {
+      final rows = await _sb
+          .from('wallet_transactions')
+          .select()
+          .eq('wallet_id', walletId)
+          .order('created_at', ascending: false)
+          .limit(30);
+      state = state.copyWith(walletTransactions: List<Map<String, dynamic>>.from(rows));
+    } catch (_) {
+      // Non-fatal — the wallet screen just won't show history this time.
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -427,9 +532,17 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
     }
   }
 
-  Future<void> addDish(String name, num price) async {
+  /// A photo is now required — `restaurant_dishes.image_url` already
+  /// existed in the schema, but nothing ever uploaded one, and the model's
+  /// own `emoji` getter (now removed) would have rendered the raw URL
+  /// string as if it were an emoji character had a value ever gotten in
+  /// there. Uploads to the public `public-images` bucket (customers browsing
+  /// the menu need to see this without auth) at a per-dish path, then
+  /// patches the just-inserted row with the resulting URL.
+  Future<void> addDish(String name, num price, Uint8List imageBytes) async {
     final restaurantId = state.restaurantId;
-    if (restaurantId == null || name.trim().isEmpty) return;
+    final uid = _sb.auth.currentUser?.id;
+    if (restaurantId == null || uid == null || name.trim().isEmpty) return;
     try {
       var categoryId = state.categories.isNotEmpty ? state.categories.first.id : null;
       if (categoryId == null) {
@@ -447,7 +560,18 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
           .insert({'restaurant_id': restaurantId, 'category_id': categoryId, 'name': name.trim(), 'price': price})
           .select()
           .single();
-      state = state.copyWith(dishes: [...state.dishes, Dish.fromRow(row)], addDishOpen: false);
+      final dishId = row['id'] as String;
+
+      final path = '$uid/dishes/$dishId.jpg';
+      await _sb.storage.from('public-images').uploadBinary(
+            path,
+            imageBytes,
+            fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      final imageUrl = _sb.storage.from('public-images').getPublicUrl(path);
+      await _sb.from('restaurant_dishes').update({'image_url': imageUrl}).eq('id', dishId);
+
+      state = state.copyWith(dishes: [...state.dishes, Dish.fromRow({...row, 'image_url': imageUrl})], addDishOpen: false);
     } catch (_) {
       // The add-dish panel used to have no try/catch at all — any failure
       // (network, RLS) threw unhandled, leaving "حفظ الطبق" appearing to do
@@ -559,24 +683,6 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   static const _dayKeys = ['sat', 'sun', 'mon', 'tue', 'wed', 'thu', 'fri'];
   static const _dayLabels = ['السبت', 'الأحد', 'الاثنين', 'الثلاثاء', 'الأربعاء', 'الخميس', 'الجمعة'];
 
-  /// Onboarding's free-text "ساعات العمل" field used to be written verbatim
-  /// as `{'raw': '10:00 - 23:00'}` — a shape `loadWorkingHours` below
-  /// doesn't understand at all (it only reads `{day: {open, from, to}}`),
-  /// so the very next time the owner opened the real Working Hours screen
-  /// and saved anything, this got silently overwritten with no trace the
-  /// onboarding text had ever mattered. Parses the same "HH:MM - HH:MM"
-  /// format the field's own hint text asks for and applies it to every
-  /// day; on anything unparseable, returns `{}` (the same "not set yet"
-  /// shape `loadWorkingHours` already falls back to sensible defaults for)
-  /// rather than writing something `loadWorkingHours` can't read either.
-  Map<String, dynamic> _parseOpeningHoursToStructured(String raw) {
-    final match = RegExp(r'(\d{1,2}:\d{2}).{0,5}(\d{1,2}:\d{2})').firstMatch(raw);
-    if (match == null) return {};
-    final from = match.group(1)!;
-    final to = match.group(2)!;
-    return {for (final day in _dayKeys) day: {'open': true, 'from': from, 'to': to}};
-  }
-
   Future<void> loadWorkingHours() async {
     final restaurantId = state.restaurantId;
     if (restaurantId == null) return;
@@ -600,6 +706,25 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   void toggleWorkingHoursDay(int index) {
     final hours = [...state.workingHours];
     hours[index] = {...hours[index], 'open': !(hours[index]['open'] as bool)};
+    state = state.copyWith(workingHours: hours);
+  }
+
+  /// "أي وقت" — an explicit request that hours be flexible rather than
+  /// forcing a fixed from/to range for every open day. `00:00`–`23:59` is
+  /// the sentinel this and `_DayRow` below both treat as "مرن/24 ساعة"; no
+  /// schema change needed, `restaurants.opening_hours` already stores
+  /// plain from/to strings per day.
+  void toggleWorkingHours24h(int index) {
+    final hours = [...state.workingHours];
+    final day = hours[index];
+    final is24h = day['from'] == '00:00' && day['to'] == '23:59';
+    hours[index] = {...day, 'from': is24h ? '10:00' : '00:00', 'to': is24h ? '23:00' : '23:59'};
+    state = state.copyWith(workingHours: hours);
+  }
+
+  void setWorkingHoursTime(int index, {String? from, String? to}) {
+    final hours = [...state.workingHours];
+    hours[index] = {...hours[index], if (from != null) 'from': from, if (to != null) 'to': to};
     state = state.copyWith(workingHours: hours);
   }
 

@@ -30,7 +30,11 @@ class NoProviderScreen extends ConsumerWidget {
             children: [
               Expanded(
                 child: TextButton(
-                  onPressed: controller.back,
+                  // Not `controller.back` — the screen we arrived from here
+                  // is `searching` (pushed by `_armSearchTimeout`'s own
+                  // `goTo`), so back() would land on the dead "جاري
+                  // البحث..." screen instead of actually leaving the flow.
+                  onPressed: () => controller.goTo(ClientScreen.home),
                   style: TextButton.styleFrom(backgroundColor: const Color(0xFFF5F5F4), padding: const EdgeInsets.all(14)),
                   child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF1C1917))),
                 ),

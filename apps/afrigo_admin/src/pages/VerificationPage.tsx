@@ -18,6 +18,8 @@ interface VerifRow {
   plate_number?: string
   address: string
   driving_license_url?: string | null
+  license_url?: string | null
+  logo_url?: string | null
 }
 
 const STATUS_MAP: Record<string, { label: string; status: 'pending' | 'verified' | 'rejected' }> = {
@@ -47,7 +49,7 @@ export function VerificationPage() {
       if (tab === 'restaurants') {
         const { data, error } = await supabase
           .from('restaurants')
-          .select('id, name, status, rejection_reason, created_at, address')
+          .select('id, name, status, rejection_reason, created_at, address, license_url, logo_url')
           .order('created_at', { ascending: false })
         if (error) throw error
         return data
@@ -88,15 +90,17 @@ export function VerificationPage() {
     }
   }
 
-  // Private bucket -- a signed URL is required to actually view the file;
-  // `vehicle_docs_select_own_or_admin`'s storage RLS policy is what lets
-  // this succeed for an admin's session (same anon-key client, RLS-scoped).
-  const licensePath = detail?.driving_license_url
+  // Both are private buckets -- a signed URL is required to actually view
+  // the file; `vehicle_docs_select_own_or_admin`/`restaurant_docs_select_own_or_admin`'s
+  // storage RLS policies are what let this succeed for an admin's session
+  // (same anon-key client, RLS-scoped).
+  const licenseBucket = tab === 'restaurants' ? 'restaurant-docs' : 'vehicle-docs'
+  const licensePath = tab === 'restaurants' ? detail?.license_url : detail?.driving_license_url
   const { data: licenseUrl } = useQuery({
-    queryKey: ['vehicle-license-url', licensePath],
+    queryKey: ['verification-license-url', licenseBucket, licensePath],
     queryFn: async () => {
       if (!licensePath) return null
-      const { data, error } = await supabase.storage.from('vehicle-docs').createSignedUrl(licensePath, 300)
+      const { data, error } = await supabase.storage.from(licenseBucket).createSignedUrl(licensePath, 300)
       if (error) throw error
       return data.signedUrl
     },
@@ -119,19 +123,23 @@ export function VerificationPage() {
               <Field label="رقم اللوحة" value={detail.plate_number ?? '—'} />
               <Field label="العنوان" value={detail.address} />
             </div>
-            <div className="mb-2 text-xs font-bold text-neutral-500 dark:text-neutral-400">المستندات المرفوعة</div>
+            {tab === 'restaurants' && detail.logo_url && (
+              <>
+                <div className="mb-2 text-xs font-bold text-neutral-500 dark:text-neutral-400">الشعار</div>
+                <img src={detail.logo_url} alt="شعار المطعم" className="mb-4 h-20 w-20 rounded-full object-cover" />
+              </>
+            )}
+            <div className="mb-2 text-xs font-bold text-neutral-500 dark:text-neutral-400">
+              {tab === 'restaurants' ? 'رخصة النشاط' : 'المستندات المرفوعة'}
+            </div>
             <div className="mb-5">
-              {tab === 'restaurants' ? (
+              {!licensePath ? (
                 <div className="flex h-30 items-center justify-center rounded-[10px] bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400">
-                  لا توجد مستندات لهذا النوع
-                </div>
-              ) : !licensePath ? (
-                <div className="flex h-30 items-center justify-center rounded-[10px] bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400">
-                  لم يرفع المتقدم صورة رخصة القيادة
+                  {tab === 'restaurants' ? 'لم يرفع المتقدم رخصة النشاط' : 'لم يرفع المتقدم صورة رخصة القيادة'}
                 </div>
               ) : licenseUrl ? (
                 <a href={licenseUrl} target="_blank" rel="noreferrer">
-                  <img src={licenseUrl} alt="رخصة القيادة" className="h-45 w-full rounded-[10px] object-cover" />
+                  <img src={licenseUrl} alt="رخصة" className="h-45 w-full rounded-[10px] object-cover" />
                 </a>
               ) : (
                 <div className="flex h-30 items-center justify-center rounded-[10px] bg-neutral-100 text-xs text-neutral-500 dark:bg-neutral-700 dark:text-neutral-400">

@@ -78,6 +78,8 @@ class ClientFlowState {
     this.profileFullName,
     this.profileEmail,
     this.profilePhone,
+    this.profileAvatarUrl,
+    this.profileAvatarUploading = false,
     this.profileLoading = false,
     this.notifications = const [],
     this.notificationsLoading = false,
@@ -251,6 +253,8 @@ class ClientFlowState {
   final String? profileFullName;
   final String? profileEmail;
   final String? profilePhone;
+  final String? profileAvatarUrl;
+  final bool profileAvatarUploading;
   final bool profileLoading;
 
   /// Real `notifications` rows for the logged-in user.
@@ -383,6 +387,8 @@ class ClientFlowState {
     Object? profileFullName = _unset,
     Object? profileEmail = _unset,
     Object? profilePhone = _unset,
+    Object? profileAvatarUrl = _unset,
+    bool? profileAvatarUploading,
     bool? profileLoading,
     List<Map<String, dynamic>>? notifications,
     bool? notificationsLoading,
@@ -481,6 +487,8 @@ class ClientFlowState {
       profileFullName: identical(profileFullName, _unset) ? this.profileFullName : profileFullName as String?,
       profileEmail: identical(profileEmail, _unset) ? this.profileEmail : profileEmail as String?,
       profilePhone: identical(profilePhone, _unset) ? this.profilePhone : profilePhone as String?,
+      profileAvatarUrl: identical(profileAvatarUrl, _unset) ? this.profileAvatarUrl : profileAvatarUrl as String?,
+      profileAvatarUploading: profileAvatarUploading ?? this.profileAvatarUploading,
       profileLoading: profileLoading ?? this.profileLoading,
       notifications: notifications ?? this.notifications,
       notificationsLoading: notificationsLoading ?? this.notificationsLoading,

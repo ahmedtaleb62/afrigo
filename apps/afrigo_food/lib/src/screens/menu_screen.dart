@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../state/dish.dart';
 import '../state/food_flow_controller.dart';
@@ -22,6 +25,8 @@ class MenuScreen extends ConsumerStatefulWidget {
 class _MenuScreenState extends ConsumerState<MenuScreen> {
   final _newDishName = TextEditingController();
   final _newDishPrice = TextEditingController();
+  Uint8List? _newDishImage;
+  bool _saving = false;
 
   @override
   void initState() {
@@ -34,6 +39,27 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     _newDishName.dispose();
     _newDishPrice.dispose();
     super.dispose();
+  }
+
+  Future<void> _pickDishImage() async {
+    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (picked == null) return;
+    final bytes = await picked.readAsBytes();
+    setState(() => _newDishImage = bytes);
+  }
+
+  Future<void> _saveDish() async {
+    final image = _newDishImage;
+    if (image == null) return;
+    setState(() => _saving = true);
+    await ref.read(foodFlowControllerProvider.notifier).addDish(_newDishName.text, num.tryParse(_newDishPrice.text) ?? 0, image);
+    if (!mounted) return;
+    setState(() {
+      _saving = false;
+      _newDishImage = null;
+    });
+    _newDishName.clear();
+    _newDishPrice.clear();
   }
 
   @override
@@ -69,6 +95,22 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
               padding: const EdgeInsets.fromLTRB(20, 0, 20, 14),
               child: Column(
                 children: [
+                  InkWell(
+                    onTap: _pickDishImage,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      width: double.infinity,
+                      height: 90,
+                      clipBehavior: Clip.antiAlias,
+                      decoration: BoxDecoration(color: const Color(0xFFF5F5F4), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE7E5E4))),
+                      child: _newDishImage != null
+                          ? Image.memory(_newDishImage!, fit: BoxFit.cover)
+                          : const Center(
+                              child: Text('📷 اضغط لإضافة صورة الطبق (مطلوبة)', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
+                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
                   FoodTextField(controller: _newDishName, hint: 'اسم الطبق الجديد', small: true),
                   const SizedBox(height: 8),
                   FoodTextField(controller: _newDishPrice, hint: 'السعر (أوقية)', small: true, keyboardType: TextInputType.number),
@@ -76,9 +118,11 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: () => controller.addDish(_newDishName.text, num.tryParse(_newDishPrice.text) ?? 0),
+                      onPressed: (_newDishImage == null || _saving) ? null : _saveDish,
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
-                      child: const Text('حفظ الطبق', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
+                      child: _saving
+                          ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                          : const Text('حفظ الطبق', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
                     ),
                   ),
                 ],
@@ -183,7 +227,16 @@ class _DishCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(width: 52, height: 52, alignment: Alignment.center, decoration: BoxDecoration(color: const Color(0xFFFEF9C3), borderRadius: BorderRadius.circular(10)), child: Text(dish.emoji, style: const TextStyle(fontSize: 22))),
+          Container(
+            width: 52,
+            height: 52,
+            alignment: Alignment.center,
+            clipBehavior: Clip.antiAlias,
+            decoration: BoxDecoration(color: const Color(0xFFFEF9C3), borderRadius: BorderRadius.circular(10)),
+            child: dish.hasImage
+                ? Image.network(dish.imageUrl!, fit: BoxFit.cover, errorBuilder: (context, error, stack) => const Text('🍽️', style: TextStyle(fontSize: 22)))
+                : const Text('🍽️', style: TextStyle(fontSize: 22)),
+          ),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
