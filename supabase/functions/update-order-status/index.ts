@@ -117,7 +117,7 @@ const FOOD_MESSAGES: Record<string, string> = {
 async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId: string, body: Body) {
   const { data: order } = await admin
     .from('food_orders')
-    .select('id, client_id, restaurant_id, livreur_id, status, delivery_location')
+    .select('id, client_id, restaurant_id, livreur_id, status, delivery_location, is_pickup')
     .eq('id', body.order_id)
     .maybeSingle();
   if (!order) throw new HttpError(404, 'الطلب غير موجود');
@@ -133,11 +133,14 @@ async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId:
   // is actually out for delivery. Previously the client had no cancel path
   // at all, at any stage, which also meant they could get permanently stuck
   // behind delete-account's active-order check if a restaurant never
-  // responded.
+  // responded. `ready -> delivered` is only reachable for pickup orders —
+  // there's no livreur leg to wait for, the restaurant hands it straight to
+  // the client and marks it done themselves.
   const ALLOWED: Record<string, string[]> = {
     pending_restaurant: ['cancelled'],
     accepted: ['preparing', 'cancelled'],
     preparing: ['ready', 'cancelled'],
+    ready: order.is_pickup ? ['delivered'] : [],
     out_for_delivery: ['delivered'],
   };
   const allowedNext = ALLOWED[order.status] ?? [];
@@ -149,7 +152,12 @@ async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId:
   if (['preparing', 'ready'].includes(body.next_status) && !isRestaurant) {
     throw new HttpError(403, 'فقط المطعم يمكنه تحديث هذه الحالة');
   }
-  if (body.next_status === 'delivered' && !isLivreur) throw new HttpError(403, 'فقط مندوب التوصيل يمكنه تحديث هذه الحالة');
+  if (body.next_status === 'delivered') {
+    // Pickup: the restaurant confirms hand-off. Delivery: only the livreur
+    // who's actually holding the order can.
+    const allowedToDeliver = order.is_pickup ? isRestaurant : isLivreur;
+    if (!allowedToDeliver) throw new HttpError(403, order.is_pickup ? 'فقط المطعم يمكنه تأكيد الاستلام' : 'فقط مندوب التوصيل يمكنه تحديث هذه الحالة');
+  }
 
   if (body.next_status === 'ready') return markFoodOrderReadyAndSearchLivreur(admin, order);
 
@@ -199,7 +207,7 @@ async function advanceFoodOrder(admin: ReturnType<typeof serviceClient>, userId:
 
 async function markFoodOrderReadyAndSearchLivreur(
   admin: ReturnType<typeof serviceClient>,
-  order: { id: string; client_id: string; delivery_location: unknown },
+  order: { id: string; client_id: string; delivery_location: unknown; is_pickup?: boolean },
 ) {
   const { data: readyOrder, error: readyError } = await admin
     .from('food_orders')
@@ -210,6 +218,19 @@ async function markFoodOrderReadyAndSearchLivreur(
     .maybeSingle();
   if (readyError) throw new HttpError(500, readyError.message);
   if (!readyOrder) throw new HttpError(409, 'تم تعديل حالة الطلب بالفعل، أعد المحاولة');
+
+  if (order.is_pickup) {
+    // No livreur leg at all — the order just sits at `ready` (now allowed
+    // to advance straight to `delivered` by the restaurant, see the
+    // `ALLOWED` map above) until the client shows up.
+    await createNotification(admin, {
+      userId: order.client_id,
+      title: 'طلبك جاهز',
+      body: 'طلبك جاهز، تفضّل باستلامه من المطعم.',
+      data: { order_id: order.id, status: 'ready' },
+    });
+    return { ok: true, order_id: order.id, status: 'ready' };
+  }
 
   const { data: couriers } = await admin.rpc('find_nearby_vehicles', {
     p_pickup: order.delivery_location,

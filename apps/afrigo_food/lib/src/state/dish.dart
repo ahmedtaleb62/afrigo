@@ -50,7 +50,7 @@ class Dish {
         imageUrl: row['image_url'] as String?,
       );
 
-  Dish copyWith({bool? isAvailable, bool? availableForDelivery, int? stock}) => Dish(
+  Dish copyWith({bool? isAvailable, bool? availableForDelivery, int? stock, String? imageUrl}) => Dish(
         id: id,
         categoryId: categoryId,
         name: name,
@@ -59,7 +59,7 @@ class Dish {
         isAvailable: isAvailable ?? this.isAvailable,
         availableForDelivery: availableForDelivery ?? this.availableForDelivery,
         stock: stock ?? this.stock,
-        imageUrl: imageUrl,
+        imageUrl: imageUrl ?? this.imageUrl,
       );
 
   (String label, int bg, int fg) get stockBadge => switch (stock) {

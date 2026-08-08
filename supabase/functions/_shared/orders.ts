@@ -187,14 +187,19 @@ export async function createDelivery(admin: Admin, clientId: string, body: Deliv
 export interface FoodOrderBody {
   restaurant_id: string;
   items: { dish_id: string; qty: number }[];
-  delivery_address: string;
-  delivery_location: LatLng;
+  delivery_address?: string;
+  delivery_location?: LatLng;
   client_note?: string;
   payment_method?: PaymentMethod;
+  /// The client collects the order themselves — skips the delivery fee and
+  /// the livreur-matching leg entirely (see `markFoodOrderReadyAndSearchLivreur`
+  /// in update-order-status/index.ts).
+  is_pickup?: boolean;
 }
 
 export async function createFoodOrder(admin: Admin, clientId: string, body: FoodOrderBody) {
-  if (!body.restaurant_id || !body.items?.length || !body.delivery_address || !body.delivery_location) {
+  const isPickup = body.is_pickup === true;
+  if (!body.restaurant_id || !body.items?.length || (!isPickup && (!body.delivery_address || !body.delivery_location))) {
     throw new HttpError(400, 'بيانات الطلب غير مكتملة');
   }
   await assertNotSuspended(admin, clientId);
@@ -225,7 +230,10 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
   const lineItems = dishIds.map((dishId) => {
     const dish = dishes.find((d) => d.id === dishId)!;
     const qty = qtyByDishId.get(dishId)!;
-    if (!dish.is_available || !dish.available_for_delivery) throw new HttpError(400, `الطبق "${dish.name}" غير متاح حاليًا`);
+    // `available_for_delivery` only makes sense for a delivery leg — a dish
+    // too fragile/hot to survive a moto ride can still be handed over fine
+    // in person, so a pickup order only needs `is_available`.
+    if (!dish.is_available || (!isPickup && !dish.available_for_delivery)) throw new HttpError(400, `الطبق "${dish.name}" غير متاح حاليًا`);
     if (!Number.isInteger(qty) || qty <= 0) throw new HttpError(400, 'الكمية غير صالحة');
     // Nothing checked this before — a client could order more of a dish
     // than the restaurant's own `stock_quantity` (real case that shipped:
@@ -242,7 +250,7 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
 
   const subtotal = lineItems.reduce((sum, i) => sum + i.price * i.qty, 0);
   if (subtotal < restaurant.min_order) throw new HttpError(400, `الحد الأدنى للطلب هو ${restaurant.min_order} أوقية`);
-  const deliveryFee = restaurant.delivery_fee;
+  const deliveryFee = isPickup ? 0 : restaurant.delivery_fee;
   const total = subtotal + deliveryFee;
 
   const { data: order, error: insertError } = await admin
@@ -254,8 +262,9 @@ export async function createFoodOrder(admin: Admin, clientId: string, body: Food
       subtotal,
       delivery_fee: deliveryFee,
       total,
-      delivery_address: body.delivery_address,
-      delivery_location: toWkt(body.delivery_location),
+      is_pickup: isPickup,
+      delivery_address: isPickup ? 'استلام من المطعم' : body.delivery_address,
+      delivery_location: isPickup ? null : toWkt(body.delivery_location!),
       client_note: body.client_note ?? null,
       status: 'pending_restaurant',
       payment_method: body.payment_method ?? 'cash',

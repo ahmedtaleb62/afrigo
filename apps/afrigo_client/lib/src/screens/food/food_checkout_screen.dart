@@ -20,6 +20,33 @@ class FoodCheckoutScreen extends ConsumerWidget {
     final meetsMinOrder = ref.watch(clientFlowControllerProvider.select((s) => s.cartMeetsMinOrder));
     final paymentMethod = ref.watch(clientFlowControllerProvider.select((s) => s.paymentMethod));
     final dropoffAddress = ref.watch(clientFlowControllerProvider.select((s) => s.dropoffAddress));
+    final isPickup = ref.watch(clientFlowControllerProvider.select((s) => s.foodIsPickup));
+
+    Widget pickupOption(String label, String emoji, bool value) {
+      final selected = isPickup == value;
+      return Expanded(
+        child: InkWell(
+          onTap: () => controller.setFoodIsPickup(value),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            decoration: BoxDecoration(
+              border: Border.all(color: selected ? const Color(0xFF16A34A) : const Color(0xFFE7E5E4), width: selected ? 2 : 1.5),
+              color: selected ? const Color(0xFFF0FDF4) : Colors.white,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(emoji, style: const TextStyle(fontSize: 18)),
+                const SizedBox(height: 4),
+                Text(label, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: selected ? const Color(0xFF166534) : const Color(0xFF1C1917))),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
 
     Widget row(String label, String trailing, {VoidCallback? onTap}) => InkWell(
           onTap: onTap,
@@ -52,9 +79,15 @@ class FoodCheckoutScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 20),
-          const Text('عنوان التسليم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          const Text('طريقة الاستلام', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
-          row(dropoffAddress ?? 'اختر عنوان التوصيل', 'تعديل', onTap: () => controller.goTo(ClientScreen.foodDeliveryAddress)),
+          Row(children: [pickupOption('توصيل', '🛵', false), const SizedBox(width: 10), pickupOption('استلام من المطعم', '🏪', true)]),
+          const SizedBox(height: 16),
+          if (!isPickup) ...[
+            const Text('عنوان التسليم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+            const SizedBox(height: 8),
+            row(dropoffAddress ?? 'اختر عنوان التوصيل', 'تعديل', onTap: () => controller.goTo(ClientScreen.foodDeliveryAddress)),
+          ],
           const Text('طريقة الدفع', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
           PaymentMethodField(value: paymentMethod, onChanged: controller.setPaymentMethod),

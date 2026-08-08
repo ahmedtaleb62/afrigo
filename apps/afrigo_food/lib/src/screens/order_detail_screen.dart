@@ -50,6 +50,7 @@ class OrderDetailScreen extends ConsumerWidget {
     final note = order['client_note'] as String?;
     final address = order['delivery_address'] as String?;
     final status = order['status'] as String? ?? '';
+    final isPickup = order['is_pickup'] == true;
 
     return Container(
       color: Colors.white,
@@ -64,7 +65,16 @@ class OrderDetailScreen extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 16),
-          if (address != null) Text('التوصيل إلى: $address', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            margin: const EdgeInsets.only(bottom: 6),
+            decoration: BoxDecoration(color: isPickup ? const Color(0xFFFEF9C3) : const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(999)),
+            child: Text(
+              isPickup ? '🏪 استلام من المطعم' : '🛵 توصيل',
+              style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: isPickup ? const Color(0xFF854D0E) : const Color(0xFF166534)),
+            ),
+          ),
+          if (!isPickup && address != null) Text('التوصيل إلى: $address', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 6),
           for (final item in items) line('${item['name']} ×${item['qty']}', '${((item['price'] as num) * (item['qty'] as num)).toStringAsFixed(0)} أوقية'),
           const SizedBox(height: 10),
@@ -124,7 +134,17 @@ class OrderDetailScreen extends ConsumerWidget {
                 child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626))),
               ),
             ),
-          ],
+          ] else if (status == 'ready' && isPickup)
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () async {
+                  if (await controller.markOrderPickedUp(id)) controller.back();
+                },
+                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(14)),
+                child: const Text('تم تسليم الطلب للزبون', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700)),
+              ),
+            ),
         ],
       ),
     );

@@ -113,6 +113,7 @@ class _OrderCard extends ConsumerWidget {
     final items = (order['items'] as List?)?.cast<Map<String, dynamic>>() ?? const [];
     final itemsSummary = items.map((i) => '${i['name']} ×${i['qty']}').join('، ');
     final status = order['status'] as String? ?? '';
+    final isPickup = order['is_pickup'] == true;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -132,7 +133,16 @@ class _OrderCard extends ConsumerWidget {
                   Text('$total أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
                 ],
               ),
-              const SizedBox(height: 6),
+              const SizedBox(height: 4),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                margin: const EdgeInsets.only(bottom: 6),
+                decoration: BoxDecoration(color: isPickup ? const Color(0xFFFEF9C3) : const Color(0xFFDCFCE7), borderRadius: BorderRadius.circular(999)),
+                child: Text(
+                  isPickup ? '🏪 استلام' : '🛵 توصيل',
+                  style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 10, color: isPickup ? const Color(0xFF854D0E) : const Color(0xFF166534)),
+                ),
+              ),
               Text(itemsSummary, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
               const SizedBox(height: 10),
               if (tab == OrderTab.newOrder)
@@ -167,9 +177,13 @@ class _OrderCard extends ConsumerWidget {
                 _ActionButton(label: 'بدء التحضير', onTap: () => controller.markOrderPreparing(id))
               else if (tab == OrderTab.prep && status == 'preparing')
                 _ActionButton(label: 'الطلب جاهز', onTap: () => controller.markOrderReady(id))
+              else if (tab == OrderTab.ready && status == 'ready' && isPickup)
+                _ActionButton(label: 'تم تسليم الطلب للزبون', onTap: () => controller.markOrderPickedUp(id))
               else
                 Text(
-                  tab == OrderTab.done ? 'تم التسليم' : (_readyStatusLabels[status] ?? status),
+                  tab == OrderTab.done
+                      ? 'تم التسليم'
+                      : (status == 'ready' && isPickup ? 'جاهز — بانتظار استلام الزبون' : (_readyStatusLabels[status] ?? status)),
                   style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF166534)),
                 ),
             ],

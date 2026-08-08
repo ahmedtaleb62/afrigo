@@ -46,6 +46,7 @@ class ClientFlowState {
     this.selectedDish,
     this.dishQty = 1,
     this.cart = const [],
+    this.foodIsPickup = false,
     this.foodStage = FoodStage.waiting,
     this.foodRatingRestaurant = 0,
     this.foodRatingDelivery = 0,
@@ -184,6 +185,11 @@ class ClientFlowState {
   final int dishQty;
   final List<CartItem> cart;
 
+  /// Pickup skips the delivery fee and the livreur leg entirely — the
+  /// client collects the order themselves. See `cartDeliveryFee`/
+  /// `cartGrandTotal` below and `request-food-order`'s `is_pickup` field.
+  final bool foodIsPickup;
+
   final FoodStage foodStage;
   final int foodRatingRestaurant;
   final int foodRatingDelivery;
@@ -307,7 +313,7 @@ class ClientFlowState {
 
   int get cartCount => cart.fold(0, (a, i) => a + i.qty);
   int get cartSubtotal => cart.fold(0, (a, i) => a + i.qty * i.price);
-  int get cartDeliveryFee => (selectedRestaurantDeliveryFee ?? 0).round();
+  int get cartDeliveryFee => foodIsPickup ? 0 : (selectedRestaurantDeliveryFee ?? 0).round();
   int get cartGrandTotal => cartSubtotal + cartDeliveryFee;
   bool get cartMeetsMinOrder => cartSubtotal >= (selectedRestaurantMinOrder ?? 0);
 
@@ -355,6 +361,7 @@ class ClientFlowState {
     Object? selectedDish = _unset,
     int? dishQty,
     List<CartItem>? cart,
+    bool? foodIsPickup,
     FoodStage? foodStage,
     int? foodRatingRestaurant,
     int? foodRatingDelivery,
@@ -454,6 +461,7 @@ class ClientFlowState {
       selectedDish: identical(selectedDish, _unset) ? this.selectedDish : selectedDish as Map<String, dynamic>?,
       dishQty: dishQty ?? this.dishQty,
       cart: cart ?? this.cart,
+      foodIsPickup: foodIsPickup ?? this.foodIsPickup,
       foodStage: foodStage ?? this.foodStage,
       foodRatingRestaurant: foodRatingRestaurant ?? this.foodRatingRestaurant,
       foodRatingDelivery: foodRatingDelivery ?? this.foodRatingDelivery,

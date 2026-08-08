@@ -26,6 +26,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   final _newDishName = TextEditingController();
   final _newDishPrice = TextEditingController();
   Uint8List? _newDishImage;
+  String? _selectedCategoryId;
   bool _saving = false;
 
   @override
@@ -42,17 +43,41 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
   }
 
   Future<void> _pickDishImage() async {
-    final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
-    if (picked == null) return;
-    final bytes = await picked.readAsBytes();
-    setState(() => _newDishImage = bytes);
+    try {
+      final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      setState(() => _newDishImage = bytes);
+    } catch (_) {
+      // Previously unguarded — any failure (permission denial, a picker
+      // platform exception) left the "اضغط لإضافة صورة" box looking
+      // untouched with zero feedback, which is exactly what "لا تعمل" (it
+      // doesn't work) looks like from the outside.
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر فتح معرض الصور، تأكد من صلاحية الوصول للصور')));
+    }
+  }
+
+  Future<void> _changeExistingDishImage(Dish dish) async {
+    try {
+      final picked = await ImagePicker().pickImage(source: ImageSource.gallery, imageQuality: 85);
+      if (picked == null) return;
+      final bytes = await picked.readAsBytes();
+      if (!mounted) return;
+      await ref.read(foodFlowControllerProvider.notifier).updateDishImage(dish, bytes);
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر فتح معرض الصور، تأكد من صلاحية الوصول للصور')));
+    }
   }
 
   Future<void> _saveDish() async {
     final image = _newDishImage;
-    if (image == null) return;
+    final categoryId = _selectedCategoryId;
+    if (image == null || categoryId == null) return;
     setState(() => _saving = true);
-    await ref.read(foodFlowControllerProvider.notifier).addDish(_newDishName.text, num.tryParse(_newDishPrice.text) ?? 0, image);
+    await ref.read(foodFlowControllerProvider.notifier).addDish(_newDishName.text, num.tryParse(_newDishPrice.text) ?? 0, image, categoryId);
     if (!mounted) return;
     setState(() {
       _saving = false;
@@ -62,10 +87,25 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
     _newDishPrice.clear();
   }
 
+  Future<void> _addCategoryThenSelect() async {
+    final controller = ref.read(foodFlowControllerProvider.notifier);
+    final before = ref.read(foodFlowControllerProvider).categories;
+    await _promptNewCategory(context, controller);
+    if (!mounted) return;
+    final after = ref.read(foodFlowControllerProvider).categories;
+    if (after.length > before.length) {
+      setState(() => _selectedCategoryId = after.last.id);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(foodFlowControllerProvider.notifier);
     final s = ref.watch(foodFlowControllerProvider);
+    _selectedCategoryId ??= s.categories.isNotEmpty ? s.categories.first.id : null;
+    if (_selectedCategoryId != null && s.categories.every((c) => c.id != _selectedCategoryId)) {
+      _selectedCategoryId = s.categories.isNotEmpty ? s.categories.first.id : null;
+    }
 
     return Container(
       color: const Color(0xFFF5F5F4),
@@ -111,6 +151,41 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                     ),
                   ),
                   const SizedBox(height: 8),
+                  // Was auto-assigned to whichever category happened to be
+                  // first (or a generic auto-created one) — no way to
+                  // actually choose where a new dish belongs.
+                  if (s.categories.isEmpty)
+                    SizedBox(
+                      width: double.infinity,
+                      child: OutlinedButton(
+                        onPressed: _addCategoryThenSelect,
+                        child: const Text('+ أضف تصنيفًا أولًا (مثال: مقبلات)', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12)),
+                      ),
+                    )
+                  else
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(10)),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedCategoryId,
+                          isExpanded: true,
+                          style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF1C1917)),
+                          items: [
+                            for (final c in s.categories) DropdownMenuItem(value: c.id, child: Text('التصنيف: ${c.name}')),
+                            const DropdownMenuItem(value: '__new__', child: Text('+ تصنيف جديد')),
+                          ],
+                          onChanged: (v) {
+                            if (v == '__new__') {
+                              _addCategoryThenSelect();
+                            } else {
+                              setState(() => _selectedCategoryId = v);
+                            }
+                          },
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 8),
                   FoodTextField(controller: _newDishName, hint: 'اسم الطبق الجديد', small: true),
                   const SizedBox(height: 8),
                   FoodTextField(controller: _newDishPrice, hint: 'السعر (أوقية)', small: true, keyboardType: TextInputType.number),
@@ -118,7 +193,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton(
-                      onPressed: (_newDishImage == null || _saving) ? null : _saveDish,
+                      onPressed: (_newDishImage == null || _selectedCategoryId == null || _saving) ? null : _saveDish,
                       style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
                       child: _saving
                           ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
@@ -136,7 +211,7 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text('🚚 التوصيل: ${s.deliveryMethodLabel}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
+                Text('🚚 رسوم التوصيل: ${s.deliveryFee} أوقية · ${s.prepTime}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
                 InkWell(
                   onTap: () => controller.goTo(FoodScreen.deliverySettings),
                   child: const Text('تعديل ›', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF166534))),
@@ -148,10 +223,20 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
             child: s.menuLoading
                 ? const Center(child: CircularProgressIndicator())
                 : s.categories.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Text('لا توجد أطباق بعد — اضغط + لإضافة أول طبق', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('لا توجد تصنيفات أو أطباق بعد', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF78716C))),
+                              const SizedBox(height: 10),
+                              TextButton(
+                                onPressed: () => _promptNewCategory(context, controller),
+                                child: const Text('+ إضافة تصنيف', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF16A34A))),
+                              ),
+                            ],
+                          ),
                         ),
                       )
                     : ListView(
@@ -170,7 +255,8 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                               ],
                             ),
                             const SizedBox(height: 8),
-                            for (final dish in s.dishes.where((d) => d.categoryId == category.id)) _DishCard(dish: dish, controller: controller),
+                            for (final dish in s.dishes.where((d) => d.categoryId == category.id))
+                              _DishCard(dish: dish, controller: controller, onChangeImage: () => _changeExistingDishImage(dish)),
                             const SizedBox(height: 14),
                           ],
                         ],
@@ -199,9 +285,10 @@ Future<void> _promptNewCategory(BuildContext context, FoodFlowController control
 }
 
 class _DishCard extends StatelessWidget {
-  const _DishCard({required this.dish, required this.controller});
+  const _DishCard({required this.dish, required this.controller, required this.onChangeImage});
   final Dish dish;
   final FoodFlowController controller;
+  final VoidCallback onChangeImage;
 
   @override
   Widget build(BuildContext context) {
@@ -227,15 +314,23 @@ class _DishCard extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 52,
-            height: 52,
-            alignment: Alignment.center,
-            clipBehavior: Clip.antiAlias,
-            decoration: BoxDecoration(color: const Color(0xFFFEF9C3), borderRadius: BorderRadius.circular(10)),
-            child: dish.hasImage
-                ? Image.network(dish.imageUrl!, fit: BoxFit.cover, errorBuilder: (context, error, stack) => const Text('🍽️', style: TextStyle(fontSize: 22)))
-                : const Text('🍽️', style: TextStyle(fontSize: 22)),
+          InkWell(
+            onTap: onChangeImage,
+            borderRadius: BorderRadius.circular(10),
+            child: Container(
+              width: 52,
+              height: 52,
+              alignment: Alignment.center,
+              clipBehavior: Clip.antiAlias,
+              decoration: BoxDecoration(color: const Color(0xFFFEF9C3), borderRadius: BorderRadius.circular(10)),
+              child: dish.hasImage
+                  ? Image.network(dish.imageUrl!, fit: BoxFit.cover, errorBuilder: (context, error, stack) => const Text('🍽️', style: TextStyle(fontSize: 22)))
+                  // Tappable even without a photo yet — dishes created
+                  // before photos were required had no way to ever get one
+                  // added; the small camera hint makes the thumbnail itself
+                  // discoverable as a tap target.
+                  : const Text('📷', style: TextStyle(fontSize: 20)),
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(

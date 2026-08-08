@@ -292,6 +292,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       foodOrderTotal: (row['total'] as num?)?.toDouble(),
       foodStage: stage,
       selectedRestaurantId: row['restaurant_id'] as String?,
+      foodIsPickup: row['is_pickup'] == true,
     );
     _subscribeFoodOrderTracking(id);
     if (stage == FoodStage.accepted || stage == FoodStage.onway) unawaited(_fetchFoodOrderContact(id));
@@ -648,6 +649,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   void setParcelNotes(String v) => state = state.copyWith(parcelNotes: v);
   void setPaymentMethod(String v) => state = state.copyWith(paymentMethod: v);
   void setOrderNote(String v) => state = state.copyWith(orderNote: v);
+  void setFoodIsPickup(bool v) => state = state.copyWith(foodIsPickup: v);
 
   /// Real pickup/dropoff once picked on a map or resolved via geocoding —
   /// falls back to the fixed placeholder pair for whichever half wasn't
@@ -957,6 +959,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         selectedRestaurantMinOrder: null,
         selectedRestaurantIsOpen: true,
         cart: const [],
+        foodIsPickup: false,
       ),
     );
     try {
@@ -1054,10 +1057,13 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       final res = await _sb.functions.invoke('request-food-order', body: {
         'restaurant_id': restaurantId,
         'items': [for (final item in state.cart) {'dish_id': item.dishId, 'qty': item.qty}],
-        'delivery_address': state.dropoffAddress ?? 'عنوان التوصيل الافتراضي',
-        'delivery_location': {
-          'lat': state.dropoffLat ?? state.currentLat ?? _placeholderDropoff['lat']!,
-          'lng': state.dropoffLng ?? state.currentLng ?? _placeholderDropoff['lng']!,
+        'is_pickup': state.foodIsPickup,
+        if (!state.foodIsPickup) ...{
+          'delivery_address': state.dropoffAddress ?? 'عنوان التوصيل الافتراضي',
+          'delivery_location': {
+            'lat': state.dropoffLat ?? state.currentLat ?? _placeholderDropoff['lat']!,
+            'lng': state.dropoffLng ?? state.currentLng ?? _placeholderDropoff['lng']!,
+          },
         },
         'payment_method': state.paymentMethod,
         if (state.orderNote.trim().isNotEmpty) 'client_note': state.orderNote.trim(),
@@ -1093,24 +1099,39 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       // indication the order had actually died.
       if (status == 'rejected_by_restaurant' || status == 'no_livreur_found' || status == 'cancelled') {
         _foodOrderSub?.cancel();
+        // Clearing history here (not just the order id) is the same fix as
+        // the ride-search trap above: without it, "اختيار مطعم آخر" pushes
+        // foodList on top of whatever screen this reactive navigation
+        // itself pushed (waiting/tracking), so a back-press — or, worse,
+        // this same terminal branch firing again for a *new* order started
+        // right after — bounces the client between foodList and this dead
+        // screen instead of ever really leaving it.
         state = state.copyWith(
+          foodOrderId: null,
           foodOrderFailureReason: switch (status) {
             'no_livreur_found' => 'تعذّر العثور على مندوب توصيل متاح حاليًا. لن يتم خصم أي مبلغ منك',
             'cancelled' => 'ألغى المطعم طلبك. لن يتم خصم أي مبلغ منك',
             _ => null,
           },
         );
-        goTo(ClientScreen.foodRejected);
+        goTo(ClientScreen.foodRejected, patch: (s) => s.copyWith(hist: const []));
         return;
       }
       final stage = _statusToFoodStage(status);
       if (stage == null) return;
 
       if (stage == FoodStage.delivered) {
-        if (state.screen == ClientScreen.foodTracking || state.screen == ClientScreen.foodWaiting) {
-          state = state.copyWith(foodStage: stage);
-          goTo(ClientScreen.foodRating);
-        }
+        // Previously gated on already being on tracking/waiting — a client
+        // who'd left for Home (see the new exit button on
+        // `FoodTrackingScreen`) while the order was `out_for_delivery`
+        // would have this fire and do *nothing* the moment it actually
+        // completed: `foodStage` never updated, no rating prompt, ever,
+        // until they happened to reopen tracking manually. Runs regardless
+        // of where they currently are now — arriving at your door is
+        // exactly the kind of event that should interrupt whatever else
+        // you're doing in the app.
+        state = state.copyWith(foodStage: stage);
+        goTo(ClientScreen.foodRating, patch: (s) => s.copyWith(hist: const []));
         return;
       }
 

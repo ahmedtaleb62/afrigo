@@ -4,6 +4,7 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
+import '../../widgets/back_circle_button.dart';
 import '../../widgets/real_map.dart';
 import '../../core/context_ext.dart';
 
@@ -19,6 +20,7 @@ class FoodTrackingScreen extends ConsumerWidget {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     final stage = s.foodStage;
+    final isPickup = s.foodIsPickup;
     final cancelable = const {FoodStage.waiting, FoodStage.accepted, FoodStage.preparing}.contains(stage);
     final lat = s.dropoffLat ?? s.pickupLat ?? s.currentLat ?? 18.0858;
     final lng = s.dropoffLng ?? s.pickupLng ?? s.currentLng ?? -15.9785;
@@ -41,14 +43,16 @@ class FoodTrackingScreen extends ConsumerWidget {
 
     // Status text only — the client watches the restaurant/livreur advance
     // these stages live via Realtime (`_subscribeFoodOrderTracking`), it
-    // never drives them itself.
-    const labels = {
+    // never drives them itself. A pickup order never reaches
+    // `searching_livreur`/`out_for_delivery` at all — `ready` is its last
+    // real stage, the restaurant then confirms hand-off directly.
+    final labels = {
       FoodStage.waiting: 'بانتظار قبول المطعم',
       FoodStage.accepted: 'المطعم يحضّر طلبك',
       FoodStage.preparing: 'المطعم يحضّر طلبك',
-      FoodStage.ready: 'جارٍ البحث عن مندوب توصيل',
+      FoodStage.ready: isPickup ? 'طلبك جاهز، تفضّل باستلامه من المطعم' : 'جارٍ البحث عن مندوب توصيل',
       FoodStage.onway: 'مندوب التوصيل في الطريق إليك',
-      FoodStage.delivered: 'تم التسليم',
+      FoodStage.delivered: isPickup ? 'تم الاستلام' : 'تم التسليم',
     };
 
     return Container(
@@ -60,7 +64,20 @@ class FoodTrackingScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('تتبّع الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                Row(
+                  children: [
+                    // Previously no way out of this screen at all short of
+                    // the order finishing — a client who just wanted to
+                    // check something else was trapped here. Leaving does
+                    // NOT cancel the order or its subscription; the client
+                    // can always get back in via "طلباتي" (order history's
+                    // active tab), and the delivered-transition above no
+                    // longer requires being on this screen to fire.
+                    BackCircleButton(onTap: () => controller.goTo(ClientScreen.home)),
+                    const SizedBox(width: 12),
+                    const Text('تتبّع الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
@@ -68,9 +85,11 @@ class FoodTrackingScreen extends ConsumerWidget {
                     bar(_active),
                     step('قيد التحضير', prepDone ? _active : _inactive, prepDone ? '✓' : '2'),
                     bar(prepDone ? _active : _inactive),
-                    step('جاهز', readyDone ? _active : _inactive, readyDone ? '✓' : '3'),
-                    bar(readyDone ? _active : _inactive),
-                    step('في الطريق', onWay ? _active : _inactive, onWay ? '🏍️' : '4'),
+                    step(isPickup ? 'جاهز للاستلام' : 'جاهز', readyDone ? _active : _inactive, readyDone ? '✓' : '3'),
+                    if (!isPickup) ...[
+                      bar(readyDone ? _active : _inactive),
+                      step('في الطريق', onWay ? _active : _inactive, onWay ? '🏍️' : '4'),
+                    ],
                   ],
                 ),
               ],

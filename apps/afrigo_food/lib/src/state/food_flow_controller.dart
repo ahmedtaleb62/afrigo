@@ -539,22 +539,15 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   /// there. Uploads to the public `public-images` bucket (customers browsing
   /// the menu need to see this without auth) at a per-dish path, then
   /// patches the just-inserted row with the resulting URL.
-  Future<void> addDish(String name, num price, Uint8List imageBytes) async {
+  /// [categoryId] is now chosen explicitly in the add-dish form — this used
+  /// to always silently file a new dish under whichever category happened
+  /// to be first (or auto-create a generic "الطبق الرئيسي" one), with no
+  /// way to pick where it actually belongs.
+  Future<void> addDish(String name, num price, Uint8List imageBytes, String categoryId) async {
     final restaurantId = state.restaurantId;
     final uid = _sb.auth.currentUser?.id;
     if (restaurantId == null || uid == null || name.trim().isEmpty) return;
     try {
-      var categoryId = state.categories.isNotEmpty ? state.categories.first.id : null;
-      if (categoryId == null) {
-        final newCat = await _sb
-            .from('restaurant_dish_categories')
-            .insert({'restaurant_id': restaurantId, 'name': 'الطبق الرئيسي', 'sort_order': 0})
-            .select()
-            .single();
-        categoryId = newCat['id'] as String;
-        state = state.copyWith(categories: [...state.categories, DishCategory.fromRow(newCat)]);
-      }
-
       final row = await _sb
           .from('restaurant_dishes')
           .insert({'restaurant_id': restaurantId, 'category_id': categoryId, 'name': name.trim(), 'price': price})
@@ -577,6 +570,30 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       // (network, RLS) threw unhandled, leaving "حفظ الطبق" appearing to do
       // nothing with zero feedback and the panel stuck open.
       state = state.copyWith(actionError: 'تعذّر إضافة الطبق، حاول مجددًا');
+    }
+  }
+
+  /// Dishes created before photos were required (or whose upload failed at
+  /// the time) had no way to ever get one added afterward — nothing in the
+  /// menu screen let you touch an existing dish's image at all.
+  Future<void> updateDishImage(Dish dish, Uint8List imageBytes) async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      final path = '$uid/dishes/${dish.id}.jpg';
+      await _sb.storage.from('public-images').uploadBinary(
+            path,
+            imageBytes,
+            fileOptions: const FileOptions(upsert: true, contentType: 'image/jpeg'),
+          );
+      // Cache-bust — `upsert: true` overwrites the same object key, which a
+      // plain public URL (no querystring) can leave a client/browser
+      // showing a stale cached image for even though the file changed.
+      final imageUrl = '${_sb.storage.from('public-images').getPublicUrl(path)}?t=${DateTime.now().millisecondsSinceEpoch}';
+      await _sb.from('restaurant_dishes').update({'image_url': imageUrl}).eq('id', dish.id);
+      _patchDish(dish.copyWith(imageUrl: imageUrl));
+    } catch (_) {
+      state = state.copyWith(actionError: 'تعذّر رفع صورة الطبق، حاول مجددًا');
     }
   }
 
@@ -647,12 +664,36 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   }
 
   // ---------------------------------------------------------------------
-  // Delivery settings — real update
+  // Delivery settings — real update. Simplified to just delivery_fee +
+  // prep_time_minutes per an explicit request — `delivery_method` was
+  // never actually read anywhere server-side (every delivery is matched
+  // through Afrigo's own livreur network regardless of this column, it's
+  // effectively dead), and `min_order` is a rarer, lower-value knob not
+  // worth the extra screen complexity right now; both stay at their DB
+  // defaults ('afrigo', 0) rather than being exposed here.
   // ---------------------------------------------------------------------
-  void setDeliveryMethod(DeliveryMethod m) => state = state.copyWith(deliveryMethod: m);
   void setDeliveryFee(String v) => state = state.copyWith(deliveryFee: v);
-  void setMinOrder(String v) => state = state.copyWith(minOrder: v);
   void setPrepTime(String v) => state = state.copyWith(prepTime: v);
+
+  /// Nothing ever populated `deliveryFee`/`prepTime` from the real
+  /// `restaurants` row before this — the screen always showed the
+  /// prototype's original hardcoded placeholders ('100', '20-30 د')
+  /// regardless of what was actually saved, and tapping "حفظ" without
+  /// touching anything would silently overwrite a real saved value with
+  /// that placeholder.
+  Future<void> loadDeliverySettings() async {
+    final restaurantId = state.restaurantId;
+    if (restaurantId == null) return;
+    try {
+      final row = await _sb.from('restaurants').select('delivery_fee, prep_time_minutes').eq('id', restaurantId).single();
+      state = state.copyWith(
+        deliveryFee: (row['delivery_fee'] as num?)?.toStringAsFixed(0) ?? '0',
+        prepTime: (row['prep_time_minutes'] as String?) ?? '',
+      );
+    } catch (_) {
+      // Non-fatal — the field just shows whatever was last in local state.
+    }
+  }
 
   Future<void> saveDeliverySettings() async {
     final restaurantId = state.restaurantId;
@@ -662,9 +703,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
     }
     try {
       await _sb.from('restaurants').update({
-        'delivery_method': state.deliveryMethod.name,
         'delivery_fee': num.tryParse(state.deliveryFee) ?? 0,
-        'min_order': num.tryParse(state.minOrder) ?? 0,
         'prep_time_minutes': state.prepTime,
       }).eq('id', restaurantId);
       back();
@@ -844,6 +883,23 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       await _sb.functions.invoke(
         'update-order-status',
         body: {'order_type': 'food_order', 'order_id': orderId, 'next_status': 'cancelled'},
+      );
+      return true;
+    } catch (e) {
+      state = state.copyWith(actionError: _functionErrorMessage(e));
+      return false;
+    }
+  }
+
+  /// Pickup orders have no livreur leg at all — `update-order-status` now
+  /// lets the restaurant confirm `ready -> delivered` directly for these
+  /// (see that function's `ALLOWED` map), since there's no one else who'd
+  /// ever do it otherwise.
+  Future<bool> markOrderPickedUp(String orderId) async {
+    try {
+      await _sb.functions.invoke(
+        'update-order-status',
+        body: {'order_type': 'food_order', 'order_id': orderId, 'next_status': 'delivered'},
       );
       return true;
     } catch (e) {
