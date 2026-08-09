@@ -1,10 +1,18 @@
 # Builds the Livreur (courier) app and uploads it to TestFlight. Signing is
 # handled by match, backed by a private git repo of encrypted certs/profiles
-# — same pattern as afrigo_taxi/afrigo_client's Fastfiles. Unlike those two,
-# this app's bundle ID (`com.afrigo.livreur`) has never been registered
-# before, so `produce` runs first to create the Developer Portal App ID +
-# App Store Connect app record (idempotent — it checks first and skips if
-# either already exists, so this stays safe to leave in on every future run).
+# — same pattern as afrigo_taxi/afrigo_client's Fastfiles.
+#
+# Unlike those two, this app's bundle ID (`com.afrigo.livreur`) had never
+# been registered before. `produce` (fastlane's app-creation action) was
+# tried here first to fully automate that, but its App Store Connect
+# app-creation path unconditionally demands an Apple ID `username` in this
+# fastlane version — true even with `skip_devcenter: true` and a valid API
+# key, so it can't be driven from CI with only the App Store Connect API key
+# secrets already configured. The App Store Connect app record ("Afrigo
+# Livreur", bundle ID `com.afrigo.livreur`) was created manually instead —
+# this lane only needs match (which DOES register the Developer Portal App
+# ID via the API key as part of creating the distribution profile) plus the
+# usual build/upload steps.
 default_platform(:ios)
 
 platform :ios do
@@ -18,25 +26,6 @@ platform :ios do
     )
 
     setup_ci if ENV["CI"]
-
-    # `produce` reads the API key from the shared lane context that
-    # `app_store_connect_api_key` above already populated — passing
-    # `api_key:` directly isn't a valid `produce` parameter and fails with
-    # "Could not find option 'api_key'". `skip_devcenter: true` because by
-    # default `produce` ALSO registers the bundle ID via the classic
-    # Developer Portal API, which (unlike App Store Connect) demands an
-    # Apple ID `username` even when an API key is set — `match` right below
-    # already registers the App ID as part of creating the distribution
-    # profile, so this step only needs to create the App Store Connect app
-    # record itself.
-    produce(
-      app_identifier: "com.afrigo.livreur",
-      app_name: "Afrigo Livreur",
-      language: "AR",
-      sku: "afrigo-livreur-ios",
-      team_id: ENV["APPLE_TEAM_ID"],
-      skip_devcenter: true,
-    )
 
     match(
       type: "appstore",
