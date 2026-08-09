@@ -14,7 +14,7 @@ class OnboardingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final step = ref.watch(clientFlowControllerProvider.select((s) => s.onboardStep));
-    final ob = ClientFlowController.onboardSteps[step];
+    final ob = ClientFlowController.onboardSteps(context.l10n)[step];
 
     Widget dot(int i) => AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -37,7 +37,7 @@ class OnboardingScreen extends ConsumerWidget {
             children: [
               TextButton(
                 onPressed: () => controller.goTo(ClientScreen.login),
-                child: const Text('تخطي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
+                child: Text(context.l10n.commonSkip, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
               ),
             ],
           ),
@@ -64,7 +64,7 @@ class OnboardingScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(bottom: 20),
             child: Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(3, dot)),
           ),
-          ClientPrimaryButton(label: step == 2 ? 'ابدأ الآن' : 'التالي', onPressed: controller.onboardNext),
+          ClientPrimaryButton(label: step == 2 ? context.l10n.commonStartNow : context.l10n.commonNext, onPressed: controller.onboardNext),
         ],
       ),
     );

@@ -28,6 +28,7 @@ class _TripRatingScreenState extends ConsumerState<TripRatingScreen> {
   Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
     final avatar = s.flowType == ClientFlowType.taxi ? '🧔' : '🏍️';
     final name = s.providerName ?? '...';
 
@@ -39,9 +40,9 @@ class _TripRatingScreenState extends ConsumerState<TripRatingScreen> {
         children: [
           Container(width: 64, height: 64, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle), child: Text(avatar, style: const TextStyle(fontSize: 26))),
           const SizedBox(height: 14),
-          Text('قيّم $name', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+          Text(l10n.clientRideRateProviderTitle(name), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
           const SizedBox(height: 4),
-          const Text('كيف كانت تجربتك؟', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientRideRateSubtitle, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -61,20 +62,20 @@ class _TripRatingScreenState extends ConsumerState<TripRatingScreen> {
             alignment: WrapAlignment.center,
             spacing: 8,
             runSpacing: 8,
-            children: const [
-              _Tag('نظيف 🧼'),
-              _Tag('مؤدب 🙏'),
-              _Tag('سريع ⚡'),
+            children: [
+              _Tag(l10n.clientRideTagClean),
+              _Tag(l10n.clientRideTagPolite),
+              _Tag(l10n.clientRideTagFast),
             ],
           ),
           const SizedBox(height: 24),
-          ClientTextField(hint: 'أضف تعليقًا (اختياري)', controller: _commentController),
+          ClientTextField(hint: l10n.clientRideCommentHint, controller: _commentController),
           const Spacer(),
-          ClientPrimaryButton(label: 'إرسال', onPressed: () => controller.finishRating(comment: _commentController.text)),
+          ClientPrimaryButton(label: l10n.clientRideSendBtn, onPressed: () => controller.finishRating(comment: _commentController.text)),
           const SizedBox(height: 10),
           TextButton(
             onPressed: controller.finishRating,
-            child: const Text('تخطي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
+            child: Text(l10n.commonSkip, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
           ),
         ],
       ),

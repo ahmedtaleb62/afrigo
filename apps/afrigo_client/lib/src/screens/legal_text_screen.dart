@@ -35,7 +35,7 @@ class LegalTextScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Text(
-                body.isNotEmpty ? body : 'لا يوجد محتوى بعد.',
+                body.isNotEmpty ? body : context.l10n.clientLegalNoContent,
                 style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, height: 1.9, color: Color(0xFF44403C)),
               ),
             ),

@@ -13,6 +13,7 @@ class FoodRatingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
 
     Widget stars(int value, ValueChanged<int> onRate) => Row(
           children: List.generate(5, (i) {
@@ -30,17 +31,17 @@ class FoodRatingScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Center(child: Text('قيّم تجربتك', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18))),
+          Center(child: Text(l10n.clientFoodRatingTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18))),
           const SizedBox(height: 20),
-          const Text('تقييم المطعم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
+          Text(l10n.clientFoodRateRestaurantLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
           const SizedBox(height: 8),
           stars(s.foodRatingRestaurant, controller.rateRestaurant),
           const SizedBox(height: 20),
-          const Text('تقييم عامل التوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
+          Text(l10n.clientFoodRateDeliveryLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
           const SizedBox(height: 8),
           stars(s.foodRatingDelivery, controller.rateDelivery),
           const Spacer(),
-          ClientPrimaryButton(label: 'إرسال التقييم', onPressed: controller.finishFoodRating),
+          ClientPrimaryButton(label: l10n.clientFoodSubmitRatingButton, onPressed: controller.finishFoodRating),
         ],
       ),
     );

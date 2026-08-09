@@ -18,6 +18,7 @@ class DishDetailScreen extends ConsumerWidget {
     final description = dish?['description'] as String? ?? '';
     final price = (dish?['price'] as num?)?.toInt() ?? 0;
     final stock = (dish?['stock_quantity'] as num?)?.toInt();
+    final l10n = context.l10n;
 
     return Container(
       color: Colors.white,
@@ -46,7 +47,7 @@ class DishDetailScreen extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text('الكمية', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
+                      Text(l10n.clientFoodQuantityLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
                       Row(
                         children: [
                           InkWell(
@@ -66,7 +67,7 @@ class DishDetailScreen extends ConsumerWidget {
                   ),
                   if (stock != null && stock > 0 && stock <= 5) ...[
                     const SizedBox(height: 6),
-                    Text('الكمية المتاحة: $stock فقط', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFFDC2626))),
+                    Text(l10n.clientFoodStockRemaining(stock), style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFFDC2626))),
                   ],
                 ],
               ),
@@ -79,7 +80,7 @@ class DishDetailScreen extends ConsumerWidget {
               child: ElevatedButton(
                 onPressed: dish == null ? null : controller.addSelectedDishToCart,
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                child: Text('أضف إلى السلة · ${qty * price} أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
+                child: Text(l10n.clientFoodAddToCartButton(qty * price), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
               ),
             ),
           ),

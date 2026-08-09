@@ -22,18 +22,19 @@ class _NotificationsListScreenState extends ConsumerState<NotificationsListScree
     Future.microtask(() => ref.read(clientFlowControllerProvider.notifier).loadNotifications());
   }
 
-  String _timeAgo(String? iso) {
+  String _timeAgo(AfrigoLocalizations l10n, String? iso) {
     if (iso == null) return '';
     final date = DateTime.tryParse(iso);
     if (date == null) return '';
     final diff = DateTime.now().difference(date);
-    if (diff.inMinutes < 60) return 'قبل ${diff.inMinutes} دقيقة';
-    if (diff.inHours < 24) return 'قبل ${diff.inHours} ساعة';
-    return 'قبل ${diff.inDays} يوم';
+    if (diff.inMinutes < 60) return l10n.clientNotifMinutesAgo(diff.inMinutes);
+    if (diff.inHours < 24) return l10n.clientNotifHoursAgo(diff.inHours);
+    return l10n.clientNotifDaysAgo(diff.inDays);
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
 
@@ -56,7 +57,7 @@ class _NotificationsListScreenState extends ConsumerState<NotificationsListScree
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(n['title'] as String? ?? '', style: TextStyle(fontFamily: 'Tajawal', fontWeight: isRead ? FontWeight.w600 : FontWeight.w800, fontSize: 13)),
-                    Text('${n['body'] ?? ''} · ${_timeAgo(n['created_at'] as String?)}', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+                    Text('${n['body'] ?? ''} · ${_timeAgo(l10n, n['created_at'] as String?)}', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
                   ],
                 ),
               ),
@@ -76,14 +77,14 @@ class _NotificationsListScreenState extends ConsumerState<NotificationsListScree
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('الإشعارات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientNotifTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
             ],
           ),
           const SizedBox(height: 16),
           if (s.notificationsLoading)
             const Expanded(child: Center(child: CircularProgressIndicator()))
           else if (s.notifications.isEmpty)
-            const Expanded(child: EmptyState(emoji: '🔔', title: 'لا توجد إشعارات بعد', message: 'ستظهر هنا آخر التحديثات على طلباتك'))
+            Expanded(child: EmptyState(emoji: '🔔', title: l10n.clientNotifEmptyTitle, message: l10n.clientNotifEmptyMessage))
           else
             Expanded(
               child: ListView.builder(

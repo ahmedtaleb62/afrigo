@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
 
 import '../state/client_flow_controller.dart';
 import '../state/client_screen.dart';
 import '../widgets/client_bottom_nav.dart';
-import '../widgets/real_map.dart';
+import '../widgets/promo_slider.dart';
 import '../core/context_ext.dart';
 import '../core/push_notifications.dart';
 
@@ -70,36 +69,51 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      Text(firstName.isEmpty ? 'مرحبًا' : firstName, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
+                      Text(firstName.isEmpty ? context.l10n.commonGreetingFallback : firstName, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
                     ],
                   ),
                 ),
-                InkWell(
-                  onTap: () => controller.goTo(ClientScreen.notificationsList),
-                  customBorder: const CircleBorder(),
-                  child: Container(
-                    width: 36,
-                    height: 36,
-                    alignment: Alignment.center,
-                    decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle),
-                    child: const Text('🔔', style: TextStyle(fontSize: 16)),
-                  ),
+                Row(
+                  children: [
+                    InkWell(
+                      onTap: () => controller.setSettingsLang(s.settingsLang == 'ar' ? 'fr' : 'ar'),
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                        decoration: BoxDecoration(color: const Color(0xFFF0FDF4), border: Border.all(color: const Color(0xFFDCFCE7)), borderRadius: BorderRadius.circular(20)),
+                        child: Text(
+                          s.settingsLang == 'ar' ? 'FR' : 'AR',
+                          style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF16A34A)),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    InkWell(
+                      onTap: () => controller.goTo(ClientScreen.notificationsList),
+                      customBorder: const CircleBorder(),
+                      child: Container(
+                        width: 36,
+                        height: 36,
+                        alignment: Alignment.center,
+                        decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle),
+                        child: const Text('🔔', style: TextStyle(fontSize: 16)),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
           Expanded(
-            child: LiveMapPreview(
-              interactive: true,
-              lat: s.currentLat ?? 18.0858,
-              lng: s.currentLng ?? -15.9785,
-              zoom: 15,
-              markers: s.currentLat == null
-                  ? const {}
-                  : {Marker(markerId: const MarkerId('me'), position: LatLng(s.currentLat!, s.currentLng!))},
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  const PromoSlider(),
+                  _ServiceGrid(controller: controller),
+                ],
+              ),
             ),
           ),
-          _ServiceGrid(controller: controller),
           const ClientBottomNav(current: ClientScreen.home),
         ],
       ),
@@ -113,8 +127,9 @@ class _ServiceGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
+    final l10n = context.l10n;
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -122,8 +137,8 @@ class _ServiceGrid extends StatelessWidget {
             icon: Icons.local_taxi_outlined,
             iconBg: const Color(0xFFF0FDF4),
             iconFg: const Color(0xFF16A34A),
-            title: 'تكسي',
-            subtitle: 'رحلة في ثوانٍ معدودة',
+            title: l10n.clientHomeTaxiTitle,
+            subtitle: l10n.clientHomeTaxiDesc,
             onTap: () => controller.goTo(
               ClientScreen.rideOrigin,
               patch: (s) => s.copyWith(
@@ -140,8 +155,8 @@ class _ServiceGrid extends StatelessWidget {
             icon: Icons.restaurant_outlined,
             iconBg: const Color(0xFFFEFCE8),
             iconFg: const Color(0xFFCA8A04),
-            title: 'طعام',
-            subtitle: 'أطباقك المفضلة تصلك بسرعة',
+            title: l10n.clientHomeFoodTitle,
+            subtitle: l10n.clientHomeFoodDesc,
             onTap: controller.goToFoodList,
           ),
           const SizedBox(height: 12),
@@ -149,8 +164,8 @@ class _ServiceGrid extends StatelessWidget {
             icon: Icons.inventory_2_outlined,
             iconBg: const Color(0xFFF5F5F4),
             iconFg: const Color(0xFF57534E),
-            title: 'توصيل',
-            subtitle: 'أرسل طردك بسرعة وأمان',
+            title: l10n.clientHomeDeliveryTitle,
+            subtitle: l10n.clientHomeDeliveryDesc,
             onTap: () => controller.goTo(
               ClientScreen.parcelPickup,
               patch: (s) => s.copyWith(
@@ -181,7 +196,7 @@ class _ServiceGrid extends StatelessWidget {
                       child: const Text('🎤', style: TextStyle(fontSize: 12)),
                     ),
                     const SizedBox(width: 10),
-                    const Text('اطلب بصوتك', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
+                    Text(l10n.clientVoiceOrderLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
                   ],
                 ),
               ),

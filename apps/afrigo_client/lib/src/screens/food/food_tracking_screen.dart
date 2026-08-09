@@ -29,6 +29,7 @@ class FoodTrackingScreen extends ConsumerWidget {
     final prepDone = const {FoodStage.preparing, FoodStage.ready, FoodStage.onway}.contains(stage);
     final readyDone = const {FoodStage.ready, FoodStage.onway}.contains(stage);
     final onWay = stage == FoodStage.onway;
+    final l10n = context.l10n;
 
     Widget step(String label, Color bg, String icon) => Expanded(
           child: Column(
@@ -48,12 +49,12 @@ class FoodTrackingScreen extends ConsumerWidget {
     // `searching_livreur`/`out_for_delivery` at all — `ready` is its last
     // real stage, the restaurant then confirms hand-off directly.
     final labels = {
-      FoodStage.waiting: 'بانتظار قبول المطعم',
-      FoodStage.accepted: 'المطعم يحضّر طلبك',
-      FoodStage.preparing: 'المطعم يحضّر طلبك',
-      FoodStage.ready: isPickup ? 'طلبك جاهز، تفضّل باستلامه من المطعم' : 'جارٍ البحث عن مندوب توصيل',
-      FoodStage.onway: 'مندوب التوصيل في الطريق إليك',
-      FoodStage.delivered: isPickup ? 'تم الاستلام' : 'تم التسليم',
+      FoodStage.waiting: l10n.clientFoodStatusWaiting,
+      FoodStage.accepted: l10n.clientFoodStatusPreparing,
+      FoodStage.preparing: l10n.clientFoodStatusPreparing,
+      FoodStage.ready: isPickup ? l10n.clientFoodStatusReadyPickup : l10n.clientFoodStatusSearchingCourier,
+      FoodStage.onway: l10n.clientFoodStatusCourierOnWay,
+      FoodStage.delivered: isPickup ? l10n.clientFoodStatusPickedUp : l10n.clientFoodStatusDelivered,
     };
 
     return Container(
@@ -76,20 +77,20 @@ class FoodTrackingScreen extends ConsumerWidget {
                     // longer requires being on this screen to fire.
                     BackCircleButton(onTap: () => controller.goTo(ClientScreen.home)),
                     const SizedBox(width: 12),
-                    const Text('تتبّع الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                    Text(l10n.clientFoodTrackingTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    step('تم القبول', _active, '✓'),
+                    step(l10n.clientFoodStepAccepted, _active, '✓'),
                     bar(_active),
-                    step('قيد التحضير', prepDone ? _active : _inactive, prepDone ? '✓' : '2'),
+                    step(l10n.clientFoodStepPreparing, prepDone ? _active : _inactive, prepDone ? '✓' : '2'),
                     bar(prepDone ? _active : _inactive),
-                    step(isPickup ? 'جاهز للاستلام' : 'جاهز', readyDone ? _active : _inactive, readyDone ? '✓' : '3'),
+                    step(isPickup ? l10n.clientFoodStepReadyPickup : l10n.clientFoodStepReady, readyDone ? _active : _inactive, readyDone ? '✓' : '3'),
                     if (!isPickup) ...[
                       bar(readyDone ? _active : _inactive),
-                      step('في الطريق', onWay ? _active : _inactive, onWay ? '🏍️' : '4'),
+                      step(l10n.clientFoodStepOnWay, onWay ? _active : _inactive, onWay ? '🏍️' : '4'),
                     ],
                   ],
                 ),
@@ -116,7 +117,7 @@ class FoodTrackingScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(15),
                   decoration: BoxDecoration(color: const Color(0xFF1C1917), borderRadius: BorderRadius.circular(14)),
                   child: Text(
-                    labels[stage] ?? 'متابعة',
+                    labels[stage] ?? l10n.clientFoodStatusFallback,
                     textAlign: TextAlign.center,
                     style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
                   ),
@@ -132,7 +133,7 @@ class FoodTrackingScreen extends ConsumerWidget {
                     child: TextButton(
                       onPressed: () => launchUrl(Uri(scheme: 'tel', path: s.providerPhone)),
                       style: TextButton.styleFrom(backgroundColor: const Color(0xFFF0FDF4), padding: const EdgeInsets.all(14)),
-                      child: Text('📞 اتصال بـ ${s.providerName ?? "المطعم"}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
+                      child: Text(l10n.clientFoodCallButtonLabel(s.providerName ?? l10n.clientFoodDefaultProviderName), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
                     ),
                   ),
                 ],
@@ -143,7 +144,7 @@ class FoodTrackingScreen extends ConsumerWidget {
                     child: TextButton(
                       onPressed: controller.cancelFoodOrder,
                       style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.all(14)),
-                      child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                      child: Text(l10n.clientFoodCancelOrderButton, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
                     ),
                   ),
                 ],

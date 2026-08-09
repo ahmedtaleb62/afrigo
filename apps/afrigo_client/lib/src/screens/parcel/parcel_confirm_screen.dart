@@ -38,6 +38,7 @@ class _ParcelConfirmScreenState extends ConsumerState<ParcelConfirmScreen> {
   Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
     final parcelType = s.parcelType;
     final paymentMethod = s.paymentMethod;
     final pickupLat = s.pickupLat ?? s.currentLat ?? 18.0858;
@@ -47,9 +48,9 @@ class _ParcelConfirmScreenState extends ConsumerState<ParcelConfirmScreen> {
 
     final loading = s.fareEstimateLoading || s.fareEstimatePrice == null;
     final distanceLabel = loading
-        ? '...جارٍ الحساب'
-        : '${s.fareEstimateDistanceKm!.toStringAsFixed(1)} كم · ${s.fareEstimateDurationMin!.round()} دقيقة تقريبًا';
-    final priceLabel = loading ? '...' : '${s.fareEstimatePrice!.round()} أوقية';
+        ? l10n.clientRideCalculatingLabel
+        : l10n.clientRideDistanceDurationLabel(s.fareEstimateDistanceKm!.toStringAsFixed(1), s.fareEstimateDurationMin!.round().toString());
+    final priceLabel = loading ? '...' : l10n.clientRidePriceValue(s.fareEstimatePrice!.round().toString());
 
     return Column(
       children: [
@@ -77,7 +78,7 @@ class _ParcelConfirmScreenState extends ConsumerState<ParcelConfirmScreen> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('طرد $parcelType', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                        Text(l10n.clientParcelTypeTitle(parcelType), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
                         Text(distanceLabel, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
                       ],
                     ),
@@ -85,7 +86,7 @@ class _ParcelConfirmScreenState extends ConsumerState<ParcelConfirmScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(priceLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18, color: Color(0xFF166534))),
-                        const Text('سعر تقديري', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
+                        Text(l10n.clientRideEstimatedPriceLabel, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
                       ],
                     ),
                   ],
@@ -93,7 +94,7 @@ class _ParcelConfirmScreenState extends ConsumerState<ParcelConfirmScreen> {
                 const SizedBox(height: 20),
                 PaymentMethodField(value: paymentMethod, onChanged: controller.setPaymentMethod),
                 const SizedBox(height: 8),
-                ClientPrimaryButton(label: 'اطلب الآن', onPressed: controller.startSearch),
+                ClientPrimaryButton(label: l10n.clientRideOrderNowBtn, onPressed: controller.startSearch),
               ],
             ),
         ),

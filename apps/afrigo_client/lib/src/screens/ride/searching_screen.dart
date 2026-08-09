@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
 import '../../widgets/spinning_ring.dart';
+import '../../core/context_ext.dart';
 
 /// Screen 15 — Searching for a taxi driver / delivery courier.
 class SearchingScreen extends ConsumerWidget {
@@ -14,6 +15,7 @@ class SearchingScreen extends ConsumerWidget {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final flowType = ref.watch(clientFlowControllerProvider.select((s) => s.flowType));
     final isTaxi = flowType == ClientFlowType.taxi;
+    final l10n = context.l10n;
 
     return Container(
       decoration: const BoxDecoration(
@@ -28,19 +30,19 @@ class SearchingScreen extends ConsumerWidget {
               const SpinningRing(),
               const SizedBox(height: 20),
               Text(
-                isTaxi ? 'جارٍ البحث عن سائق قريب...' : 'جارٍ البحث عن عامل توصيل...',
+                isTaxi ? l10n.clientRideSearchingDriverTitle : l10n.clientRideSearchingCourierTitle,
                 style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white),
               ),
               const SizedBox(height: 20),
               Text(
-                isTaxi ? 'قد يستغرق الأمر بضع ثوانٍ' : 'سنعلمك فور القبول',
+                isTaxi ? l10n.clientRideSearchingDriverDesc : l10n.clientRideSearchingCourierDesc,
                 style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFFBBF7D0)),
               ),
               const SizedBox(height: 12),
               TextButton(
                 onPressed: controller.cancelSearch,
                 style: TextButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.12), padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12)),
-                child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
+                child: Text(l10n.clientRideCancelBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
               ),
             ],
           ),

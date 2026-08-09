@@ -16,6 +16,7 @@ class ParcelDetailsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
 
     Widget typeChip(String label, String emoji, String value) {
       final selected = s.parcelType == value;
@@ -46,35 +47,37 @@ class ParcelDetailsScreen extends ConsumerWidget {
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('وصف الطرد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientParcelDetailsTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('نوع الطرد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientParcelTypeLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
           Row(
             children: [
-              typeChip('وثائق', '📄', 'وثائق'),
+              // NOTE: `value:` (3rd arg) stays the raw Arabic identifier
+              // stored as `s.parcelType` — only the display label is localized.
+              typeChip(l10n.clientParcelTypeDocuments, '📄', 'وثائق'),
               const SizedBox(width: 8),
-              typeChip('طعام', '🍱', 'طعام'),
+              typeChip(l10n.clientParcelTypeFood, '🍱', 'طعام'),
               const SizedBox(width: 8),
-              typeChip('أخرى', '📦', 'أخرى'),
+              typeChip(l10n.clientParcelTypeOther, '📦', 'أخرى'),
             ],
           ),
           const SizedBox(height: 18),
-          const Text('الحجم التقريبي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientParcelSizeLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
-          const Row(
+          Row(
             children: [
-              Expanded(child: _SizeChip('صغير', selected: true)),
-              SizedBox(width: 8),
-              Expanded(child: _SizeChip('متوسط')),
-              SizedBox(width: 8),
-              Expanded(child: _SizeChip('كبير')),
+              Expanded(child: _SizeChip(l10n.clientParcelSizeSmall, selected: true)),
+              const SizedBox(width: 8),
+              Expanded(child: _SizeChip(l10n.clientParcelSizeMedium)),
+              const SizedBox(width: 8),
+              Expanded(child: _SizeChip(l10n.clientParcelSizeLarge)),
             ],
           ),
           const SizedBox(height: 14),
-          ClientTextField(hint: 'ملاحظات إضافية', onChanged: controller.setParcelNotes),
+          ClientTextField(hint: l10n.clientParcelNotesHint, onChanged: controller.setParcelNotes),
           const SizedBox(height: 14),
           InkWell(
             onTap: controller.togglePhoto,
@@ -85,13 +88,13 @@ class ParcelDetailsScreen extends ConsumerWidget {
                 children: [
                   Text(s.parcelPhoto ? '✅' : '📷', style: const TextStyle(fontSize: 22)),
                   const SizedBox(height: 6),
-                  Text(s.parcelPhoto ? 'تم إرفاق صورة الطرد' : 'أضف صورة للطرد (اختياري)', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
+                  Text(s.parcelPhoto ? l10n.clientParcelPhotoAttached : l10n.clientParcelPhotoAddHint, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
                 ],
               ),
             ),
           ),
           const Spacer(),
-          ClientPrimaryButton(label: 'متابعة', onPressed: () => controller.goTo(ClientScreen.parcelConfirm)),
+          ClientPrimaryButton(label: l10n.commonContinue, onPressed: () => controller.goTo(ClientScreen.parcelConfirm)),
         ],
       ),
     );

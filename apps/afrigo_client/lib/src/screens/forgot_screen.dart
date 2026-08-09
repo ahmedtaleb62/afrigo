@@ -29,7 +29,7 @@ class ForgotScreen extends ConsumerWidget {
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('استعادة كلمة المرور', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 16, color: Color(0xFF1C1917))),
+              Text(context.l10n.clientForgotTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 16, color: Color(0xFF1C1917))),
             ],
           ),
           const SizedBox(height: 24),
@@ -53,14 +53,15 @@ class _StepRequestCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('أدخل رقم هاتفك وسنرسل رمز استعادة عبر رسالة نصية', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
+        Text(l10n.clientForgotStep0Desc, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
         const SizedBox(height: 14),
         ClientTextField(hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setFpPhone),
         const SizedBox(height: 20),
-        ClientPrimaryButton(label: 'إرسال الرمز', onPressed: controller.sendResetCode),
+        ClientPrimaryButton(label: l10n.clientSendCode, onPressed: controller.sendResetCode),
       ],
     );
   }
@@ -73,16 +74,17 @@ class _StepVerifyCode extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         const Text('✅', style: TextStyle(fontSize: 36)),
         const SizedBox(height: 14),
-        const Text('تم إرسال رمز إلى هاتفك', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1C1917))),
+        Text(l10n.clientCodeSentDesc, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 14, color: Color(0xFF1C1917))),
         const SizedBox(height: 14),
-        ClientTextField(hint: 'أدخل الرمز', textAlign: TextAlign.center, onChanged: controller.setFpCode),
+        ClientTextField(hint: l10n.clientEnterCodeHint, textAlign: TextAlign.center, onChanged: controller.setFpCode),
         const SizedBox(height: 20),
-        ClientPrimaryButton(label: 'تحقق', onPressed: controller.verifyResetCode),
+        ClientPrimaryButton(label: l10n.commonVerify, onPressed: controller.verifyResetCode),
       ],
     );
   }
@@ -95,14 +97,15 @@ class _StepNewPassword extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        ClientTextField(label: 'كلمة مرور جديدة', hint: '••••••••', obscureText: true, onChanged: controller.setFpNewPassword),
+        ClientTextField(label: l10n.clientNewPasswordLabel, hint: '••••••••', obscureText: true, onChanged: controller.setFpNewPassword),
         const SizedBox(height: 14),
-        const ClientTextField(label: 'تأكيد كلمة المرور', hint: '••••••••', obscureText: true),
+        ClientTextField(label: l10n.clientConfirmPasswordLabel, hint: '••••••••', obscureText: true),
         const SizedBox(height: 20),
-        ClientPrimaryButton(label: 'حفظ وتسجيل الدخول', onPressed: controller.resetPasswordDone),
+        ClientPrimaryButton(label: l10n.clientSaveAndLogin, onPressed: controller.resetPasswordDone),
       ],
     );
   }

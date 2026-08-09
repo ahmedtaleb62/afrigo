@@ -12,6 +12,7 @@ class VoiceFailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
 
     return Container(
@@ -22,18 +23,18 @@ class VoiceFailScreen extends ConsumerWidget {
         children: [
           const Text('🤔', style: TextStyle(fontSize: 52)),
           const SizedBox(height: 16),
-          const Text('لم نفهم طلبك جيدًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+          Text(l10n.clientVoiceFailTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 8),
-          const Text('حاول التحدث بوضوح أكبر أو انتقل للطلب اليدوي', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
+          Text(l10n.clientVoiceFailDesc, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
           const Spacer(),
-          ClientPrimaryButton(label: 'إعادة المحاولة', onPressed: () => controller.goTo(ClientScreen.voiceRecord, patch: (s) => s.copyWith(voiceStage: VoiceStage.idle))),
+          ClientPrimaryButton(label: l10n.commonRetry, onPressed: () => controller.goTo(ClientScreen.voiceRecord, patch: (s) => s.copyWith(voiceStage: VoiceStage.idle))),
           const SizedBox(height: 10),
           SizedBox(
             width: double.infinity,
             child: TextButton(
               onPressed: () => controller.goTo(ClientScreen.home),
               style: TextButton.styleFrom(backgroundColor: const Color(0xFFF5F5F4), padding: const EdgeInsets.all(16)),
-              child: const Text('تابع يدويًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1C1917))),
+              child: Text(l10n.clientVoiceFailManualContinue, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1C1917))),
             ),
           ),
         ],

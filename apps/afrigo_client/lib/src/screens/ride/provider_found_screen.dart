@@ -9,6 +9,7 @@ import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
 import '../../widgets/bottom_sheet_panel.dart';
 import '../../widgets/real_map.dart';
+import '../../core/context_ext.dart';
 
 /// Screen 17 — Provider found. A brief "matched!" confirmation before the
 /// client moves on to the real live-tracking screen — auto-advances after
@@ -51,8 +52,9 @@ class _ProviderFoundScreenState extends ConsumerState<ProviderFoundScreen> {
   Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
     final isTaxi = s.flowType == ClientFlowType.taxi;
-    final providerNoun = isTaxi ? 'سائق' : 'عامل توصيل';
+    final providerNoun = isTaxi ? l10n.clientRideDriverNoun : l10n.clientRideCourierNoun;
     final avatar = isTaxi ? '🧔' : '🏍️';
     final name = s.providerName ?? '...';
     final vehicle = s.providerVehicle;
@@ -72,7 +74,7 @@ class _ProviderFoundScreenState extends ConsumerState<ProviderFoundScreen> {
                   padding: const EdgeInsets.all(10),
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(10)),
-                  child: Text('تم العثور على $providerNoun', textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
+                  child: Text(l10n.clientRideProviderFoundBanner(providerNoun), textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
                 ),
                 Row(
                   children: [
@@ -104,7 +106,7 @@ class _ProviderFoundScreenState extends ConsumerState<ProviderFoundScreen> {
                           controller.goTo(ClientScreen.tracking);
                         },
                         style: TextButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.all(16)),
-                        child: const Text('متابعة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
+                        child: Text(l10n.commonContinue, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -114,7 +116,7 @@ class _ProviderFoundScreenState extends ConsumerState<ProviderFoundScreen> {
                         controller.cancelActiveOrder();
                       },
                       style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16)),
-                      child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFDC2626))),
+                      child: Text(l10n.clientRideCancelBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFDC2626))),
                     ),
                   ],
                 ),

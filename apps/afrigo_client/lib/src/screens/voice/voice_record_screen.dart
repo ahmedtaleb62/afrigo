@@ -17,6 +17,7 @@ class VoiceRecordScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final recording = ref.watch(clientFlowControllerProvider.select((s) => s.voiceStage == VoiceStage.recording));
 
@@ -31,7 +32,7 @@ class VoiceRecordScreen extends ConsumerWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(recording ? 'استمع... تحدّث الآن' : 'اضغط للتحدث', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white)),
+                Text(recording ? l10n.clientVoiceRecordListening : l10n.clientVoiceRecordTapToSpeak, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18, color: Colors.white)),
                 const SizedBox(height: 20),
                 InkWell(
                   onTap: controller.toggleRecording,
@@ -66,7 +67,7 @@ class VoiceRecordScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: 20),
                 Text(
-                  recording ? 'اضغط مجددًا لإيقاف التسجيل' : 'مثال: "اطلب لي تكسي إلى المطار"',
+                  recording ? l10n.clientVoiceRecordTapToStop : l10n.clientVoiceRecordExampleHint,
                   style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFFBBF7D0)),
                 ),
               ],

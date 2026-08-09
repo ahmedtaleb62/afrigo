@@ -13,6 +13,7 @@ class TripEndScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
 
     Widget row(String label, String value, {bool big = false}) => Padding(
           padding: const EdgeInsets.only(bottom: 10),
@@ -31,10 +32,10 @@ class TripEndScreen extends ConsumerWidget {
       child: Column(
         children: [
           Column(
-            children: const [
-              Text('✅', style: TextStyle(fontSize: 48)),
-              SizedBox(height: 10),
-              Text('تم الوصول بنجاح', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 19)),
+            children: [
+              const Text('✅', style: TextStyle(fontSize: 48)),
+              const SizedBox(height: 10),
+              Text(l10n.clientRideArrivedTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 19)),
             ],
           ),
           const SizedBox(height: 24),
@@ -44,14 +45,14 @@ class TripEndScreen extends ConsumerWidget {
             decoration: BoxDecoration(color: const Color(0xFFFAFAF9), borderRadius: BorderRadius.circular(14)),
             child: Column(
               children: [
-                row('المسافة', '${(s.orderDistanceKm ?? 0).toStringAsFixed(1)} كم'),
-                if (s.orderDurationMin != null) row('المدة', '${s.orderDurationMin!.toStringAsFixed(0)} دقيقة'),
-                row('السعر الإجمالي', '${(s.orderPrice ?? 0).toStringAsFixed(0)} أوقية', big: true),
+                row(l10n.clientRideDistanceLabel, l10n.clientRideDistanceKmValue((s.orderDistanceKm ?? 0).toStringAsFixed(1))),
+                if (s.orderDurationMin != null) row(l10n.clientRideDurationLabel, l10n.clientRideDurationMinValue(s.orderDurationMin!.toStringAsFixed(0))),
+                row(l10n.clientRideTotalPriceLabel, l10n.clientRidePriceValue((s.orderPrice ?? 0).toStringAsFixed(0)), big: true),
               ],
             ),
           ),
           const Spacer(),
-          ClientPrimaryButton(label: 'الدفع نقدًا - تم', onPressed: controller.payCashDone),
+          ClientPrimaryButton(label: l10n.clientRideCashPaidBtn, onPressed: controller.payCashDone),
         ],
       ),
     );

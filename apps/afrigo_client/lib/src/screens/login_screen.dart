@@ -16,25 +16,26 @@ class LoginScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
 
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(24, context.topGap(36), 24, 24),
       child: ListView(
         children: [
-          const Text('تسجيل الدخول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 26)),
+          Text(l10n.clientLoginTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 26)),
           const SizedBox(height: 6),
-          const Text('أدخل بياناتك للاستمرار في afrigo', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
+          Text(l10n.clientLoginSubtitle, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
           const SizedBox(height: 28),
           ClientTextField(
-            label: 'رقم الهاتف',
+            label: l10n.commonPhoneLabel,
             hint: '46 12 34 56',
             keyboardType: TextInputType.phone,
             onChanged: controller.setPhone,
           ),
           const SizedBox(height: 14),
           ClientTextField(
-            label: 'كلمة المرور',
+            label: l10n.commonPasswordLabel,
             hint: '••••••••',
             obscureText: !s.showPass,
             onChanged: controller.setPassword,
@@ -51,19 +52,19 @@ class LoginScreen extends ConsumerWidget {
             alignment: Alignment.centerLeft,
             child: TextButton(
               onPressed: controller.goToForgot,
-              child: const Text('نسيت كلمة المرور؟', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF166534))),
+              child: Text(l10n.clientForgotPassword, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF166534))),
             ),
           ),
           const SizedBox(height: 8),
-          ClientPrimaryButton(label: 'دخول', isLoading: s.isSubmitting, onPressed: controller.doLogin),
+          ClientPrimaryButton(label: l10n.commonLogin, isLoading: s.isSubmitting, onPressed: controller.doLogin),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('ليس لديك حساب؟ ', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
+              Text(l10n.clientNoAccountPrompt, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
               InkWell(
                 onTap: () => controller.goTo(ClientScreen.signup),
-                child: const Text('إنشاء حساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
+                child: Text(l10n.commonCreateAccount, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
               ),
             ],
           ),

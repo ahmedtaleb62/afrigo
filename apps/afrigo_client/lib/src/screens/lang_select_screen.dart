@@ -65,7 +65,7 @@ class LangSelectScreen extends ConsumerWidget {
             style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w700, fontSize: 16),
           ),
           const Spacer(),
-          ClientPrimaryButton(label: 'متابعة', onPressed: () => controller.goTo(ClientScreen.onboarding)),
+          ClientPrimaryButton(label: context.l10n.commonContinue, onPressed: () => controller.goTo(ClientScreen.onboarding)),
         ],
       ),
     );

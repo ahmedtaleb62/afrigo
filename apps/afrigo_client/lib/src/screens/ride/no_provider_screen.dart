@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
+import '../../core/context_ext.dart';
 
 /// Screen 16 — No provider found.
 class NoProviderScreen extends ConsumerWidget {
@@ -12,7 +13,8 @@ class NoProviderScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final flowType = ref.watch(clientFlowControllerProvider.select((s) => s.flowType));
-    final providerNoun = flowType == ClientFlowType.taxi ? 'سائق' : 'عامل توصيل';
+    final l10n = context.l10n;
+    final providerNoun = flowType == ClientFlowType.taxi ? l10n.clientRideDriverNoun : l10n.clientRideCourierNoun;
 
     return Container(
       color: Colors.white,
@@ -22,9 +24,9 @@ class NoProviderScreen extends ConsumerWidget {
         children: [
           const Text('😕', style: TextStyle(fontSize: 56)),
           const SizedBox(height: 16),
-          Text('لم نتمكن من إيجاد $providerNoun متاح', textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+          Text(l10n.clientRideNoProviderTitle(providerNoun), textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 8),
-          const Text('قد تكون الكثافة مرتفعة حاليًا في منطقتك، حاول مجددًا خلال لحظات', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
+          Text(l10n.clientRideNoProviderDesc, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
           const SizedBox(height: 24),
           Row(
             children: [
@@ -36,7 +38,7 @@ class NoProviderScreen extends ConsumerWidget {
                   // البحث..." screen instead of actually leaving the flow.
                   onPressed: () => controller.goTo(ClientScreen.home),
                   style: TextButton.styleFrom(backgroundColor: const Color(0xFFF5F5F4), padding: const EdgeInsets.all(14)),
-                  child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF1C1917))),
+                  child: Text(l10n.clientRideCancelBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF1C1917))),
                 ),
               ),
               const SizedBox(width: 10),
@@ -44,7 +46,7 @@ class NoProviderScreen extends ConsumerWidget {
                 child: TextButton(
                   onPressed: controller.startSearch,
                   style: TextButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.all(14)),
-                  child: const Text('إعادة المحاولة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
+                  child: Text(l10n.commonRetry, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
                 ),
               ),
             ],

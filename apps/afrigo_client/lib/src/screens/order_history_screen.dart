@@ -11,17 +11,6 @@ const _terminalStatuses = {
   'rejected_by_restaurant', 'no_driver_found', 'no_livreur_found',
 };
 
-const _statusLabels = {
-  'completed': 'مكتملة',
-  'delivered': 'مكتملة',
-  'cancelled': 'ملغاة',
-  'cancelled_by_client': 'ملغاة',
-  'cancelled_by_driver': 'ملغاة',
-  'rejected_by_restaurant': 'مرفوضة',
-  'no_driver_found': 'لم يُعثر على سائق',
-  'no_livreur_found': 'لم يُعثر على مندوب',
-};
-
 /// Screen 40 — Order history (active/past tabs). Real orders merged from
 /// `rides`/`food_orders`/`delivery_requests` — replaces the design's 2
 /// hardcoded demo cards.
@@ -41,6 +30,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     final isActive = s.orderTab == OrderTab.active;
@@ -48,6 +38,16 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
       final terminal = _terminalStatuses.contains(o['status']);
       return isActive ? !terminal : terminal;
     }).toList();
+    final statusLabels = {
+      'completed': l10n.clientOrdersStatusCompleted,
+      'delivered': l10n.clientOrdersStatusCompleted,
+      'cancelled': l10n.clientOrdersStatusCancelled,
+      'cancelled_by_client': l10n.clientOrdersStatusCancelled,
+      'cancelled_by_driver': l10n.clientOrdersStatusCancelled,
+      'rejected_by_restaurant': l10n.clientOrdersStatusRejected,
+      'no_driver_found': l10n.clientOrdersStatusNoDriver,
+      'no_livreur_found': l10n.clientOrdersStatusNoLivreur,
+    };
 
     Widget tabButton(String label, OrderTab value) {
       final selected = s.orderTab == value;
@@ -67,19 +67,19 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
     (String, String) emojiAndLabel(Map<String, dynamic> o) {
       switch (o['order_type']) {
         case 'ride':
-          return ('🚕', 'رحلة تكسي');
+          return ('🚕', l10n.clientOrdersTypeRide);
         case 'delivery_request':
-          return ('📦', 'توصيل طرد');
+          return ('📦', l10n.clientOrdersTypeDelivery);
         default:
           final restaurant = o['restaurants'];
           final name = restaurant is Map ? restaurant['name'] as String? : null;
-          return ('🍔', name != null ? 'طلب من $name' : 'طلب طعام');
+          return ('🍔', name != null ? l10n.clientOrdersTypeFoodFrom(name) : l10n.clientOrdersTypeFoodGeneric);
       }
     }
 
     String priceOf(Map<String, dynamic> o) {
       final v = (o['order_type'] == 'food_order' ? o['total'] : o['price']) as num?;
-      return v == null ? '—' : '${v.toStringAsFixed(0)} أوقية';
+      return v == null ? '—' : '${v.toStringAsFixed(0)} ${l10n.clientOrdersCurrencySuffix}';
     }
 
     String dateOf(Map<String, dynamic> o) {
@@ -91,7 +91,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
 
     Widget orderCard(Map<String, dynamic> o) {
       final (emoji, label) = emojiAndLabel(o);
-      final statusLabel = _statusLabels[o['status']] ?? 'جارية';
+      final statusLabel = statusLabels[o['status']] ?? l10n.clientOrdersStatusOngoing;
       final card = Container(
         padding: const EdgeInsets.all(14),
         margin: const EdgeInsets.only(bottom: 12),
@@ -139,7 +139,7 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                     controller.goTo(ClientScreen.rideConfirm, patch: (s) => s.copyWith(flowType: ClientFlowType.taxi));
                   }
                 },
-                child: const Text('إعادة الطلب ›', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
+                child: Text(l10n.clientOrdersReorder, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
               ),
             ],
           ],
@@ -164,9 +164,9 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('طلباتي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+                Text(l10n.clientOrdersTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
                 const SizedBox(height: 14),
-                Row(children: [tabButton('نشطة', OrderTab.active), const SizedBox(width: 8), tabButton('سابقة', OrderTab.past)]),
+                Row(children: [tabButton(l10n.clientOrdersTabActive, OrderTab.active), const SizedBox(width: 8), tabButton(l10n.clientOrdersTabPast, OrderTab.past)]),
               ],
             ),
           ),
@@ -182,9 +182,9 @@ class _OrderHistoryScreenState extends ConsumerState<OrderHistoryScreen> {
                             children: [
                               const Text('📭', style: TextStyle(fontSize: 44)),
                               const SizedBox(height: 12),
-                              Text(isActive ? 'لا توجد طلبات نشطة حاليًا' : 'لا توجد طلبات سابقة', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
+                              Text(isActive ? l10n.clientOrdersEmptyActiveTitle : l10n.clientOrdersEmptyPastTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
                               const SizedBox(height: 4),
-                              Text(isActive ? 'ستظهر طلباتك الجارية هنا' : 'ستظهر طلباتك المكتملة هنا', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+                              Text(isActive ? l10n.clientOrdersEmptyActiveMessage : l10n.clientOrdersEmptyPastMessage, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
                             ],
                           ),
                         ),

@@ -10,12 +10,6 @@ import '../../state/client_screen.dart';
 import '../../widgets/real_map.dart';
 import '../../core/context_ext.dart';
 
-const _statusLabels = {
-  'driver_arriving': 'السائق في طريقه إليك',
-  'in_progress': 'رحلتك جارية الآن',
-  'picked_up': 'استلم مندوبك طردك، في الطريق للتسليم',
-};
-
 /// Driver location broadcasts normally arrive every ~5s (see the taxi
 /// app's `_startBroadcastingLocation`) — anything quieter than this for a
 /// while means updates have actually stopped (backgrounded app,
@@ -54,10 +48,16 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
   @override
   Widget build(BuildContext context) {
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
     final isTaxi = s.flowType == ClientFlowType.taxi;
     final avatar = isTaxi ? '🧔' : '🏍️';
     final name = s.providerName ?? '...';
-    final status = _statusLabels[s.activeOrderStatus] ?? (isTaxi ? 'في الطريق إليك' : 'في الطريق لاستلام الطرد');
+    final statusLabels = {
+      'driver_arriving': l10n.clientRideStatusDriverArriving,
+      'in_progress': l10n.clientRideStatusInProgress,
+      'picked_up': l10n.clientRideStatusPickedUp,
+    };
+    final status = statusLabels[s.activeOrderStatus] ?? (isTaxi ? l10n.clientRideEnRouteToYouDesc : l10n.clientRideEnRoutePickupDesc);
     final pickupLat = s.pickupLat ?? s.currentLat ?? 18.0858;
     final pickupLng = s.pickupLng ?? s.currentLng ?? -15.9785;
     final hasLiveDriver = s.driverLat != null;
@@ -100,7 +100,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                         decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10)),
-                        child: const Text('🔗 مشاركة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12)),
+                        child: Text(l10n.clientRideShareBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12)),
                       ),
                     ],
                   ),
@@ -114,7 +114,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                       decoration: BoxDecoration(color: const Color(0xFFFEF2F2), borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFFEE2E2))),
                       child: Text(
-                        isTaxi ? 'تعذّر تحديث موقع السائق مؤخرًا — قد يكون في نفق أو منطقة ضعيفة التغطية' : 'تعذّر تحديث موقع المندوب مؤخرًا — قد يكون في منطقة ضعيفة التغطية',
+                        isTaxi ? l10n.clientRideStaleDriverWarning : l10n.clientRideStaleCourierWarning,
                         textAlign: TextAlign.center,
                         style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF991B1B)),
                       ),
@@ -166,7 +166,7 @@ class _TrackingScreenState extends ConsumerState<TrackingScreen> {
                     child: TextButton(
                       onPressed: ref.read(clientFlowControllerProvider.notifier).cancelActiveOrder,
                       style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.all(14)),
-                      child: const Text('إلغاء الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                      child: Text(l10n.clientRideCancelOrderBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
                     ),
                   ),
                 ],

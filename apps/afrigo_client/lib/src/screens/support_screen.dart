@@ -12,6 +12,7 @@ class SupportScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final supportPhone = ref.watch(clientFlowControllerProvider.select((s) => s.supportPhone));
 
@@ -32,22 +33,22 @@ class SupportScreen extends ConsumerWidget {
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('الدعم والمساعدة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientSupportTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('الأسئلة الشائعة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF78716C))),
+          Text(l10n.clientSupportFaqLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
-          faq('كيف ألغي رحلة؟'),
-          faq('ماذا لو نسيت غرضًا في السيارة؟'),
-          faq('كيف أستعيد كلمة المرور؟'),
+          faq(l10n.clientSupportFaq1),
+          faq(l10n.clientSupportFaq2),
+          faq(l10n.clientSupportFaq3),
           const SizedBox(height: 14),
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
               onPressed: () => launchUrl(Uri.parse('https://wa.me/${supportPhone.replaceAll('+', '')}'), mode: LaunchMode.externalApplication),
               style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF25D366), foregroundColor: Colors.white, padding: const EdgeInsets.all(15), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-              child: const Text('تواصل عبر واتساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
+              child: Text(l10n.clientSupportWhatsapp, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
             ),
           ),
           const SizedBox(height: 10),
@@ -56,7 +57,7 @@ class SupportScreen extends ConsumerWidget {
             child: TextButton(
               onPressed: () => launchUrl(Uri(scheme: 'tel', path: supportPhone)),
               style: TextButton.styleFrom(backgroundColor: const Color(0xFFF5F5F4), padding: const EdgeInsets.all(15)),
-              child: const Text('اتصل بنا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF1C1917))),
+              child: Text(l10n.clientSupportCallUs, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFF1C1917))),
             ),
           ),
         ],

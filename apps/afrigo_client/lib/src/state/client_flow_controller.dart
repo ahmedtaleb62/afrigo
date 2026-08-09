@@ -154,11 +154,11 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   // ---------------------------------------------------------------------
   // Splash / language / onboarding
   // ---------------------------------------------------------------------
-  static const onboardSteps = [
-    (emoji: '🚕', title: 'تنقّل بثقة', desc: 'اطلب تكسي في ثوانٍ مع سائقين موثّقين وأسعار واضحة قبل الانطلاق'),
-    (emoji: '🍔', title: 'اطلب طعامك المفضّل', desc: 'تصفّح مئات المطاعم القريبة واطلب وجبتك بضغطة زر'),
-    (emoji: '📦', title: 'أرسل واستلم طرودك', desc: 'توصيل سريع وآمن لأي طرد داخل مدينتك'),
-  ];
+  static List<({String emoji, String title, String desc})> onboardSteps(AfrigoLocalizations l10n) => [
+        (emoji: '🚕', title: l10n.clientOnboard1Title, desc: l10n.clientOnboard1Desc),
+        (emoji: '🍔', title: l10n.clientOnboard2Title, desc: l10n.clientOnboard2Desc),
+        (emoji: '📦', title: l10n.clientOnboard3Title, desc: l10n.clientOnboard3Desc),
+      ];
 
   void pickLang(String lang) => state = state.copyWith(langPick: lang);
 

@@ -17,6 +17,7 @@ class RideDestinationScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
+    final l10n = context.l10n;
 
     Future<void> search(String query) async {
       final ok = await controller.searchDestination(query);
@@ -24,7 +25,7 @@ class RideDestinationScreen extends ConsumerWidget {
       if (ok) {
         controller.goTo(ClientScreen.rideConfirm);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تعذّر العثور على هذا العنوان، جرّب صياغة أخرى')));
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(l10n.clientRideAddressNotFound)));
       }
     }
 
@@ -61,45 +62,45 @@ class RideDestinationScreen extends ConsumerWidget {
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('إلى أين تريد الذهاب؟', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientRideDestTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
             ],
           ),
           const SizedBox(height: 20),
-          ClientTextField(hint: 'ابحث عن وجهة...', borderColor: const Color(0xFF16A34A), onChanged: controller.setRideDest, onSubmitted: search),
+          ClientTextField(hint: l10n.clientRideDestSearchHint, borderColor: const Color(0xFF16A34A), onChanged: controller.setRideDest, onSubmitted: search),
           const SizedBox(height: 20),
-          const Text('أماكن محفوظة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientRideSavedPlaces, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
           place(
             emoji: '🏠',
             bg: const Color(0xFFF0FDF4),
-            title: 'المنزل',
-            subtitle: 'تفرغ زينة، نواكشوط',
+            title: l10n.clientRideHomeLabel,
+            subtitle: l10n.clientRideHomeAddress,
             onTap: () {
-              controller.setDropoffLocation(18.1004, -15.9711, 'المنزل — تفرغ زينة');
+              controller.setDropoffLocation(18.1004, -15.9711, l10n.clientRideHomeDropoffLabel);
               controller.goTo(ClientScreen.rideConfirm);
             },
           ),
           place(
             emoji: '💼',
             bg: const Color(0xFFFEFCE8),
-            title: 'العمل',
-            subtitle: 'لكصر، نواكشوط',
+            title: l10n.clientRideWorkLabel,
+            subtitle: l10n.clientRideWorkAddress,
             onTap: () {
-              controller.setDropoffLocation(18.0731, -15.9582, 'العمل — لكصر');
+              controller.setDropoffLocation(18.0731, -15.9582, l10n.clientRideWorkDropoffLabel);
               controller.goTo(ClientScreen.rideConfirm);
             },
           ),
           const SizedBox(height: 14),
-          const Text('آخر الوجهات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientRideRecentPlaces, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 10),
           place(
             emoji: '🕓',
             bg: const Color(0xFFF5F5F4),
-            title: 'مطار نواكشوط أم التونسي الدولي',
-            subtitle: 'نواكشوط',
+            title: l10n.clientRideAirportName,
+            subtitle: l10n.clientRideAirportCity,
             divider: false,
             onTap: () {
-              controller.setDropoffLocation(18.3181, -15.9151, 'مطار نواكشوط أم التونسي الدولي');
+              controller.setDropoffLocation(18.3181, -15.9151, l10n.clientRideAirportName);
               controller.goTo(ClientScreen.rideConfirm);
             },
           ),

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
 import '../../widgets/client_primary_button.dart';
+import '../../core/context_ext.dart';
 
 /// Screen 28 — Restaurant rejected the order.
 class FoodRejectedScreen extends ConsumerWidget {
@@ -13,6 +14,7 @@ class FoodRejectedScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final reason = ref.watch(clientFlowControllerProvider.select((s) => s.foodOrderFailureReason));
+    final l10n = context.l10n;
 
     return Container(
       color: Colors.white,
@@ -22,15 +24,15 @@ class FoodRejectedScreen extends ConsumerWidget {
         children: [
           const Text('😔', style: TextStyle(fontSize: 56)),
           const SizedBox(height: 16),
-          const Text('لم يكتمل طلبك', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+          Text(l10n.clientFoodOrderIncompleteTitle, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 8),
           Text(
-            reason ?? 'قد يكون المطعم مشغولًا حاليًا. لن يتم خصم أي مبلغ منك',
+            reason ?? l10n.clientFoodOrderRejectedDefaultReason,
             textAlign: TextAlign.center,
             style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C)),
           ),
           const SizedBox(height: 24),
-          ClientPrimaryButton(label: 'اختيار مطعم آخر', onPressed: () => controller.goTo(ClientScreen.foodList)),
+          ClientPrimaryButton(label: l10n.clientFoodChooseAnotherRestaurantButton, onPressed: () => controller.goTo(ClientScreen.foodList)),
         ],
       ),
     );

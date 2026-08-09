@@ -24,14 +24,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _pickAvatar() async {
+    final l10n = context.l10n;
     final source = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (ctx) => SafeArea(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            ListTile(leading: const Text('📷'), title: const Text('التقاط صورة', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
-            ListTile(leading: const Text('🖼️'), title: const Text('اختيار من المعرض', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+            ListTile(leading: const Text('📷'), title: Text(l10n.clientProfileTakePhoto, style: const TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
+            ListTile(leading: const Text('🖼️'), title: Text(l10n.clientProfilePickFromGallery, style: const TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
           ],
         ),
       ),
@@ -41,6 +42,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
 
@@ -103,7 +105,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     ),
                     const SizedBox(height: 10),
                     Text(
-                      s.profileLoading ? '...' : (s.profileFullName ?? 'مستخدم Afrigo'),
+                      s.profileLoading ? '...' : (s.profileFullName ?? l10n.clientProfileDefaultName),
                       style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17),
                     ),
                     Text(
@@ -119,35 +121,35 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   margin: const EdgeInsets.only(bottom: 16),
                   child: Column(children: [
                     menuRow(
-                      'تعديل البيانات الشخصية',
+                      l10n.clientProfileEditPersonalInfo,
                       onTap: () async {
                         final name = await SimplePromptDialog.showTextPrompt(
                           context,
-                          title: 'الاسم الكامل',
+                          title: l10n.clientFullNameLabel,
                           initialValue: s.profileFullName,
-                          hint: 'اسمك الكامل',
+                          hint: l10n.clientProfileFullNameHint,
                         );
                         if (name != null && name.trim().isNotEmpty) await controller.updateFullName(name);
                       },
                     ),
                     menuRow(
-                      'تغيير كلمة المرور',
+                      l10n.clientProfileChangePassword,
                       divider: false,
                       onTap: () async {
                         final pass = await SimplePromptDialog.showTextPrompt(
                           context,
-                          title: 'كلمة المرور الجديدة',
+                          title: l10n.clientProfileNewPasswordTitle,
                           hint: '••••••••',
                           obscureText: true,
-                          confirmLabel: 'تغيير',
+                          confirmLabel: l10n.clientProfileChangeConfirm,
                         );
                         if (pass == null || pass.isEmpty || !context.mounted) return;
                         final ok = await controller.changePassword(pass);
                         if (!context.mounted) return;
                         SimplePromptDialog.showInfo(
                           context,
-                          title: ok ? 'تم' : 'تعذّر',
-                          body: ok ? 'تم تغيير كلمة المرور بنجاح' : 'تعذّر تغيير كلمة المرور، حاول مجددًا',
+                          title: ok ? l10n.clientProfileChangeSuccessTitle : l10n.clientProfileChangeFailTitle,
+                          body: ok ? l10n.clientProfileChangeSuccessMsg : l10n.clientProfileChangeFailMsg,
                         );
                       },
                     ),
@@ -156,11 +158,11 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                 Container(
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                  child: menuRow('⚙️ الإعدادات', onTap: () => controller.goTo(ClientScreen.settings), divider: false),
+                  child: menuRow(l10n.clientProfileSettingsMenu, onTap: () => controller.goTo(ClientScreen.settings), divider: false),
                 ),
                 Container(
                   decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
-                  child: menuRow('🆘 الدعم والمساعدة', onTap: () => controller.goToInfo(ClientScreen.support), divider: false),
+                  child: menuRow(l10n.clientProfileSupportMenu, onTap: () => controller.goToInfo(ClientScreen.support), divider: false),
                 ),
               ],
             ),

@@ -12,20 +12,21 @@ class VoiceConfirmScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final transcript = ref.watch(clientFlowControllerProvider.select((s) => s.voiceTranscript));
-    final display = transcript.isEmpty ? 'اطلب لي تكسي من موقعي الحالي إلى المطار' : transcript;
+    final display = transcript.isEmpty ? l10n.clientVoiceConfirmSampleTranscript : transcript;
 
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(24, context.topGap(36), 24, 24),
       child: Column(
         children: [
-          const Column(
+          Column(
             children: [
-              Text('🤖', style: TextStyle(fontSize: 40)),
-              SizedBox(height: 10),
-              Text('هل فهمنا طلبك بشكل صحيح؟', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+              const Text('🤖', style: TextStyle(fontSize: 40)),
+              const SizedBox(height: 10),
+              Text(l10n.clientVoiceConfirmTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
             ],
           ),
           const SizedBox(height: 20),
@@ -37,8 +38,8 @@ class VoiceConfirmScreen extends ConsumerWidget {
           ),
           const Spacer(),
           ClientPrimaryButton(
-            label: 'نعم صحيح، تابع',
-            onPressed: () => controller.goTo(ClientScreen.rideConfirm, patch: (s) => s.copyWith(flowType: ClientFlowType.taxi, rideDest: 'مطار نواكشوط أم التونسي الدولي')),
+            label: l10n.clientVoiceConfirmYes,
+            onPressed: () => controller.goTo(ClientScreen.rideConfirm, patch: (s) => s.copyWith(flowType: ClientFlowType.taxi, rideDest: l10n.clientVoiceConfirmAirportName)),
           ),
           const SizedBox(height: 10),
           SizedBox(
@@ -46,13 +47,13 @@ class VoiceConfirmScreen extends ConsumerWidget {
             child: TextButton(
               onPressed: () => controller.goTo(ClientScreen.home),
               style: TextButton.styleFrom(backgroundColor: const Color(0xFFF5F5F4), padding: const EdgeInsets.all(16)),
-              child: const Text('تعديل يدوي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1C1917))),
+              child: Text(l10n.clientVoiceConfirmManualEdit, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15, color: Color(0xFF1C1917))),
             ),
           ),
           const SizedBox(height: 10),
           TextButton(
             onPressed: () => controller.goTo(ClientScreen.voiceRecord, patch: (s) => s.copyWith(voiceStage: VoiceStage.idle)),
-            child: const Text('أعد التسجيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
+            child: Text(l10n.clientVoiceConfirmReRecord, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
           ),
         ],
       ),

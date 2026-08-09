@@ -39,7 +39,8 @@ class _RideConfirmScreenState extends ConsumerState<RideConfirmScreen> {
   Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
-    final destLabel = s.rideDest.isEmpty ? 'وجهتك المحددة' : s.rideDest;
+    final l10n = context.l10n;
+    final destLabel = s.rideDest.isEmpty ? l10n.clientRideConfirmDestFallback : s.rideDest;
     final pickupLat = s.pickupLat ?? s.currentLat ?? 18.0858;
     final pickupLng = s.pickupLng ?? s.currentLng ?? -15.9785;
     final dropoffLat = s.dropoffLat ?? 18.0950;
@@ -52,10 +53,12 @@ class _RideConfirmScreenState extends ConsumerState<RideConfirmScreen> {
     // record-keeping server-side, see `client_gaps` migration), so this is
     // an honest label for a display-only markup, not a real quote.
     final comfortPrice = economyPrice * 1.35;
+    // NOTE: 'مريح' here is a stored business identifier (compared against
+    // `s.rideVehicle`), not display text — intentionally left untranslated.
     final selectedPrice = s.rideVehicle == 'مريح' ? comfortPrice : economyPrice;
     final distanceLabel = loading
-        ? '...جارٍ الحساب'
-        : '${s.fareEstimateDistanceKm!.toStringAsFixed(1)} كم · ${s.fareEstimateDurationMin!.round()} دقيقة تقريبًا';
+        ? l10n.clientRideCalculatingLabel
+        : l10n.clientRideDistanceDurationLabel(s.fareEstimateDistanceKm!.toStringAsFixed(1), s.fareEstimateDurationMin!.round().toString());
 
     Widget vehicleOption({required String emoji, required String label, required String price, required String value}) {
       final selected = s.rideVehicle == value;
@@ -118,29 +121,31 @@ class _RideConfirmScreenState extends ConsumerState<RideConfirmScreen> {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text(
-                          loading ? '...' : '${selectedPrice.round()} أوقية',
+                          loading ? '...' : l10n.clientRidePriceValue(selectedPrice.round().toString()),
                           style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 20, color: Color(0xFF166534)),
                         ),
-                        const Text('سعر تقديري', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
+                        Text(l10n.clientRideEstimatedPriceLabel, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
                       ],
                     ),
                   ],
                 ),
                 const SizedBox(height: 18),
-                const Text('نوع المركبة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+                Text(l10n.clientRideVehicleTypeLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    vehicleOption(emoji: '🚗', label: 'اقتصادي', price: loading ? '...' : '${economyPrice.round()} أوقية', value: 'اقتصادي'),
+                    // NOTE: `value:` stays the raw Arabic identifier ('اقتصادي'/'مريح')
+                    // stored in state/selection logic — only `label:` (the display text) is localized.
+                    vehicleOption(emoji: '🚗', label: l10n.clientRideVehicleEconomy, price: loading ? '...' : l10n.clientRidePriceValue(economyPrice.round().toString()), value: 'اقتصادي'),
                     const SizedBox(width: 10),
-                    vehicleOption(emoji: '🚙', label: 'مريح', price: loading ? '...' : '${comfortPrice.round()} أوقية', value: 'مريح'),
+                    vehicleOption(emoji: '🚙', label: l10n.clientRideVehicleComfort, price: loading ? '...' : l10n.clientRidePriceValue(comfortPrice.round().toString()), value: 'مريح'),
                   ],
                 ),
                 const SizedBox(height: 18),
                 PaymentMethodField(value: s.paymentMethod, onChanged: controller.setPaymentMethod),
-                ClientTextField(hint: 'ملاحظة للسائق (اختياري)', onChanged: controller.setOrderNote),
+                ClientTextField(hint: l10n.clientRideDriverNoteHint, onChanged: controller.setOrderNote),
                 const SizedBox(height: 18),
-                ClientPrimaryButton(label: 'اطلب الآن', onPressed: controller.startSearch),
+                ClientPrimaryButton(label: l10n.clientRideOrderNowBtn, onPressed: controller.startSearch),
               ],
             ),
         ),

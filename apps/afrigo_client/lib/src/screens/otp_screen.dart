@@ -61,6 +61,8 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
 
+    final l10n = context.l10n;
+
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(24, context.topGap(36), 24, 24),
@@ -69,9 +71,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
         children: [
           BackCircleButton(onTap: controller.back),
           const SizedBox(height: 20),
-          const Text('تأكيد الرمز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
+          Text(l10n.commonOtpTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
           const SizedBox(height: 8),
-          const Text('أدخل الرمز المكوّن من 6 أرقام المرسل إلى رقم هاتفك', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
+          Text(l10n.commonOtpDesc, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
           const SizedBox(height: 28),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -112,13 +114,13 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             child: InkWell(
               onTap: _countdown > 0 ? null : _resend,
               child: Text(
-                _countdown > 0 ? 'إعادة الإرسال خلال $_countdown ثانية' : 'إعادة الإرسال',
+                _countdown > 0 ? l10n.commonResendIn(_countdown) : l10n.commonResend,
                 style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: _countdown > 0 ? const Color(0xFFA8A29E) : const Color(0xFF166534)),
               ),
             ),
           ),
           const Spacer(),
-          ClientPrimaryButton(label: 'تأكيد', isLoading: s.isSubmitting, onPressed: controller.confirmOtp),
+          ClientPrimaryButton(label: l10n.commonConfirm, isLoading: s.isSubmitting, onPressed: controller.confirmOtp),
         ],
       ),
     );

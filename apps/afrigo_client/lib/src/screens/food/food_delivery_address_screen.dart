@@ -23,6 +23,7 @@ class FoodDeliveryAddressScreen extends ConsumerWidget {
     final s = ref.watch(clientFlowControllerProvider);
     final lat = s.dropoffLat ?? s.currentLat ?? 18.0858;
     final lng = s.dropoffLng ?? s.currentLng ?? -15.9785;
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -39,7 +40,7 @@ class FoodDeliveryAddressScreen extends ConsumerWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('عنوان التوصيل', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientFoodDeliveryAddressTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
               const SizedBox(height: 16),
               Container(
                 padding: const EdgeInsets.all(14),
@@ -49,13 +50,13 @@ class FoodDeliveryAddressScreen extends ConsumerWidget {
                   children: [
                     const Text('📍', style: TextStyle(color: Color(0xFF16A34A))),
                     const SizedBox(width: 10),
-                    Expanded(child: Text(s.dropoffAddress ?? 'جارٍ تحديد الموقع...', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13))),
+                    Expanded(child: Text(s.dropoffAddress ?? l10n.clientFoodLocatingMessage, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13))),
                   ],
                 ),
               ),
-              const Text('اسحب الخريطة لتعديل عنوان التوصيل بدقة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+              Text(l10n.clientFoodMapDragHint, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
               const SizedBox(height: 16),
-              ClientPrimaryButton(label: 'تأكيد عنوان التوصيل', onPressed: controller.back),
+              ClientPrimaryButton(label: l10n.clientFoodConfirmDeliveryAddressButton, onPressed: controller.back),
             ],
           ),
         ),

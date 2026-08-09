@@ -22,6 +22,7 @@ class FoodCheckoutScreen extends ConsumerWidget {
     final dropoffAddress = ref.watch(clientFlowControllerProvider.select((s) => s.dropoffAddress));
     final isPickup = ref.watch(clientFlowControllerProvider.select((s) => s.foodIsPickup));
     final minOrder = ref.watch(clientFlowControllerProvider.select((s) => s.selectedRestaurantMinOrder));
+    final l10n = context.l10n;
 
     Widget pickupOption(String label, String emoji, bool value) {
       final selected = isPickup == value;
@@ -76,23 +77,23 @@ class FoodCheckoutScreen extends ConsumerWidget {
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('تأكيد الطلب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientFoodCheckoutTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
             ],
           ),
           const SizedBox(height: 20),
-          const Text('طريقة الاستلام', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientFoodReceiveMethodLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
-          Row(children: [pickupOption('توصيل', '🛵', false), const SizedBox(width: 10), pickupOption('استلام من المطعم', '🏪', true)]),
+          Row(children: [pickupOption(l10n.clientFoodDeliveryOption, '🛵', false), const SizedBox(width: 10), pickupOption(l10n.clientFoodPickupOption, '🏪', true)]),
           const SizedBox(height: 16),
           if (!isPickup) ...[
-            const Text('عنوان التسليم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+            Text(l10n.clientFoodDeliveryAddressLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
             const SizedBox(height: 8),
-            row(dropoffAddress ?? 'اختر عنوان التوصيل', 'تعديل', onTap: () => controller.goTo(ClientScreen.foodDeliveryAddress)),
+            row(dropoffAddress ?? l10n.clientFoodChooseDeliveryAddress, l10n.clientFoodEditLabel, onTap: () => controller.goTo(ClientScreen.foodDeliveryAddress)),
           ],
-          const Text('طريقة الدفع', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.clientFoodPaymentMethodLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 8),
           PaymentMethodField(value: paymentMethod, onChanged: controller.setPaymentMethod),
-          ClientTextField(hint: 'ملاحظة للمطعم (اختياري)', onChanged: controller.setOrderNote),
+          ClientTextField(hint: l10n.clientFoodOrderNoteHint, onChanged: controller.setOrderNote),
           const SizedBox(height: 16),
           Container(
             padding: const EdgeInsets.all(16),
@@ -100,21 +101,21 @@ class FoodCheckoutScreen extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text('الإجمالي النهائي', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14)),
-                Text('$grandTotal أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF166534))),
+                Text(l10n.clientFoodFinalTotalLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14)),
+                Text(l10n.clientFoodAmountMru(grandTotal), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFF166534))),
               ],
             ),
           ),
           if (!meetsMinOrder && minOrder != null && minOrder > 0) ...[
             const SizedBox(height: 10),
             Text(
-              'الحد الأدنى للطلب في هذا المطعم ${minOrder.toStringAsFixed(0)} أوقية',
+              l10n.clientFoodCheckoutMinOrderWarning(minOrder.toStringAsFixed(0)),
               textAlign: TextAlign.center,
               style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFFDC2626)),
             ),
           ],
           const Spacer(),
-          ClientPrimaryButton(label: 'أرسل الطلب', onPressed: meetsMinOrder ? controller.placeFoodOrder : null),
+          ClientPrimaryButton(label: l10n.clientFoodSubmitOrderButton, onPressed: meetsMinOrder ? controller.placeFoodOrder : null),
         ],
       ),
     );

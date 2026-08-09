@@ -28,5 +28,406 @@
   "navHome": "الرئيسية",
   "navOrders": "الطلبات",
   "navWallet": "المحفظة",
-  "navAccount": "الحساب"
+  "navAccount": "الحساب",
+
+  "commonContinue": "متابعة",
+  "commonSkip": "تخطي",
+  "commonNext": "التالي",
+  "commonStartNow": "ابدأ الآن",
+  "commonPhoneLabel": "رقم الهاتف",
+  "commonPasswordLabel": "كلمة المرور",
+  "commonLogin": "دخول",
+  "commonCreateAccount": "إنشاء حساب",
+  "commonOtpTitle": "تأكيد الرمز",
+  "commonOtpDesc": "أدخل الرمز المكوّن من 6 أرقام المرسل إلى رقم هاتفك",
+  "commonResendIn": "إعادة الإرسال خلال {seconds} ثانية",
+  "@commonResendIn": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "commonResend": "إعادة الإرسال",
+  "commonVerify": "تحقق",
+  "commonNotNow": "ليس الآن",
+  "commonGreetingFallback": "مرحبًا",
+
+  "clientLoginTitle": "تسجيل الدخول",
+  "clientLoginSubtitle": "أدخل بياناتك للاستمرار في afrigo",
+  "clientForgotPassword": "نسيت كلمة المرور؟",
+  "clientNoAccountPrompt": "ليس لديك حساب؟ ",
+  "clientHaveAccountPrompt": "لديك حساب؟ ",
+  "clientFullNameLabel": "الاسم الكامل",
+  "clientFullNameHint": "مثال: سارة بن علي",
+  "clientConfirmPasswordLabel": "تأكيد كلمة المرور",
+
+  "clientOnboard1Title": "تنقّل بثقة",
+  "clientOnboard1Desc": "اطلب تكسي في ثوانٍ مع سائقين موثّقين وأسعار واضحة قبل الانطلاق",
+  "clientOnboard2Title": "اطلب طعامك المفضّل",
+  "clientOnboard2Desc": "تصفّح مئات المطاعم القريبة واطلب وجبتك بضغطة زر",
+  "clientOnboard3Title": "أرسل واستلم طرودك",
+  "clientOnboard3Desc": "توصيل سريع وآمن لأي طرد داخل مدينتك",
+
+  "clientForgotTitle": "استعادة كلمة المرور",
+  "clientForgotStep0Desc": "أدخل رقم هاتفك وسنرسل رمز استعادة عبر رسالة نصية",
+  "clientSendCode": "إرسال الرمز",
+  "clientCodeSentDesc": "تم إرسال رمز إلى هاتفك",
+  "clientEnterCodeHint": "أدخل الرمز",
+  "clientNewPasswordLabel": "كلمة مرور جديدة",
+  "clientSaveAndLogin": "حفظ وتسجيل الدخول",
+
+  "clientLocationPermTitle": "تفعيل الموقع الجغرافي",
+  "clientLocationPermDesc": "نحتاج موقعك لعرض الخدمات القريبة منك وتحديد نقطة انطلاقك بدقة",
+  "clientLocationPermAllow": "السماح بالوصول للموقع",
+  "clientNotifPermTitle": "تفعيل الإشعارات",
+  "clientNotifPermDesc": "ابقَ على اطلاع بحالة طلباتك، عروض خاصة، وتحديثات مهمة",
+  "clientNotifPermAllow": "تفعيل الإشعارات",
+
+  "clientHomeTaxiTitle": "تكسي",
+  "clientHomeTaxiDesc": "رحلة في ثوانٍ معدودة",
+  "clientHomeFoodTitle": "طعام",
+  "clientHomeFoodDesc": "أطباقك المفضلة تصلك بسرعة",
+  "clientHomeDeliveryTitle": "توصيل",
+  "clientHomeDeliveryDesc": "أرسل طردك بسرعة وأمان",
+  "clientVoiceOrderLabel": "اطلب بصوتك",
+
+  "clientPromoTaxiTitle": "خصم 20% على أول رحلة تكسي",
+  "clientPromoTaxiSubtitle": "استخدم الكود AFRIGO20 اليوم",
+  "clientPromoFoodTitle": "توصيل مجاني لأول طلب طعام",
+  "clientPromoFoodSubtitle": "اطلب الآن من مطاعمك المفضلة",
+  "clientPromoParcelTitle": "أرسل طرودك بأمان وسرعة",
+  "clientPromoParcelSubtitle": "تغطية كاملة لنواكشوط وضواحيها",
+
+  "clientRideOriginTitle": "حدّد نقطة الانطلاق",
+  "clientRideLocatingAddress": "جارٍ تحديد الموقع...",
+  "clientRideOriginDragHint": "اسحب الخريطة لتعديل نقطة الانطلاق بدقة",
+  "clientRideOriginConfirmBtn": "تأكيد نقطة الانطلاق",
+
+  "clientRideAddressNotFound": "تعذّر العثور على هذا العنوان، جرّب صياغة أخرى",
+  "clientRideDestTitle": "إلى أين تريد الذهاب؟",
+  "clientRideDestSearchHint": "ابحث عن وجهة...",
+  "clientRideSavedPlaces": "أماكن محفوظة",
+  "clientRideHomeLabel": "المنزل",
+  "clientRideHomeAddress": "تفرغ زينة، نواكشوط",
+  "clientRideHomeDropoffLabel": "المنزل — تفرغ زينة",
+  "clientRideWorkLabel": "العمل",
+  "clientRideWorkAddress": "لكصر، نواكشوط",
+  "clientRideWorkDropoffLabel": "العمل — لكصر",
+  "clientRideRecentPlaces": "آخر الوجهات",
+  "clientRideAirportName": "مطار نواكشوط أم التونسي الدولي",
+  "clientRideAirportCity": "نواكشوط",
+
+  "clientRideConfirmDestFallback": "وجهتك المحددة",
+  "clientRideCalculatingLabel": "...جارٍ الحساب",
+  "clientRideDistanceDurationLabel": "{km} كم · {min} دقيقة تقريبًا",
+  "@clientRideDistanceDurationLabel": {
+    "placeholders": { "km": { "type": "String" }, "min": { "type": "String" } }
+  },
+  "clientRidePriceValue": "{price} أوقية",
+  "@clientRidePriceValue": {
+    "placeholders": { "price": { "type": "String" } }
+  },
+  "clientRideEstimatedPriceLabel": "سعر تقديري",
+  "clientRideVehicleTypeLabel": "نوع المركبة",
+  "clientRideVehicleEconomy": "اقتصادي",
+  "clientRideVehicleComfort": "مريح",
+  "clientRideDriverNoteHint": "ملاحظة للسائق (اختياري)",
+  "clientRideOrderNowBtn": "اطلب الآن",
+
+  "clientRideSearchingDriverTitle": "جارٍ البحث عن سائق قريب...",
+  "clientRideSearchingCourierTitle": "جارٍ البحث عن عامل توصيل...",
+  "clientRideSearchingDriverDesc": "قد يستغرق الأمر بضع ثوانٍ",
+  "clientRideSearchingCourierDesc": "سنعلمك فور القبول",
+  "clientRideCancelBtn": "إلغاء",
+
+  "clientRideDriverNoun": "سائق",
+  "clientRideCourierNoun": "عامل توصيل",
+  "clientRideNoProviderTitle": "لم نتمكن من إيجاد {providerNoun} متاح",
+  "@clientRideNoProviderTitle": {
+    "placeholders": { "providerNoun": { "type": "String" } }
+  },
+  "clientRideNoProviderDesc": "قد تكون الكثافة مرتفعة حاليًا في منطقتك، حاول مجددًا خلال لحظات",
+
+  "clientRideProviderFoundBanner": "تم العثور على {providerNoun}",
+  "@clientRideProviderFoundBanner": {
+    "placeholders": { "providerNoun": { "type": "String" } }
+  },
+
+  "clientRideStatusDriverArriving": "السائق في طريقه إليك",
+  "clientRideStatusInProgress": "رحلتك جارية الآن",
+  "clientRideStatusPickedUp": "استلم مندوبك طردك، في الطريق للتسليم",
+  "clientRideEnRouteToYouDesc": "في الطريق إليك",
+  "clientRideEnRoutePickupDesc": "في الطريق لاستلام الطرد",
+  "clientRideShareBtn": "🔗 مشاركة",
+  "clientRideStaleDriverWarning": "تعذّر تحديث موقع السائق مؤخرًا — قد يكون في نفق أو منطقة ضعيفة التغطية",
+  "clientRideStaleCourierWarning": "تعذّر تحديث موقع المندوب مؤخرًا — قد يكون في منطقة ضعيفة التغطية",
+  "clientRideCancelOrderBtn": "إلغاء الطلب",
+
+  "clientRideArrivedTitle": "تم الوصول بنجاح",
+  "clientRideDistanceLabel": "المسافة",
+  "clientRideDurationLabel": "المدة",
+  "clientRideTotalPriceLabel": "السعر الإجمالي",
+  "clientRideDistanceKmValue": "{km} كم",
+  "@clientRideDistanceKmValue": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+  "clientRideDurationMinValue": "{min} دقيقة",
+  "@clientRideDurationMinValue": {
+    "placeholders": { "min": { "type": "String" } }
+  },
+  "clientRideCashPaidBtn": "الدفع نقدًا - تم",
+
+  "clientRideRateProviderTitle": "قيّم {name}",
+  "@clientRideRateProviderTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "clientRideRateSubtitle": "كيف كانت تجربتك؟",
+  "clientRideTagClean": "نظيف 🧼",
+  "clientRideTagPolite": "مؤدب 🙏",
+  "clientRideTagFast": "سريع ⚡",
+  "clientRideCommentHint": "أضف تعليقًا (اختياري)",
+  "clientRideSendBtn": "إرسال",
+
+  "clientParcelPickupTitle": "نقطة الاستلام",
+  "clientParcelConfirmPickupBtn": "تأكيد نقطة الاستلام",
+
+  "clientParcelDropoffTitle": "نقطة التسليم",
+  "clientParcelDropoffSearchHint": "ابحث عن عنوان التسليم...",
+  "clientParcelRecipientDetailsLabel": "بيانات المستلم",
+  "clientParcelRecipientNameHint": "اسم المستلم",
+  "clientParcelRecipientPhoneHint": "رقم هاتف المستلم",
+
+  "clientParcelDetailsTitle": "وصف الطرد",
+  "clientParcelTypeLabel": "نوع الطرد",
+  "clientParcelTypeDocuments": "وثائق",
+  "clientParcelTypeFood": "طعام",
+  "clientParcelTypeOther": "أخرى",
+  "clientParcelSizeLabel": "الحجم التقريبي",
+  "clientParcelSizeSmall": "صغير",
+  "clientParcelSizeMedium": "متوسط",
+  "clientParcelSizeLarge": "كبير",
+  "clientParcelNotesHint": "ملاحظات إضافية",
+  "clientParcelPhotoAttached": "تم إرفاق صورة الطرد",
+  "clientParcelPhotoAddHint": "أضف صورة للطرد (اختياري)",
+
+  "clientParcelTypeTitle": "طرد {parcelType}",
+  "@clientParcelTypeTitle": {
+    "placeholders": { "parcelType": { "type": "String" } }
+  },
+
+  "clientFoodFilterAll": "الكل",
+  "clientFoodFilterTopRated": "الأعلى تقييمًا",
+  "clientFoodFilterNearest": "الأقرب",
+  "clientFoodFilterPriceLow": "الأقل سعرًا",
+  "clientFoodFilterPriceHigh": "الأعلى سعرًا",
+  "clientFoodFilterOpenNow": "مفتوح الآن",
+  "clientFoodFilterClosedNow": "مغلق حاليًا",
+  "clientFoodListTitle": "المطاعم القريبة",
+  "clientFoodSearchHint": "ابحث عن مطعم أو نوع مطبخ...",
+  "clientFoodEmptyNoRestaurants": "لا توجد مطاعم متاحة الآن",
+  "clientFoodEmptyNoMatches": "لا توجد نتائج مطابقة",
+  "clientFoodEmptyTryLater": "جرّب العودة لاحقًا",
+  "clientFoodEmptyTryDifferentSearch": "جرّب كلمة بحث أو فلترة مختلفة",
+  "clientFoodOpenBadge": "مفتوح",
+  "clientFoodClosedBadge": "مغلق",
+  "clientFoodRestaurantSubtitle": "{cuisine} · الحد الأدنى {minOrder} أوقية · توصيل {deliveryFee} أوقية",
+  "@clientFoodRestaurantSubtitle": {
+    "placeholders": {
+      "cuisine": { "type": "String" },
+      "minOrder": { "type": "num" },
+      "deliveryFee": { "type": "num" }
+    }
+  },
+  "clientFoodDistanceSuffix": "{subtitle} · {distance} كم",
+  "@clientFoodDistanceSuffix": {
+    "placeholders": { "subtitle": { "type": "String" }, "distance": { "type": "String" } }
+  },
+
+  "clientFoodAmountMru": "{amount} أوقية",
+  "@clientFoodAmountMru": {
+    "placeholders": { "amount": { "type": "num" } }
+  },
+  "clientFoodRestaurantClosedMessage": "المطعم مغلق حاليًا ولا يستقبل طلبات جديدة",
+  "clientFoodNoDishesAvailable": "لا توجد أطباق متاحة حاليًا",
+  "clientFoodViewCartButton": "عرض السلة ({count})",
+  "@clientFoodViewCartButton": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "clientFoodQuantityLabel": "الكمية",
+  "clientFoodStockRemaining": "الكمية المتاحة: {stock} فقط",
+  "@clientFoodStockRemaining": {
+    "placeholders": { "stock": { "type": "int" } }
+  },
+  "clientFoodAddToCartButton": "أضف إلى السلة · {total} أوقية",
+  "@clientFoodAddToCartButton": {
+    "placeholders": { "total": { "type": "num" } }
+  },
+
+  "clientFoodCartTitle": "سلتك",
+  "clientFoodOrderNoteHint": "ملاحظة للمطعم (اختياري)",
+  "clientFoodSubtotalLabel": "المجموع الفرعي",
+  "clientFoodDeliveryFeeLabel": "رسوم التوصيل",
+  "clientFoodTotalLabel": "الإجمالي",
+  "clientFoodCartMinOrderWarning": "الحد الأدنى للطلب من هذا المطعم {minOrder} أوقية",
+  "@clientFoodCartMinOrderWarning": {
+    "placeholders": { "minOrder": { "type": "String" } }
+  },
+  "clientFoodContinueOrderButton": "متابعة الطلب",
+
+  "clientFoodCheckoutTitle": "تأكيد الطلب",
+  "clientFoodReceiveMethodLabel": "طريقة الاستلام",
+  "clientFoodDeliveryOption": "توصيل",
+  "clientFoodPickupOption": "استلام من المطعم",
+  "clientFoodDeliveryAddressLabel": "عنوان التسليم",
+  "clientFoodChooseDeliveryAddress": "اختر عنوان التوصيل",
+  "clientFoodEditLabel": "تعديل",
+  "clientFoodPaymentMethodLabel": "طريقة الدفع",
+  "clientFoodFinalTotalLabel": "الإجمالي النهائي",
+  "clientFoodCheckoutMinOrderWarning": "الحد الأدنى للطلب في هذا المطعم {minOrder} أوقية",
+  "@clientFoodCheckoutMinOrderWarning": {
+    "placeholders": { "minOrder": { "type": "String" } }
+  },
+  "clientFoodSubmitOrderButton": "أرسل الطلب",
+
+  "clientFoodWaitingTitle": "بانتظار قبول المطعم للطلب",
+  "clientFoodWaitingSubtitle": "سيتم إعلامك فور رد المطعم",
+  "clientFoodCancelOrderButton": "إلغاء الطلب",
+
+  "clientFoodOrderIncompleteTitle": "لم يكتمل طلبك",
+  "clientFoodOrderRejectedDefaultReason": "قد يكون المطعم مشغولًا حاليًا. لن يتم خصم أي مبلغ منك",
+  "clientFoodChooseAnotherRestaurantButton": "اختيار مطعم آخر",
+
+  "clientFoodTrackingTitle": "تتبّع الطلب",
+  "clientFoodStepAccepted": "تم القبول",
+  "clientFoodStepPreparing": "قيد التحضير",
+  "clientFoodStepReadyPickup": "جاهز للاستلام",
+  "clientFoodStepReady": "جاهز",
+  "clientFoodStepOnWay": "في الطريق",
+  "clientFoodStatusWaiting": "بانتظار قبول المطعم",
+  "clientFoodStatusPreparing": "المطعم يحضّر طلبك",
+  "clientFoodStatusReadyPickup": "طلبك جاهز، تفضّل باستلامه من المطعم",
+  "clientFoodStatusSearchingCourier": "جارٍ البحث عن مندوب توصيل",
+  "clientFoodStatusCourierOnWay": "مندوب التوصيل في الطريق إليك",
+  "clientFoodStatusPickedUp": "تم الاستلام",
+  "clientFoodStatusDelivered": "تم التسليم",
+  "clientFoodStatusFallback": "متابعة",
+  "clientFoodCallButtonLabel": "📞 اتصال بـ {name}",
+  "@clientFoodCallButtonLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "clientFoodDefaultProviderName": "المطعم",
+
+  "clientFoodRatingTitle": "قيّم تجربتك",
+  "clientFoodRateRestaurantLabel": "تقييم المطعم",
+  "clientFoodRateDeliveryLabel": "تقييم عامل التوصيل",
+  "clientFoodSubmitRatingButton": "إرسال التقييم",
+
+  "clientFoodDeliveryAddressTitle": "عنوان التوصيل",
+  "clientFoodLocatingMessage": "جارٍ تحديد الموقع...",
+  "clientFoodMapDragHint": "اسحب الخريطة لتعديل عنوان التوصيل بدقة",
+  "clientFoodConfirmDeliveryAddressButton": "تأكيد عنوان التوصيل",
+
+  "clientVoiceAnalyzingTitle": "جارٍ تحليل طلبك...",
+  "clientVoiceAnalyzingDesc": "يفهم الذكاء الاصطناعي طلبك الصوتي",
+
+  "clientVoiceConfirmSampleTranscript": "اطلب لي تكسي من موقعي الحالي إلى المطار",
+  "clientVoiceConfirmTitle": "هل فهمنا طلبك بشكل صحيح؟",
+  "clientVoiceConfirmYes": "نعم صحيح، تابع",
+  "clientVoiceConfirmAirportName": "مطار نواكشوط أم التونسي الدولي",
+  "clientVoiceConfirmManualEdit": "تعديل يدوي",
+  "clientVoiceConfirmReRecord": "أعد التسجيل",
+
+  "clientVoiceFailTitle": "لم نفهم طلبك جيدًا",
+  "clientVoiceFailDesc": "حاول التحدث بوضوح أكبر أو انتقل للطلب اليدوي",
+  "clientVoiceFailManualContinue": "تابع يدويًا",
+
+  "clientVoiceRecordListening": "استمع... تحدّث الآن",
+  "clientVoiceRecordTapToSpeak": "اضغط للتحدث",
+  "clientVoiceRecordTapToStop": "اضغط مجددًا لإيقاف التسجيل",
+  "clientVoiceRecordExampleHint": "مثال: \"اطلب لي تكسي إلى المطار\"",
+
+  "clientNotifMinutesAgo": "قبل {minutes} دقيقة",
+  "@clientNotifMinutesAgo": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "clientNotifHoursAgo": "قبل {hours} ساعة",
+  "@clientNotifHoursAgo": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "clientNotifDaysAgo": "قبل {days} يوم",
+  "@clientNotifDaysAgo": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "clientNotifTitle": "الإشعارات",
+  "clientNotifEmptyTitle": "لا توجد إشعارات بعد",
+  "clientNotifEmptyMessage": "ستظهر هنا آخر التحديثات على طلباتك",
+
+  "clientSupportTitle": "الدعم والمساعدة",
+  "clientSupportFaqLabel": "الأسئلة الشائعة",
+  "clientSupportFaq1": "كيف ألغي رحلة؟",
+  "clientSupportFaq2": "ماذا لو نسيت غرضًا في السيارة؟",
+  "clientSupportFaq3": "كيف أستعيد كلمة المرور؟",
+  "clientSupportWhatsapp": "تواصل عبر واتساب",
+  "clientSupportCallUs": "اتصل بنا",
+
+  "clientLegalNoContent": "لا يوجد محتوى بعد.",
+
+  "clientSettingsTitle": "الإعدادات",
+  "clientSettingsLanguage": "اللغة",
+  "clientSettingsNotifications": "الإشعارات",
+  "clientSettingsSavedAddresses": "العناوين المحفوظة",
+  "clientSettingsAddressHome": "المنزل",
+  "clientSettingsAddressWork": "العمل",
+  "clientSettingsAddressOther": "عنوان",
+  "clientSettingsNewAddressTitle": "عنوان جديد",
+  "clientSettingsNewAddressHint": "مثال: تفرغ زينة، نواكشوط",
+  "clientSettingsAddConfirm": "إضافة",
+  "clientSettingsAddAddress": "+ إضافة عنوان جديد",
+  "clientSettingsAbout": "عن التطبيق",
+  "clientSettingsTerms": "الشروط والأحكام",
+  "clientSettingsPrivacy": "سياسة الخصوصية",
+  "clientSettingsLogout": "تسجيل الخروج",
+  "clientSettingsDeleteAccountTitle": "حذف الحساب",
+  "clientSettingsDeleteAccountMessage": "سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟",
+  "clientSettingsDeleteAccountConfirm": "حذف نهائيًا",
+  "clientSettingsDeleteFailedTitle": "تعذّر الحذف",
+  "clientSettingsDeleteAccountLink": "حذف الحساب",
+
+  "clientOrdersStatusCompleted": "مكتملة",
+  "clientOrdersStatusCancelled": "ملغاة",
+  "clientOrdersStatusRejected": "مرفوضة",
+  "clientOrdersStatusNoDriver": "لم يُعثر على سائق",
+  "clientOrdersStatusNoLivreur": "لم يُعثر على مندوب",
+  "clientOrdersStatusOngoing": "جارية",
+  "clientOrdersTypeRide": "رحلة تكسي",
+  "clientOrdersTypeDelivery": "توصيل طرد",
+  "clientOrdersTypeFoodFrom": "طلب من {name}",
+  "@clientOrdersTypeFoodFrom": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "clientOrdersTypeFoodGeneric": "طلب طعام",
+  "clientOrdersCurrencySuffix": "أوقية",
+  "clientOrdersTabActive": "نشطة",
+  "clientOrdersTabPast": "سابقة",
+  "clientOrdersTitle": "طلباتي",
+  "clientOrdersEmptyActiveTitle": "لا توجد طلبات نشطة حاليًا",
+  "clientOrdersEmptyPastTitle": "لا توجد طلبات سابقة",
+  "clientOrdersEmptyActiveMessage": "ستظهر طلباتك الجارية هنا",
+  "clientOrdersEmptyPastMessage": "ستظهر طلباتك المكتملة هنا",
+  "clientOrdersReorder": "إعادة الطلب ›",
+
+  "clientProfileTakePhoto": "التقاط صورة",
+  "clientProfilePickFromGallery": "اختيار من المعرض",
+  "clientProfileDefaultName": "مستخدم Afrigo",
+  "clientProfileEditPersonalInfo": "تعديل البيانات الشخصية",
+  "clientProfileFullNameHint": "اسمك الكامل",
+  "clientProfileChangePassword": "تغيير كلمة المرور",
+  "clientProfileNewPasswordTitle": "كلمة المرور الجديدة",
+  "clientProfileChangeConfirm": "تغيير",
+  "clientProfileChangeSuccessTitle": "تم",
+  "clientProfileChangeFailTitle": "تعذّر",
+  "clientProfileChangeSuccessMsg": "تم تغيير كلمة المرور بنجاح",
+  "clientProfileChangeFailMsg": "تعذّر تغيير كلمة المرور، حاول مجددًا",
+  "clientProfileSettingsMenu": "⚙️ الإعدادات",
+  "clientProfileSupportMenu": "🆘 الدعم والمساعدة"
 }

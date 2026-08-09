@@ -28,5 +28,406 @@
   "navHome": "Accueil",
   "navOrders": "Commandes",
   "navWallet": "Portefeuille",
-  "navAccount": "Compte"
+  "navAccount": "Compte",
+
+  "commonContinue": "Continuer",
+  "commonSkip": "Passer",
+  "commonNext": "Suivant",
+  "commonStartNow": "Commencer",
+  "commonPhoneLabel": "Numéro de téléphone",
+  "commonPasswordLabel": "Mot de passe",
+  "commonLogin": "Connexion",
+  "commonCreateAccount": "Créer un compte",
+  "commonOtpTitle": "Confirmer le code",
+  "commonOtpDesc": "Entrez le code à 6 chiffres envoyé à votre téléphone",
+  "commonResendIn": "Renvoyer dans {seconds}s",
+  "@commonResendIn": {
+    "placeholders": {
+      "seconds": { "type": "int" }
+    }
+  },
+  "commonResend": "Renvoyer le code",
+  "commonVerify": "Vérifier",
+  "commonNotNow": "Plus tard",
+  "commonGreetingFallback": "Bonjour",
+
+  "clientLoginTitle": "Connexion",
+  "clientLoginSubtitle": "Entrez vos informations pour continuer sur afrigo",
+  "clientForgotPassword": "Mot de passe oublié ?",
+  "clientNoAccountPrompt": "Vous n'avez pas de compte ? ",
+  "clientHaveAccountPrompt": "Vous avez déjà un compte ? ",
+  "clientFullNameLabel": "Nom complet",
+  "clientFullNameHint": "Exemple : Sara Ben Ali",
+  "clientConfirmPasswordLabel": "Confirmer le mot de passe",
+
+  "clientOnboard1Title": "Déplacez-vous en toute confiance",
+  "clientOnboard1Desc": "Commandez un taxi en quelques secondes avec des chauffeurs vérifiés et des prix clairs avant le départ",
+  "clientOnboard2Title": "Commandez votre plat préféré",
+  "clientOnboard2Desc": "Parcourez des centaines de restaurants à proximité et commandez en un clic",
+  "clientOnboard3Title": "Envoyez et recevez vos colis",
+  "clientOnboard3Desc": "Livraison rapide et sécurisée pour tout colis dans votre ville",
+
+  "clientForgotTitle": "Récupérer le mot de passe",
+  "clientForgotStep0Desc": "Entrez votre numéro de téléphone, nous vous enverrons un code par SMS",
+  "clientSendCode": "Envoyer le code",
+  "clientCodeSentDesc": "Un code a été envoyé à votre téléphone",
+  "clientEnterCodeHint": "Entrez le code",
+  "clientNewPasswordLabel": "Nouveau mot de passe",
+  "clientSaveAndLogin": "Enregistrer et se connecter",
+
+  "clientLocationPermTitle": "Activer la localisation",
+  "clientLocationPermDesc": "Nous avons besoin de votre position pour afficher les services à proximité et déterminer précisément votre point de départ",
+  "clientLocationPermAllow": "Autoriser l'accès à la position",
+  "clientNotifPermTitle": "Activer les notifications",
+  "clientNotifPermDesc": "Restez informé de l'état de vos commandes, des offres spéciales et des mises à jour importantes",
+  "clientNotifPermAllow": "Activer les notifications",
+
+  "clientHomeTaxiTitle": "Taxi",
+  "clientHomeTaxiDesc": "Une course en quelques secondes",
+  "clientHomeFoodTitle": "Nourriture",
+  "clientHomeFoodDesc": "Vos plats préférés livrés rapidement",
+  "clientHomeDeliveryTitle": "Livraison",
+  "clientHomeDeliveryDesc": "Envoyez votre colis rapidement et en toute sécurité",
+  "clientVoiceOrderLabel": "Commander à la voix",
+
+  "clientPromoTaxiTitle": "20% de réduction sur votre première course",
+  "clientPromoTaxiSubtitle": "Utilisez le code AFRIGO20 aujourd'hui",
+  "clientPromoFoodTitle": "Livraison gratuite pour votre première commande",
+  "clientPromoFoodSubtitle": "Commandez maintenant chez vos restaurants préférés",
+  "clientPromoParcelTitle": "Envoyez vos colis en toute sécurité et rapidité",
+  "clientPromoParcelSubtitle": "Couverture complète de Nouakchott et ses environs",
+
+  "clientRideOriginTitle": "Définissez le point de départ",
+  "clientRideLocatingAddress": "Localisation en cours...",
+  "clientRideOriginDragHint": "Faites glisser la carte pour ajuster précisément le point de départ",
+  "clientRideOriginConfirmBtn": "Confirmer le point de départ",
+
+  "clientRideAddressNotFound": "Impossible de trouver cette adresse, essayez une autre formulation",
+  "clientRideDestTitle": "Où voulez-vous aller ?",
+  "clientRideDestSearchHint": "Rechercher une destination...",
+  "clientRideSavedPlaces": "Lieux enregistrés",
+  "clientRideHomeLabel": "Domicile",
+  "clientRideHomeAddress": "Tevragh-Zeina, Nouakchott",
+  "clientRideHomeDropoffLabel": "Domicile — Tevragh-Zeina",
+  "clientRideWorkLabel": "Travail",
+  "clientRideWorkAddress": "Ksar, Nouakchott",
+  "clientRideWorkDropoffLabel": "Travail — Ksar",
+  "clientRideRecentPlaces": "Destinations récentes",
+  "clientRideAirportName": "Aéroport international Nouakchott–Oumtounsy",
+  "clientRideAirportCity": "Nouakchott",
+
+  "clientRideConfirmDestFallback": "Votre destination sélectionnée",
+  "clientRideCalculatingLabel": "Calcul en cours...",
+  "clientRideDistanceDurationLabel": "{km} km · environ {min} min",
+  "@clientRideDistanceDurationLabel": {
+    "placeholders": { "km": { "type": "String" }, "min": { "type": "String" } }
+  },
+  "clientRidePriceValue": "{price} MRU",
+  "@clientRidePriceValue": {
+    "placeholders": { "price": { "type": "String" } }
+  },
+  "clientRideEstimatedPriceLabel": "Prix estimé",
+  "clientRideVehicleTypeLabel": "Type de véhicule",
+  "clientRideVehicleEconomy": "Économique",
+  "clientRideVehicleComfort": "Confort",
+  "clientRideDriverNoteHint": "Note pour le chauffeur (facultatif)",
+  "clientRideOrderNowBtn": "Commander maintenant",
+
+  "clientRideSearchingDriverTitle": "Recherche d'un chauffeur à proximité...",
+  "clientRideSearchingCourierTitle": "Recherche d'un livreur...",
+  "clientRideSearchingDriverDesc": "Cela peut prendre quelques secondes",
+  "clientRideSearchingCourierDesc": "Nous vous préviendrons dès qu'une commande est acceptée",
+  "clientRideCancelBtn": "Annuler",
+
+  "clientRideDriverNoun": "chauffeur",
+  "clientRideCourierNoun": "livreur",
+  "clientRideNoProviderTitle": "Nous n'avons pas pu trouver de {providerNoun} disponible",
+  "@clientRideNoProviderTitle": {
+    "placeholders": { "providerNoun": { "type": "String" } }
+  },
+  "clientRideNoProviderDesc": "La demande est peut-être élevée dans votre zone actuellement, réessayez dans un instant",
+
+  "clientRideProviderFoundBanner": "{providerNoun} trouvé",
+  "@clientRideProviderFoundBanner": {
+    "placeholders": { "providerNoun": { "type": "String" } }
+  },
+
+  "clientRideStatusDriverArriving": "Le chauffeur est en route vers vous",
+  "clientRideStatusInProgress": "Votre course est en cours",
+  "clientRideStatusPickedUp": "Votre livreur a récupéré le colis, en route pour la livraison",
+  "clientRideEnRouteToYouDesc": "En route vers vous",
+  "clientRideEnRoutePickupDesc": "En route pour récupérer le colis",
+  "clientRideShareBtn": "🔗 Partager",
+  "clientRideStaleDriverWarning": "Impossible de mettre à jour la position du chauffeur récemment — il est peut-être dans un tunnel ou une zone mal couverte",
+  "clientRideStaleCourierWarning": "Impossible de mettre à jour la position du livreur récemment — il est peut-être dans une zone mal couverte",
+  "clientRideCancelOrderBtn": "Annuler la commande",
+
+  "clientRideArrivedTitle": "Arrivée effectuée avec succès",
+  "clientRideDistanceLabel": "Distance",
+  "clientRideDurationLabel": "Durée",
+  "clientRideTotalPriceLabel": "Prix total",
+  "clientRideDistanceKmValue": "{km} km",
+  "@clientRideDistanceKmValue": {
+    "placeholders": { "km": { "type": "String" } }
+  },
+  "clientRideDurationMinValue": "{min} min",
+  "@clientRideDurationMinValue": {
+    "placeholders": { "min": { "type": "String" } }
+  },
+  "clientRideCashPaidBtn": "Paiement en espèces - Effectué",
+
+  "clientRideRateProviderTitle": "Évaluez {name}",
+  "@clientRideRateProviderTitle": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "clientRideRateSubtitle": "Comment s'est passée votre expérience ?",
+  "clientRideTagClean": "Propre 🧼",
+  "clientRideTagPolite": "Poli 🙏",
+  "clientRideTagFast": "Rapide ⚡",
+  "clientRideCommentHint": "Ajouter un commentaire (facultatif)",
+  "clientRideSendBtn": "Envoyer",
+
+  "clientParcelPickupTitle": "Point de collecte",
+  "clientParcelConfirmPickupBtn": "Confirmer le point de collecte",
+
+  "clientParcelDropoffTitle": "Point de livraison",
+  "clientParcelDropoffSearchHint": "Rechercher une adresse de livraison...",
+  "clientParcelRecipientDetailsLabel": "Coordonnées du destinataire",
+  "clientParcelRecipientNameHint": "Nom du destinataire",
+  "clientParcelRecipientPhoneHint": "Téléphone du destinataire",
+
+  "clientParcelDetailsTitle": "Description du colis",
+  "clientParcelTypeLabel": "Type de colis",
+  "clientParcelTypeDocuments": "Documents",
+  "clientParcelTypeFood": "Nourriture",
+  "clientParcelTypeOther": "Autre",
+  "clientParcelSizeLabel": "Taille approximative",
+  "clientParcelSizeSmall": "Petit",
+  "clientParcelSizeMedium": "Moyen",
+  "clientParcelSizeLarge": "Grand",
+  "clientParcelNotesHint": "Notes supplémentaires",
+  "clientParcelPhotoAttached": "Photo du colis ajoutée",
+  "clientParcelPhotoAddHint": "Ajouter une photo du colis (facultatif)",
+
+  "clientParcelTypeTitle": "Colis {parcelType}",
+  "@clientParcelTypeTitle": {
+    "placeholders": { "parcelType": { "type": "String" } }
+  },
+
+  "clientFoodFilterAll": "Tous",
+  "clientFoodFilterTopRated": "Les mieux notés",
+  "clientFoodFilterNearest": "Les plus proches",
+  "clientFoodFilterPriceLow": "Prix croissant",
+  "clientFoodFilterPriceHigh": "Prix décroissant",
+  "clientFoodFilterOpenNow": "Ouvert maintenant",
+  "clientFoodFilterClosedNow": "Fermé actuellement",
+  "clientFoodListTitle": "Restaurants à proximité",
+  "clientFoodSearchHint": "Rechercher un restaurant ou un type de cuisine...",
+  "clientFoodEmptyNoRestaurants": "Aucun restaurant disponible pour le moment",
+  "clientFoodEmptyNoMatches": "Aucun résultat correspondant",
+  "clientFoodEmptyTryLater": "Réessayez plus tard",
+  "clientFoodEmptyTryDifferentSearch": "Essayez un autre mot-clé ou filtre",
+  "clientFoodOpenBadge": "Ouvert",
+  "clientFoodClosedBadge": "Fermé",
+  "clientFoodRestaurantSubtitle": "{cuisine} · Minimum {minOrder} MRU · Livraison {deliveryFee} MRU",
+  "@clientFoodRestaurantSubtitle": {
+    "placeholders": {
+      "cuisine": { "type": "String" },
+      "minOrder": { "type": "num" },
+      "deliveryFee": { "type": "num" }
+    }
+  },
+  "clientFoodDistanceSuffix": "{subtitle} · {distance} km",
+  "@clientFoodDistanceSuffix": {
+    "placeholders": { "subtitle": { "type": "String" }, "distance": { "type": "String" } }
+  },
+
+  "clientFoodAmountMru": "{amount} MRU",
+  "@clientFoodAmountMru": {
+    "placeholders": { "amount": { "type": "num" } }
+  },
+  "clientFoodRestaurantClosedMessage": "Ce restaurant est actuellement fermé et n'accepte pas de nouvelles commandes",
+  "clientFoodNoDishesAvailable": "Aucun plat disponible pour le moment",
+  "clientFoodViewCartButton": "Voir le panier ({count})",
+  "@clientFoodViewCartButton": {
+    "placeholders": { "count": { "type": "int" } }
+  },
+
+  "clientFoodQuantityLabel": "Quantité",
+  "clientFoodStockRemaining": "Il ne reste que {stock} en stock",
+  "@clientFoodStockRemaining": {
+    "placeholders": { "stock": { "type": "int" } }
+  },
+  "clientFoodAddToCartButton": "Ajouter au panier · {total} MRU",
+  "@clientFoodAddToCartButton": {
+    "placeholders": { "total": { "type": "num" } }
+  },
+
+  "clientFoodCartTitle": "Mon panier",
+  "clientFoodOrderNoteHint": "Note pour le restaurant (facultatif)",
+  "clientFoodSubtotalLabel": "Sous-total",
+  "clientFoodDeliveryFeeLabel": "Frais de livraison",
+  "clientFoodTotalLabel": "Total",
+  "clientFoodCartMinOrderWarning": "Commande minimum pour ce restaurant : {minOrder} MRU",
+  "@clientFoodCartMinOrderWarning": {
+    "placeholders": { "minOrder": { "type": "String" } }
+  },
+  "clientFoodContinueOrderButton": "Continuer la commande",
+
+  "clientFoodCheckoutTitle": "Confirmer la commande",
+  "clientFoodReceiveMethodLabel": "Mode de récupération",
+  "clientFoodDeliveryOption": "Livraison",
+  "clientFoodPickupOption": "À emporter au restaurant",
+  "clientFoodDeliveryAddressLabel": "Adresse de livraison",
+  "clientFoodChooseDeliveryAddress": "Choisir l'adresse de livraison",
+  "clientFoodEditLabel": "Modifier",
+  "clientFoodPaymentMethodLabel": "Mode de paiement",
+  "clientFoodFinalTotalLabel": "Total final",
+  "clientFoodCheckoutMinOrderWarning": "Commande minimum pour ce restaurant : {minOrder} MRU",
+  "@clientFoodCheckoutMinOrderWarning": {
+    "placeholders": { "minOrder": { "type": "String" } }
+  },
+  "clientFoodSubmitOrderButton": "Envoyer la commande",
+
+  "clientFoodWaitingTitle": "En attente de l'acceptation du restaurant",
+  "clientFoodWaitingSubtitle": "Vous serez averti dès que le restaurant répondra",
+  "clientFoodCancelOrderButton": "Annuler la commande",
+
+  "clientFoodOrderIncompleteTitle": "Votre commande n'a pas abouti",
+  "clientFoodOrderRejectedDefaultReason": "Le restaurant est peut-être occupé actuellement. Aucun montant ne vous sera débité",
+  "clientFoodChooseAnotherRestaurantButton": "Choisir un autre restaurant",
+
+  "clientFoodTrackingTitle": "Suivi de la commande",
+  "clientFoodStepAccepted": "Acceptée",
+  "clientFoodStepPreparing": "En préparation",
+  "clientFoodStepReadyPickup": "Prêt pour le retrait",
+  "clientFoodStepReady": "Prêt",
+  "clientFoodStepOnWay": "En route",
+  "clientFoodStatusWaiting": "En attente de l'acceptation du restaurant",
+  "clientFoodStatusPreparing": "Le restaurant prépare votre commande",
+  "clientFoodStatusReadyPickup": "Votre commande est prête, vous pouvez la récupérer au restaurant",
+  "clientFoodStatusSearchingCourier": "Recherche d'un livreur en cours",
+  "clientFoodStatusCourierOnWay": "Le livreur est en route vers vous",
+  "clientFoodStatusPickedUp": "Récupérée",
+  "clientFoodStatusDelivered": "Livrée",
+  "clientFoodStatusFallback": "En cours",
+  "clientFoodCallButtonLabel": "📞 Appeler {name}",
+  "@clientFoodCallButtonLabel": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "clientFoodDefaultProviderName": "le restaurant",
+
+  "clientFoodRatingTitle": "Évaluez votre expérience",
+  "clientFoodRateRestaurantLabel": "Note du restaurant",
+  "clientFoodRateDeliveryLabel": "Note du livreur",
+  "clientFoodSubmitRatingButton": "Envoyer l'évaluation",
+
+  "clientFoodDeliveryAddressTitle": "Adresse de livraison",
+  "clientFoodLocatingMessage": "Localisation en cours...",
+  "clientFoodMapDragHint": "Faites glisser la carte pour ajuster précisément l'adresse de livraison",
+  "clientFoodConfirmDeliveryAddressButton": "Confirmer l'adresse de livraison",
+
+  "clientVoiceAnalyzingTitle": "Analyse de votre demande en cours...",
+  "clientVoiceAnalyzingDesc": "L'IA comprend votre commande vocale",
+
+  "clientVoiceConfirmSampleTranscript": "Commande-moi un taxi de ma position actuelle à l'aéroport",
+  "clientVoiceConfirmTitle": "Avons-nous bien compris votre demande ?",
+  "clientVoiceConfirmYes": "Oui, c'est exact, continuer",
+  "clientVoiceConfirmAirportName": "Aéroport international de Nouakchott–Oumtounsy",
+  "clientVoiceConfirmManualEdit": "Modifier manuellement",
+  "clientVoiceConfirmReRecord": "Réenregistrer",
+
+  "clientVoiceFailTitle": "Nous n'avons pas bien compris votre demande",
+  "clientVoiceFailDesc": "Essayez de parler plus clairement ou passez à la commande manuelle",
+  "clientVoiceFailManualContinue": "Continuer manuellement",
+
+  "clientVoiceRecordListening": "À l'écoute... parlez maintenant",
+  "clientVoiceRecordTapToSpeak": "Appuyez pour parler",
+  "clientVoiceRecordTapToStop": "Appuyez à nouveau pour arrêter l'enregistrement",
+  "clientVoiceRecordExampleHint": "Exemple : « Commande-moi un taxi jusqu'à l'aéroport »",
+
+  "clientNotifMinutesAgo": "Il y a {minutes} min",
+  "@clientNotifMinutesAgo": {
+    "placeholders": { "minutes": { "type": "int" } }
+  },
+  "clientNotifHoursAgo": "Il y a {hours} h",
+  "@clientNotifHoursAgo": {
+    "placeholders": { "hours": { "type": "int" } }
+  },
+  "clientNotifDaysAgo": "Il y a {days} j",
+  "@clientNotifDaysAgo": {
+    "placeholders": { "days": { "type": "int" } }
+  },
+  "clientNotifTitle": "Notifications",
+  "clientNotifEmptyTitle": "Aucune notification pour l'instant",
+  "clientNotifEmptyMessage": "Les dernières mises à jour de vos commandes apparaîtront ici",
+
+  "clientSupportTitle": "Support et aide",
+  "clientSupportFaqLabel": "Questions fréquentes",
+  "clientSupportFaq1": "Comment annuler une course ?",
+  "clientSupportFaq2": "Que faire si j'ai oublié un objet dans la voiture ?",
+  "clientSupportFaq3": "Comment récupérer mon mot de passe ?",
+  "clientSupportWhatsapp": "Contacter via WhatsApp",
+  "clientSupportCallUs": "Appelez-nous",
+
+  "clientLegalNoContent": "Aucun contenu pour le moment.",
+
+  "clientSettingsTitle": "Paramètres",
+  "clientSettingsLanguage": "Langue",
+  "clientSettingsNotifications": "Notifications",
+  "clientSettingsSavedAddresses": "Adresses enregistrées",
+  "clientSettingsAddressHome": "Domicile",
+  "clientSettingsAddressWork": "Travail",
+  "clientSettingsAddressOther": "Adresse",
+  "clientSettingsNewAddressTitle": "Nouvelle adresse",
+  "clientSettingsNewAddressHint": "Exemple : Tevragh-Zeina, Nouakchott",
+  "clientSettingsAddConfirm": "Ajouter",
+  "clientSettingsAddAddress": "+ Ajouter une nouvelle adresse",
+  "clientSettingsAbout": "À propos de l'application",
+  "clientSettingsTerms": "Conditions générales",
+  "clientSettingsPrivacy": "Politique de confidentialité",
+  "clientSettingsLogout": "Déconnexion",
+  "clientSettingsDeleteAccountTitle": "Supprimer le compte",
+  "clientSettingsDeleteAccountMessage": "Votre compte et toutes vos données seront supprimés définitivement. Cette action est irréversible. Êtes-vous sûr(e) ?",
+  "clientSettingsDeleteAccountConfirm": "Supprimer définitivement",
+  "clientSettingsDeleteFailedTitle": "Échec de la suppression",
+  "clientSettingsDeleteAccountLink": "Supprimer le compte",
+
+  "clientOrdersStatusCompleted": "Terminée",
+  "clientOrdersStatusCancelled": "Annulée",
+  "clientOrdersStatusRejected": "Refusée",
+  "clientOrdersStatusNoDriver": "Aucun chauffeur trouvé",
+  "clientOrdersStatusNoLivreur": "Aucun livreur trouvé",
+  "clientOrdersStatusOngoing": "En cours",
+  "clientOrdersTypeRide": "Course en taxi",
+  "clientOrdersTypeDelivery": "Livraison de colis",
+  "clientOrdersTypeFoodFrom": "Commande de {name}",
+  "@clientOrdersTypeFoodFrom": {
+    "placeholders": { "name": { "type": "String" } }
+  },
+  "clientOrdersTypeFoodGeneric": "Commande de repas",
+  "clientOrdersCurrencySuffix": "MRU",
+  "clientOrdersTabActive": "En cours",
+  "clientOrdersTabPast": "Passées",
+  "clientOrdersTitle": "Mes commandes",
+  "clientOrdersEmptyActiveTitle": "Aucune commande en cours actuellement",
+  "clientOrdersEmptyPastTitle": "Aucune commande passée",
+  "clientOrdersEmptyActiveMessage": "Vos commandes en cours apparaîtront ici",
+  "clientOrdersEmptyPastMessage": "Vos commandes terminées apparaîtront ici",
+  "clientOrdersReorder": "Recommander ›",
+
+  "clientProfileTakePhoto": "Prendre une photo",
+  "clientProfilePickFromGallery": "Choisir depuis la galerie",
+  "clientProfileDefaultName": "Utilisateur Afrigo",
+  "clientProfileEditPersonalInfo": "Modifier les informations personnelles",
+  "clientProfileFullNameHint": "Votre nom complet",
+  "clientProfileChangePassword": "Changer le mot de passe",
+  "clientProfileNewPasswordTitle": "Nouveau mot de passe",
+  "clientProfileChangeConfirm": "Changer",
+  "clientProfileChangeSuccessTitle": "Terminé",
+  "clientProfileChangeFailTitle": "Échec",
+  "clientProfileChangeSuccessMsg": "Le mot de passe a été changé avec succès",
+  "clientProfileChangeFailMsg": "Impossible de changer le mot de passe, réessayez",
+  "clientProfileSettingsMenu": "⚙️ Paramètres",
+  "clientProfileSupportMenu": "🆘 Support et aide"
 }

@@ -18,6 +18,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
     final cartHasItems = s.cart.isNotEmpty;
     final cartCount = s.cartCount;
     final cartTotal = s.cart.fold(0, (a, i) => a + i.qty * i.price);
+    final l10n = context.l10n;
 
     Widget dishRow(Map<String, dynamic> dish) {
       final name = dish['name'] as String? ?? '';
@@ -38,7 +39,7 @@ class RestaurantDetailScreen extends ConsumerWidget {
                   children: [
                     Text(name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14)),
                     if (desc.isNotEmpty) Text(desc, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
-                    Text('$price أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
+                    Text(l10n.clientFoodAmountMru(price), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
                   ],
                 ),
               ),
@@ -78,14 +79,14 @@ class RestaurantDetailScreen extends ConsumerWidget {
                         width: double.infinity,
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(color: const Color(0xFFF5F5F4), borderRadius: BorderRadius.circular(10)),
-                        child: const Text('المطعم مغلق حاليًا ولا يستقبل طلبات جديدة', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+                        child: Text(l10n.clientFoodRestaurantClosedMessage, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
                       ),
                     ],
                     const SizedBox(height: 16),
                     if (s.restaurantDishes.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Center(child: Text('لا توجد أطباق متاحة حاليًا', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)))),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 24),
+                        child: Center(child: Text(l10n.clientFoodNoDishesAvailable, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)))),
                       )
                     else
                       for (final dish in s.restaurantDishes) dishRow(dish),
@@ -109,8 +110,8 @@ class RestaurantDetailScreen extends ConsumerWidget {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('عرض السلة ($cartCount)', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
-                      Text('$cartTotal أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white)),
+                      Text(l10n.clientFoodViewCartButton(cartCount), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Colors.white)),
+                      Text(l10n.clientFoodAmountMru(cartTotal), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Colors.white)),
                     ],
                   ),
                 ),

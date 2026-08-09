@@ -8,7 +8,6 @@ import '../widgets/simple_prompt_dialog.dart';
 import '../core/context_ext.dart';
 
 const _labelEmoji = {'home': '🏠', 'work': '💼', 'other': '📍'};
-const _labelText = {'home': 'المنزل', 'work': 'العمل', 'other': 'عنوان'};
 
 /// Screen 42 — Settings.
 class SettingsScreen extends ConsumerStatefulWidget {
@@ -27,8 +26,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final labelText = {'home': l10n.clientSettingsAddressHome, 'work': l10n.clientSettingsAddressWork, 'other': l10n.clientSettingsAddressOther};
 
     Widget row({required Widget label, required Widget trailing, bool divider = true}) => Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
@@ -58,7 +59,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           children: [
             Expanded(
               child: Text(
-                '${_labelEmoji[label] ?? '📍'} ${_labelText[label] ?? 'عنوان'} — ${addr['address']}',
+                '${_labelEmoji[label] ?? '📍'} ${labelText[label] ?? l10n.clientSettingsAddressOther} — ${addr['address']}',
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13),
               ),
@@ -92,16 +93,16 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             children: [
               BackCircleButton(onTap: controller.back),
               const SizedBox(width: 12),
-              const Text('الإعدادات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+              Text(l10n.clientSettingsTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
             ],
           ),
           const SizedBox(height: 20),
           row(
-            label: const Text('اللغة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
+            label: Text(l10n.clientSettingsLanguage, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
             trailing: Row(children: [langChip('عربي', 'ar'), const SizedBox(width: 6), langChip('Français', 'fr')]),
           ),
           row(
-            label: const Text('الإشعارات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
+            label: Text(l10n.clientSettingsNotifications, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
             trailing: InkWell(
               onTap: controller.toggleNotif,
               child: AnimatedContainer(
@@ -121,7 +122,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('العناوين المحفوظة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
+                Text(l10n.clientSettingsSavedAddresses, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF78716C))),
                 const SizedBox(height: 10),
                 if (s.savedAddressesLoading)
                   const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Center(child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))))
@@ -131,48 +132,48 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   onTap: () async {
                     final text = await SimplePromptDialog.showTextPrompt(
                       context,
-                      title: 'عنوان جديد',
-                      hint: 'مثال: تفرغ زينة، نواكشوط',
-                      confirmLabel: 'إضافة',
+                      title: l10n.clientSettingsNewAddressTitle,
+                      hint: l10n.clientSettingsNewAddressHint,
+                      confirmLabel: l10n.clientSettingsAddConfirm,
                     );
                     if (text != null && text.trim().isNotEmpty) await controller.addSavedAddress('other', text);
                   },
-                  child: const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Text('+ إضافة عنوان جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Text(l10n.clientSettingsAddAddress, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF166534))),
                   ),
                 ),
               ],
             ),
           ),
-          linkRow('عن التطبيق', onTap: () => controller.goToInfo(ClientScreen.about)),
-          linkRow('الشروط والأحكام', onTap: () => controller.goToInfo(ClientScreen.terms)),
-          linkRow('سياسة الخصوصية', onTap: () => controller.goToInfo(ClientScreen.privacy)),
+          linkRow(l10n.clientSettingsAbout, onTap: () => controller.goToInfo(ClientScreen.about)),
+          linkRow(l10n.clientSettingsTerms, onTap: () => controller.goToInfo(ClientScreen.terms)),
+          linkRow(l10n.clientSettingsPrivacy, onTap: () => controller.goToInfo(ClientScreen.privacy)),
           InkWell(
             onTap: controller.signOut,
-            child: const Padding(
-              padding: EdgeInsets.symmetric(vertical: 16),
-              child: Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Text(l10n.clientSettingsLogout, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
             ),
           ),
           InkWell(
             onTap: () async {
               final confirmed = await SimplePromptDialog.showConfirm(
                 context,
-                title: 'حذف الحساب',
-                message: 'سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟',
-                confirmLabel: 'حذف نهائيًا',
+                title: l10n.clientSettingsDeleteAccountTitle,
+                message: l10n.clientSettingsDeleteAccountMessage,
+                confirmLabel: l10n.clientSettingsDeleteAccountConfirm,
                 danger: true,
               );
               if (!confirmed || !context.mounted) return;
               final error = await controller.deleteAccount();
               if (error != null && context.mounted) {
-                SimplePromptDialog.showInfo(context, title: 'تعذّر الحذف', body: error);
+                SimplePromptDialog.showInfo(context, title: l10n.clientSettingsDeleteFailedTitle, body: error);
               }
             },
-            child: const Padding(
-              padding: EdgeInsets.only(top: 6, bottom: 16),
-              child: Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFA8A29E))),
+            child: Padding(
+              padding: const EdgeInsets.only(top: 6, bottom: 16),
+              child: Text(l10n.clientSettingsDeleteAccountLink, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFA8A29E))),
             ),
           ),
         ],

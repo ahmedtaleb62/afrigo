@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../state/client_flow_controller.dart';
+import '../core/context_ext.dart';
 
 /// Screen 1 — Splash. A returning, already-logged-in user should never
 /// really see this screen — it now only holds for the brief brand-mark
@@ -75,7 +76,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 10),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
                   ),
-                  child: const Text('متابعة ›', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Colors.white)),
+                  child: Text('${context.l10n.commonContinue} ›', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Colors.white)),
                 ),
               ),
             ),

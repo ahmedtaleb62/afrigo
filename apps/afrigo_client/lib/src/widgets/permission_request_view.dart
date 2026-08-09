@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/context_ext.dart';
 import 'client_primary_button.dart';
 
 /// Shared layout for screens 8 (Location) and 9 (Notifications) — same
@@ -44,7 +45,7 @@ class PermissionRequestView extends StatelessWidget {
           const SizedBox(height: 12),
           TextButton(
             onPressed: onSkip,
-            child: const Text('ليس الآن', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
+            child: Text(context.l10n.commonNotNow, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFF78716C))),
           ),
         ],
       ),

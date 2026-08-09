@@ -5,16 +5,6 @@ import '../../state/client_flow_controller.dart';
 import '../../widgets/back_circle_button.dart';
 import '../../core/context_ext.dart';
 
-const _filters = {
-  'all': 'الكل',
-  'rating': 'الأعلى تقييمًا',
-  'nearest': 'الأقرب',
-  'price_low': 'الأقل سعرًا',
-  'price_high': 'الأعلى سعرًا',
-  'open': 'مفتوح الآن',
-  'closed': 'مغلق حاليًا',
-};
-
 /// Screens 21/22 — Food list. Real `restaurants` rows (via the
 /// `nearby_restaurants` RPC — real rating/distance included), loaded by
 /// `ClientFlowController.loadRestaurants` when this screen is entered (see
@@ -57,6 +47,16 @@ class FoodListScreen extends ConsumerWidget {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     final restaurants = _applyFilters(s.restaurants, s.restaurantSearch, s.restaurantFilter);
+    final l10n = context.l10n;
+    final filters = <String, String>{
+      'all': l10n.clientFoodFilterAll,
+      'rating': l10n.clientFoodFilterTopRated,
+      'nearest': l10n.clientFoodFilterNearest,
+      'price_low': l10n.clientFoodFilterPriceLow,
+      'price_high': l10n.clientFoodFilterPriceHigh,
+      'open': l10n.clientFoodFilterOpenNow,
+      'closed': l10n.clientFoodFilterClosedNow,
+    };
 
     return Container(
       color: const Color(0xFFFAFAF9),
@@ -73,7 +73,7 @@ class FoodListScreen extends ConsumerWidget {
                   children: [
                     BackCircleButton(onTap: controller.back),
                     const SizedBox(width: 12),
-                    const Text('المطاعم القريبة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+                    Text(l10n.clientFoodListTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
                   ],
                 ),
                 const SizedBox(height: 14),
@@ -81,7 +81,7 @@ class FoodListScreen extends ConsumerWidget {
                   onChanged: controller.setRestaurantSearch,
                   style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13),
                   decoration: InputDecoration(
-                    hintText: 'ابحث عن مطعم أو نوع مطبخ...',
+                    hintText: l10n.clientFoodSearchHint,
                     hintStyle: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFFA8A29E)),
                     filled: true,
                     fillColor: const Color(0xFFFAFAF9),
@@ -97,7 +97,7 @@ class FoodListScreen extends ConsumerWidget {
                   scrollDirection: Axis.horizontal,
                   child: Row(
                     children: [
-                      for (final entry in _filters.entries) ...[
+                      for (final entry in filters.entries) ...[
                         _FilterChip(entry.value, selected: s.restaurantFilter == entry.key, onTap: () => controller.setRestaurantFilter(entry.key)),
                         const SizedBox(width: 8),
                       ],
@@ -120,19 +120,19 @@ class FoodListScreen extends ConsumerWidget {
                               const Text('🍽️', style: TextStyle(fontSize: 52)),
                               const SizedBox(height: 14),
                               Text(
-                                s.restaurants.isEmpty ? 'لا توجد مطاعم متاحة الآن' : 'لا توجد نتائج مطابقة',
+                                s.restaurants.isEmpty ? l10n.clientFoodEmptyNoRestaurants : l10n.clientFoodEmptyNoMatches,
                                 style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16),
                               ),
                               const SizedBox(height: 6),
                               Text(
-                                s.restaurants.isEmpty ? 'جرّب العودة لاحقًا' : 'جرّب كلمة بحث أو فلترة مختلفة',
+                                s.restaurants.isEmpty ? l10n.clientFoodEmptyTryLater : l10n.clientFoodEmptyTryDifferentSearch,
                                 style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)),
                               ),
                               const SizedBox(height: 18),
                               TextButton(
                                 onPressed: controller.loadRestaurants,
                                 style: TextButton.styleFrom(backgroundColor: const Color(0xFFF5F5F4), padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 12)),
-                                child: const Text('إعادة المحاولة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
+                                child: Text(l10n.commonRetry, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13)),
                               ),
                             ],
                           ),
@@ -144,7 +144,7 @@ class FoodListScreen extends ConsumerWidget {
                           for (final r in restaurants)
                             _RestaurantCard(
                               name: r['name'] as String? ?? '',
-                              subtitle: '${r['cuisine_type'] ?? ''} · الحد الأدنى ${r['min_order'] ?? 0} أوقية · توصيل ${r['delivery_fee'] ?? 0} أوقية',
+                              subtitle: l10n.clientFoodRestaurantSubtitle(r['cuisine_type'] as String? ?? '', (r['min_order'] as num?) ?? 0, (r['delivery_fee'] as num?) ?? 0),
                               rating: (r['avg_rating'] as num?)?.toDouble() ?? 0,
                               ratingsCount: (r['ratings_count'] as num?)?.toInt() ?? 0,
                               distanceKm: (r['distance_km'] as num?)?.toDouble(),
@@ -201,6 +201,7 @@ class _RestaurantCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
@@ -225,7 +226,7 @@ class _RestaurantCard extends StatelessWidget {
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(color: isOpen ? const Color(0xFFDCFCE7) : const Color(0xFFF5F5F4), borderRadius: BorderRadius.circular(999)),
-                    child: Text(isOpen ? 'مفتوح' : 'مغلق', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: isOpen ? const Color(0xFF166534) : const Color(0xFF78716C))),
+                    child: Text(isOpen ? l10n.clientFoodOpenBadge : l10n.clientFoodClosedBadge, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: isOpen ? const Color(0xFF166534) : const Color(0xFF78716C))),
                   ),
                 ),
               ],
@@ -251,7 +252,7 @@ class _RestaurantCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    distanceKm == null ? subtitle : '$subtitle · ${distanceKm!.toStringAsFixed(1)} كم',
+                    distanceKm == null ? subtitle : l10n.clientFoodDistanceSuffix(subtitle, distanceKm!.toStringAsFixed(1)),
                     style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C)),
                   ),
                 ],

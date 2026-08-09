@@ -23,6 +23,7 @@ class ParcelPickupScreen extends ConsumerWidget {
     // `pickupLat` first auto-resolved to (possibly still the placeholder).
     final lat = s.pickupIsUserSet ? (s.pickupLat ?? s.currentLat ?? 18.0858) : (s.currentLat ?? s.pickupLat ?? 18.0858);
     final lng = s.pickupIsUserSet ? (s.pickupLng ?? s.currentLng ?? -15.9785) : (s.currentLng ?? s.pickupLng ?? -15.9785);
+    final l10n = context.l10n;
 
     return Column(
       children: [
@@ -39,7 +40,7 @@ class ParcelPickupScreen extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('نقطة الاستلام', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                Text(l10n.clientParcelPickupTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
                 const SizedBox(height: 16),
                 Container(
                   padding: const EdgeInsets.all(14),
@@ -49,11 +50,11 @@ class ParcelPickupScreen extends ConsumerWidget {
                     children: [
                       const Text('📍', style: TextStyle(color: Color(0xFF16A34A))),
                       const SizedBox(width: 10),
-                      Expanded(child: Text(s.pickupAddress ?? 'جارٍ تحديد الموقع...', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13))),
+                      Expanded(child: Text(s.pickupAddress ?? l10n.clientRideLocatingAddress, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13))),
                     ],
                   ),
                 ),
-                ClientPrimaryButton(label: 'تأكيد نقطة الاستلام', onPressed: () => controller.goTo(ClientScreen.parcelDropoff)),
+                ClientPrimaryButton(label: l10n.clientParcelConfirmPickupBtn, onPressed: () => controller.goTo(ClientScreen.parcelDropoff)),
               ],
             ),
         ),

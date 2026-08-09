@@ -17,6 +17,7 @@ class SignupScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
+    final l10n = context.l10n;
 
     return Container(
       color: Colors.white,
@@ -25,29 +26,29 @@ class SignupScreen extends ConsumerWidget {
         children: [
           Row(children: [BackCircleButton(onTap: () => controller.goTo(ClientScreen.login))]),
           const SizedBox(height: 14),
-          const Text('إنشاء حساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 24)),
+          Text(l10n.commonCreateAccount, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 24)),
           const SizedBox(height: 24),
-          ClientTextField(label: 'الاسم الكامل', hint: 'مثال: سارة بن علي', onChanged: controller.setFullName),
+          ClientTextField(label: l10n.clientFullNameLabel, hint: l10n.clientFullNameHint, onChanged: controller.setFullName),
           const SizedBox(height: 14),
-          ClientTextField(label: 'رقم الهاتف', hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setPhone),
+          ClientTextField(label: l10n.commonPhoneLabel, hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setPhone),
           const SizedBox(height: 14),
-          ClientTextField(label: 'كلمة المرور', hint: '••••••••', obscureText: true, onChanged: controller.setPassword),
+          ClientTextField(label: l10n.commonPasswordLabel, hint: '••••••••', obscureText: true, onChanged: controller.setPassword),
           const SizedBox(height: 14),
-          ClientTextField(label: 'تأكيد كلمة المرور', hint: '••••••••', obscureText: true, onChanged: controller.setConfirmPassword),
+          ClientTextField(label: l10n.clientConfirmPasswordLabel, hint: '••••••••', obscureText: true, onChanged: controller.setConfirmPassword),
           if (s.authError != null) ...[
             const SizedBox(height: 10),
             Text(s.authError!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFFDC2626))),
           ],
           const SizedBox(height: 24),
-          ClientPrimaryButton(label: 'إنشاء الحساب', isLoading: s.isSubmitting, onPressed: controller.doSignup),
+          ClientPrimaryButton(label: l10n.commonCreateAccount, isLoading: s.isSubmitting, onPressed: controller.doSignup),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text('لديك حساب؟ ', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
+              Text(l10n.clientHaveAccountPrompt, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
               InkWell(
                 onTap: () => controller.goTo(ClientScreen.login),
-                child: const Text('تسجيل الدخول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
+                child: Text(l10n.commonLogin, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
               ),
             ],
           ),
