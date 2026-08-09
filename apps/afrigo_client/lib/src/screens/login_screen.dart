@@ -60,9 +60,10 @@ class LoginScreen extends ConsumerWidget {
                   const Text('أهلًا بعودتك إلى Afrigo', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
                   const SizedBox(height: 26),
                   ClientTextField(
-                    label: 'البريد الإلكتروني أو رقم الهاتف',
-                    hint: 'example@afrigo.com',
-                    onChanged: controller.setEmail,
+                    label: 'رقم الهاتف',
+                    hint: '46 12 34 56',
+                    keyboardType: TextInputType.phone,
+                    onChanged: controller.setPhone,
                   ),
                   const SizedBox(height: 14),
                   ClientTextField(

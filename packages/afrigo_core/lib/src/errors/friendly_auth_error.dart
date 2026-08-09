@@ -18,7 +18,7 @@ String friendlyAuthError({required String? code, required String message, requir
     case 'email_exists':
     case 'phone_exists':
     case 'identity_already_exists':
-      return 'هذا البريد الإلكتروني مسجل بالفعل';
+      return 'هذا الحساب مسجل بالفعل';
     case 'weak_password':
       return 'كلمة المرور ضعيفة جدًا، اختر كلمة مرور أقوى';
     case 'email_not_confirmed':

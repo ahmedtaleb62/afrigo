@@ -140,7 +140,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     children: [
                       menuRow('تعديل بيانات المطعم', onTap: () => controller.goTo(FoodScreen.restaurantDocs)),
                       menuRow('تعديل بيانات الدراجة', onTap: () => controller.goTo(FoodScreen.bikeDocs)),
-                      menuRow('إعدادات التوصيل والتسعير', onTap: () => controller.goTo(FoodScreen.deliverySettings)),
+                      menuRow('سياسة المطعم', onTap: () => controller.goTo(FoodScreen.deliverySettings)),
                       menuRow('أوقات العمل', onTap: () => controller.goTo(FoodScreen.workingHours), divider: false),
                     ],
                   ),

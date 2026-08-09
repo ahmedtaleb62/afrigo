@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -64,17 +65,34 @@ class LivreurFlowController extends StateNotifier<LivreurFlowState> {
   }
 
   // ---------------------------------------------------------------------
-  // Auth
+  // Auth — real Supabase calls. Phone-first: signup/login identify the
+  // account by Mauritanian mobile number (Chinguisoft SMS OTP via the
+  // `sms-hook` Auth Hook Edge Function), not email — mirrors
+  // `afrigo_client`'s `ClientFlowController`.
   // ---------------------------------------------------------------------
-  void setEmail(String v) => state = state.copyWith(email: v);
+  /// Mauritanian mobile numbers are 8 digits starting with 2, 3, or 4 (the
+  /// same shape Chinguisoft's API requires) — `null` when `local` doesn't
+  /// match, so every call site can treat that as "invalid, don't submit".
+  String? _toE164(String local) {
+    final trimmed = local.trim();
+    if (!RegExp(r'^[234]\d{7}$').hasMatch(trimmed)) return null;
+    return '+222$trimmed';
+  }
+
+  void setPhone(String v) => state = state.copyWith(phone: v);
   void setPassword(String v) => state = state.copyWith(password: v);
   void setConfirmPassword(String v) => state = state.copyWith(confirmPassword: v);
   void setFullName(String v) => state = state.copyWith(fullName: v);
 
   Future<void> doLogin() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'أدخل رقم هاتف موريتاني صحيح (8 أرقام) وكلمة المرور');
+      return;
+    }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      await _sb.auth.signInWithPassword(email: state.email.trim(), password: state.password);
+      await _sb.auth.signInWithPassword(phone: e164, password: state.password);
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       watchWallet();
@@ -82,39 +100,97 @@ class LivreurFlowController extends StateNotifier<LivreurFlowState> {
       unawaited(PushNotifications.register());
       goTo(LivreurScreen.home);
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر تسجيل الدخول، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
     }
   }
 
   Future<void> doSignup() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null) {
+      state = state.copyWith(authError: 'أدخل رقم هاتف موريتاني صحيح (8 أرقام)');
+      return;
+    }
     if (state.password != state.confirmPassword) {
       state = state.copyWith(authError: 'كلمتا المرور غير متطابقتين');
       return;
     }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      // Only creates the auth.users row — profiles/wallets (role='livreur')
-      // are created by `register-provider` once the user confirms via OTP.
-      await _sb.auth.signUp(email: state.email.trim(), password: state.password, data: {'full_name': state.fullName});
-      state = state.copyWith(isSubmitting: false);
+      // Only creates the auth.users row (unconfirmed until the OTP screen's
+      // `confirmOtp()` verifies the SMS code) — profiles/wallets
+      // (role='livreur') are created by `register-provider` once the user
+      // confirms via OTP.
+      await _sb.auth.signUp(phone: e164, password: state.password, data: {'full_name': state.fullName});
+      state = state.copyWith(isSubmitting: false, otp: const ['', '', '', '', '', ''], otpCountdown: 45);
       goTo(LivreurScreen.otp);
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر إنشاء الحساب، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر إنشاء الحساب، حاول مجددًا');
     }
   }
 
+  void setOtpDigit(int index, String value) {
+    final otp = [...state.otp];
+    otp[index] = value;
+    state = state.copyWith(otp: otp);
+  }
+
+  /// Real verification via Supabase Auth's phone OTP (`sms_otp_length: 6`,
+  /// delivered by Chinguisoft through the `sms-hook` Auth Hook) — a wrong or
+  /// expired code throws an `AuthException` here, surfaced via
+  /// `friendlyAuthError`. `register-provider` (role: 'livreur') still runs
+  /// right after, same as before, to create the `profiles`/`wallets` rows.
   Future<void> confirmOtp() async {
+    final e164 = _toE164(state.phone);
+    final code = state.otp.join();
+    if (e164 == null || code.length < 6) {
+      state = state.copyWith(authError: 'أدخل الرمز المكوّن من 6 أرقام');
+      return;
+    }
+    state = state.copyWith(isSubmitting: true, authError: null);
+    try {
+      await _sb.auth.verifyOTP(phone: e164, token: code, type: OtpType.sms);
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'رمز غير صحيح أو منتهي الصلاحية'),
+      );
+      return;
+    } catch (_) {
+      state = state.copyWith(isSubmitting: false, authError: 'تعذّر تأكيد الرمز، حاول مجددًا');
+      return;
+    }
     try {
       await _sb.functions.invoke('register-provider', body: {'role': 'livreur', 'full_name': state.fullName});
     } catch (_) {
       // Non-fatal — vehicleDocs submission below still works even if this
       // races the auth session; register-provider is idempotent.
     }
+    state = state.copyWith(isSubmitting: false);
     goTo(LivreurScreen.vehicleDocs);
+  }
+
+  /// Countdown-gated resend — `signInWithOtp` on an unconfirmed phone
+  /// re-triggers the same signup OTP flow (GoTrue treats it as a resend),
+  /// hitting the `sms-hook` again for a fresh Chinguisoft SMS.
+  Future<void> resendOtp() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null) return;
+    try {
+      await _sb.auth.signInWithOtp(phone: e164);
+      state = state.copyWith(otp: const ['', '', '', '', '', ''], otpCountdown: 45, authError: null);
+    } catch (_) {
+      state = state.copyWith(authError: 'تعذّر إعادة إرسال الرمز، حاول مجددًا');
+    }
   }
 
   /// Self-heals accounts stuck with an `auth.users` row but no `profiles`/

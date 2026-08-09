@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
@@ -120,6 +121,21 @@ class FoodTrackingScreen extends ConsumerWidget {
                     style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white),
                   ),
                 ),
+                // `providerPhone` is the livreur's number once one is
+                // assigned, else falls back to the restaurant's client-facing
+                // support number (`restaurants.contact_phone`) — see
+                // `_fetchFoodOrderContact`.
+                if (s.providerPhone != null) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: TextButton(
+                      onPressed: () => launchUrl(Uri(scheme: 'tel', path: s.providerPhone)),
+                      style: TextButton.styleFrom(backgroundColor: const Color(0xFFF0FDF4), padding: const EdgeInsets.all(14)),
+                      child: Text('📞 اتصال بـ ${s.providerName ?? "المطعم"}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFF166534))),
+                    ),
+                  ),
+                ],
                 if (cancelable) ...[
                   const SizedBox(height: 10),
                   SizedBox(

@@ -24,7 +24,7 @@ class LoginScreen extends ConsumerWidget {
           const SizedBox(height: 6),
           const Text('أهلًا بعودتك إلى Afrigo Food', style: TextStyle(fontFamily: 'Tajawal', fontSize: 14, color: Color(0xFF78716C))),
           const SizedBox(height: 28),
-          FoodTextField(label: 'البريد الإلكتروني', hint: 'restaurant@afrigo.com', onChanged: controller.setEmail),
+          FoodTextField(label: 'رقم الهاتف', hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setPhone),
           const SizedBox(height: 14),
           FoodTextField(label: 'كلمة المرور', hint: '••••••••', obscureText: true, onChanged: controller.setPassword),
           if (s.authError != null) ...[

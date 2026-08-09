@@ -171,22 +171,35 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   }
 
   // ---------------------------------------------------------------------
-  // Auth — real Supabase calls
+  // Auth — real Supabase calls. Phone-first per an explicit request: signup/
+  // login/forgot-password all identify the account by Mauritanian mobile
+  // number (Chinguisoft SMS OTP via the `sms-hook` Auth Hook Edge Function),
+  // not email — see that function's doc comment for the full wiring.
   // ---------------------------------------------------------------------
-  void setEmail(String v) => state = state.copyWith(email: v);
+  /// Mauritanian mobile numbers are 8 digits starting with 2, 3, or 4 (the
+  /// same shape Chinguisoft's API requires) — `null` when `local` doesn't
+  /// match, so every call site can treat that as "invalid, don't submit".
+  String? _toE164(String local) {
+    final trimmed = local.trim();
+    if (!RegExp(r'^[234]\d{7}$').hasMatch(trimmed)) return null;
+    return '+222$trimmed';
+  }
+
+  void setPhone(String v) => state = state.copyWith(phone: v);
   void setPassword(String v) => state = state.copyWith(password: v);
   void setConfirmPassword(String v) => state = state.copyWith(confirmPassword: v);
   void setFullName(String v) => state = state.copyWith(fullName: v);
   void togglePass() => state = state.copyWith(showPass: !state.showPass);
 
   Future<void> doLogin() async {
-    if (state.email.trim().isEmpty || state.password.isEmpty) {
-      state = state.copyWith(authError: 'أدخل البريد الإلكتروني وكلمة المرور');
+    final e164 = _toE164(state.phone);
+    if (e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'أدخل رقم هاتف موريتاني صحيح (8 أرقام) وكلمة المرور');
       return;
     }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      await _sb.auth.signInWithPassword(email: state.email.trim(), password: state.password);
+      await _sb.auth.signInWithPassword(phone: e164, password: state.password);
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       unawaited(PushNotifications.register());
@@ -386,8 +399,9 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   }
 
   Future<void> doSignup() async {
-    if (state.fullName.trim().isEmpty || state.email.trim().isEmpty || state.password.isEmpty) {
-      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول');
+    final e164 = _toE164(state.phone);
+    if (state.fullName.trim().isEmpty || e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول (رقم هاتف موريتاني صحيح من 8 أرقام)');
       return;
     }
     if (state.password.length < 6) {
@@ -400,17 +414,15 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      // Only creates the auth.users row. `register-provider` isn't relevant
-      // here (that's for providers) — a client's `profiles`/`wallets` rows
-      // need their own creation path; for now this mirrors the design's own
-      // behavior (screens reading `profiles` show placeholder data until
-      // that's wired).
+      // Only creates the auth.users row (unconfirmed until the OTP screen's
+      // `confirmOtp()` verifies the SMS code) — `register-provider` runs
+      // there, not here, same as every sibling app.
       await _sb.auth.signUp(
-        email: state.email.trim(),
+        phone: e164,
         password: state.password,
         data: {'full_name': state.fullName},
       );
-      state = state.copyWith(isSubmitting: false);
+      state = state.copyWith(isSubmitting: false, otp: const ['', '', '', '', '', ''], otpCountdown: 45);
       goTo(ClientScreen.otp);
     } on AuthException catch (e) {
       state = state.copyWith(
@@ -435,19 +447,35 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     state = state.copyWith(otp: otp);
   }
 
-  /// The original prototype never actually validates the OTP either — it
-  /// just advances. Real SMS/email OTP verification needs a provider
-  /// (Twilio, etc.) configured on the Supabase project, which isn't set up
-  /// yet; wire `Supabase.instance.client.auth.verifyOTP(...)` here once it is.
+  /// Real verification via Supabase Auth's phone OTP (`sms_otp_length: 6`,
+  /// delivered by Chinguisoft through the `sms-hook` Auth Hook). A wrong or
+  /// expired code throws an `AuthException` here — previously this screen
+  /// just advanced no matter what was typed.
   ///
-  /// What isn't optional: every sibling app (taxi/food/livreur) calls
-  /// `register-provider` at this exact point to create the `profiles`/
-  /// `wallets` rows for the just-confirmed signup — this app was missing
-  /// that call entirely, which meant a client's `profiles` row never
-  /// existed, and every real order request would fail with "الملف الشخصي
-  /// غير موجود" (`assertNotSuspended` in every request-* function requires
-  /// one). `role: 'client'` is a valid `register-provider` role.
+  /// Every sibling app (taxi/food/livreur) calls `register-provider` at this
+  /// exact point to create the `profiles`/`wallets` rows for the
+  /// just-confirmed signup — `role: 'client'` is a valid `register-provider`
+  /// role for this app's case.
   Future<void> confirmOtp() async {
+    final e164 = _toE164(state.phone);
+    final code = state.otp.join();
+    if (e164 == null || code.length < 6) {
+      state = state.copyWith(authError: 'أدخل الرمز المكوّن من 6 أرقام');
+      return;
+    }
+    state = state.copyWith(isSubmitting: true, authError: null);
+    try {
+      await _sb.auth.verifyOTP(phone: e164, token: code, type: OtpType.sms);
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'رمز غير صحيح أو منتهي الصلاحية'),
+      );
+      return;
+    } catch (_) {
+      state = state.copyWith(isSubmitting: false, authError: 'تعذّر تأكيد الرمز، حاول مجددًا');
+      return;
+    }
     try {
       await _sb.functions.invoke('register-provider', body: {'role': 'client', 'full_name': state.fullName});
     } catch (_) {
@@ -455,32 +483,72 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       // that needs profiles/wallets data already tolerates it being
       // missing; the user isn't blocked from proceeding either way.
     }
+    state = state.copyWith(isSubmitting: false);
     goTo(ClientScreen.locationPermission);
   }
 
-  /// Forgot-password is a single screen with 3 inline steps (request code →
-  /// verify code → set new password), matching the new design — same real
-  /// Supabase calls as before, just no longer spread across dedicated
-  /// screens/the shared OTP screen.
-  void goToForgot() => goTo(ClientScreen.forgot, patch: (s) => s.copyWith(forgotStep: 0, fpEmail: '', fpCode: '', fpNewPassword: ''));
+  /// Countdown-gated resend — `signInWithOtp` on an unconfirmed phone
+  /// re-triggers the same signup OTP flow (GoTrue treats it as a resend),
+  /// hitting the `sms-hook` again for a fresh Chinguisoft SMS.
+  Future<void> resendOtp() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null) return;
+    try {
+      await _sb.auth.signInWithOtp(phone: e164);
+      state = state.copyWith(otp: const ['', '', '', '', '', ''], otpCountdown: 45, authError: null);
+    } catch (_) {
+      state = state.copyWith(authError: 'تعذّر إعادة إرسال الرمز، حاول مجددًا');
+    }
+  }
 
-  void setFpEmail(String v) => state = state.copyWith(fpEmail: v);
+  /// Forgot-password is a single screen with 3 inline steps (request code →
+  /// verify code → set new password), matching the new design. Phone-based:
+  /// step 0 sends a real OTP via `signInWithOtp` (no password needed since
+  /// the point is the user forgot it), step 1's `verifyOTP` call is what
+  /// actually authenticates them (there's no separate "reset link"), and
+  /// step 2's `updateUser` only works because that verification produced a
+  /// real session — previously this whole flow never sent or checked
+  /// anything real, and `updateUser` in step 2 would have failed silently
+  /// with no session to act on.
+  void goToForgot() => goTo(ClientScreen.forgot, patch: (s) => s.copyWith(forgotStep: 0, fpPhone: '', fpCode: '', fpNewPassword: ''));
+
+  void setFpPhone(String v) => state = state.copyWith(fpPhone: v);
   void setFpCode(String v) => state = state.copyWith(fpCode: v);
   void setFpNewPassword(String v) => state = state.copyWith(fpNewPassword: v);
 
   Future<void> sendResetCode() async {
+    final e164 = _toE164(state.fpPhone);
+    if (e164 == null) {
+      state = state.copyWith(authError: 'أدخل رقم هاتف موريتاني صحيح (8 أرقام)');
+      return;
+    }
     try {
-      await _sb.auth.resetPasswordForEmail(state.fpEmail.trim());
+      // `shouldCreateUser: false` — this is password *recovery*, a
+      // mistyped/unregistered number must not silently create a fresh
+      // blank account instead of surfacing "not found".
+      await _sb.auth.signInWithOtp(phone: e164, shouldCreateUser: false);
     } catch (_) {
-      // Best-effort — Supabase intentionally doesn't reveal whether the
-      // email exists, so we still advance either way, same as the design.
+      // Best-effort — same as the email flow this replaced, we still
+      // advance either way so this can't be used to enumerate accounts.
     }
     state = state.copyWith(forgotStep: 1);
   }
 
-  /// The original prototype never actually validates the reset code either
-  /// — it just advances (same as signup OTP, see `confirmOtp`).
-  void verifyResetCode() => state = state.copyWith(forgotStep: 2);
+  Future<void> verifyResetCode() async {
+    final e164 = _toE164(state.fpPhone);
+    if (e164 == null || state.fpCode.length < 6) {
+      state = state.copyWith(authError: 'أدخل الرمز المكوّن من 6 أرقام');
+      return;
+    }
+    try {
+      await _sb.auth.verifyOTP(phone: e164, token: state.fpCode, type: OtpType.sms);
+      state = state.copyWith(forgotStep: 2, authError: null);
+    } on AuthException catch (e) {
+      state = state.copyWith(authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'رمز غير صحيح أو منتهي الصلاحية'));
+    } catch (_) {
+      state = state.copyWith(authError: 'تعذّر تأكيد الرمز، حاول مجددًا');
+    }
+  }
 
   Future<void> resetPasswordDone() async {
     try {

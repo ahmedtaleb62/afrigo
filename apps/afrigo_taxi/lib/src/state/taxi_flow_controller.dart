@@ -92,21 +92,34 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   }
 
   // ---------------------------------------------------------------------
-  // Auth
+  // Auth — real Supabase calls. Phone-first: signup/login identify the
+  // account by Mauritanian mobile number (Chinguisoft SMS OTP via the
+  // `sms-hook` Auth Hook Edge Function), not email — see that function's
+  // doc comment for the full wiring.
   // ---------------------------------------------------------------------
-  void setEmail(String v) => state = state.copyWith(email: v);
+  /// Mauritanian mobile numbers are 8 digits starting with 2, 3, or 4 (the
+  /// same shape Chinguisoft's API requires) — `null` when `local` doesn't
+  /// match, so every call site can treat that as "invalid, don't submit".
+  String? _toE164(String local) {
+    final trimmed = local.trim();
+    if (!RegExp(r'^[234]\d{7}$').hasMatch(trimmed)) return null;
+    return '+222$trimmed';
+  }
+
+  void setPhone(String v) => state = state.copyWith(phone: v);
   void setPassword(String v) => state = state.copyWith(password: v);
   void setConfirmPassword(String v) => state = state.copyWith(confirmPassword: v);
   void setFullName(String v) => state = state.copyWith(fullName: v);
 
   Future<void> doLogin() async {
-    if (state.email.trim().isEmpty || state.password.isEmpty) {
-      state = state.copyWith(authError: 'أدخل البريد الإلكتروني وكلمة المرور');
+    final e164 = _toE164(state.phone);
+    if (e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'أدخل رقم هاتف موريتاني صحيح (8 أرقام) وكلمة المرور');
       return;
     }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      await _sb.auth.signInWithPassword(email: state.email.trim(), password: state.password);
+      await _sb.auth.signInWithPassword(phone: e164, password: state.password);
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       ensureLiveSubscriptions();
@@ -240,8 +253,9 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   }
 
   Future<void> doSignup() async {
-    if (state.fullName.trim().isEmpty || state.email.trim().isEmpty || state.password.isEmpty) {
-      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول');
+    final e164 = _toE164(state.phone);
+    if (state.fullName.trim().isEmpty || e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول (رقم هاتف موريتاني صحيح من 8 أرقام)');
       return;
     }
     if (state.password.length < 6) {
@@ -254,10 +268,12 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      // Only creates the auth.users row — profiles/wallets (role='taxi_driver')
-      // are created by `register-provider` once the user confirms via OTP.
-      await _sb.auth.signUp(email: state.email.trim(), password: state.password, data: {'full_name': state.fullName});
-      state = state.copyWith(isSubmitting: false);
+      // Only creates the auth.users row (unconfirmed until the OTP screen's
+      // `confirmOtp()` verifies the SMS code) — profiles/wallets
+      // (role='taxi_driver') are created by `register-provider` there, not
+      // here.
+      await _sb.auth.signUp(phone: e164, password: state.password, data: {'full_name': state.fullName});
+      state = state.copyWith(isSubmitting: false, otp: const ['', '', '', '', '', ''], otpCountdown: 45);
       goTo(TaxiScreen.otp);
     } on AuthException catch (e) {
       state = state.copyWith(
@@ -269,18 +285,60 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     }
   }
 
-  /// The original prototype never validates the OTP either — it just
-  /// advances. Wire `auth.verifyOTP(...)` here once an SMS/email OTP
-  /// provider is configured on the Supabase project. `register-provider`
-  /// creates the `profiles`/`wallets` rows for the now-confirmed user.
+  void setOtpDigit(int index, String value) {
+    final otp = [...state.otp];
+    otp[index] = value;
+    state = state.copyWith(otp: otp);
+  }
+
+  /// Real verification via Supabase Auth's phone OTP (`sms_otp_length: 6`,
+  /// delivered by Chinguisoft through the `sms-hook` Auth Hook). A wrong or
+  /// expired code throws an `AuthException` here — previously this screen
+  /// advanced no matter what was typed, since nothing here ever read the
+  /// digits at all. `register-provider` creates the `profiles`/`wallets`
+  /// rows for the now-confirmed user, same as before.
   Future<void> confirmOtp() async {
+    final e164 = _toE164(state.phone);
+    final code = state.otp.join();
+    if (e164 == null || code.length < 6) {
+      state = state.copyWith(authError: 'أدخل الرمز المكوّن من 6 أرقام');
+      return;
+    }
+    state = state.copyWith(isSubmitting: true, authError: null);
+    try {
+      await _sb.auth.verifyOTP(phone: e164, token: code, type: OtpType.sms);
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'رمز غير صحيح أو منتهي الصلاحية'),
+      );
+      return;
+    } catch (_) {
+      state = state.copyWith(isSubmitting: false, authError: 'تعذّر تأكيد الرمز، حاول مجددًا');
+      return;
+    }
     try {
       await _sb.functions.invoke('register-provider', body: {'role': 'taxi_driver', 'full_name': state.fullName});
     } catch (_) {
       // Non-fatal — vehicleDocs submission below still works even if this
       // races the auth session; register-provider is idempotent.
     }
+    state = state.copyWith(isSubmitting: false);
     goTo(TaxiScreen.accountCreating);
+  }
+
+  /// Countdown-gated resend — `signInWithOtp` on an unconfirmed phone
+  /// re-triggers the same signup OTP flow (GoTrue treats it as a resend),
+  /// hitting the `sms-hook` again for a fresh Chinguisoft SMS.
+  Future<void> resendOtp() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null) return;
+    try {
+      await _sb.auth.signInWithOtp(phone: e164);
+      state = state.copyWith(otp: const ['', '', '', '', '', ''], otpCountdown: 45, authError: null);
+    } catch (_) {
+      state = state.copyWith(authError: 'تعذّر إعادة إرسال الرمز، حاول مجددًا');
+    }
   }
 
   /// Self-heals accounts stuck with an `auth.users` row but no `profiles`/

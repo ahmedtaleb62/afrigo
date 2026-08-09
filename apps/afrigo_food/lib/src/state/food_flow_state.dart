@@ -5,10 +5,11 @@ class FoodFlowState {
   const FoodFlowState({
     this.screen = FoodScreen.splash,
     this.hist = const [],
-    this.email = '',
+    this.phone = '',
     this.password = '',
     this.confirmPassword = '',
     this.fullName = '',
+    this.otp = const ['', '', '', '', '', ''],
     this.doc1 = false,
     this.doc2 = false,
     this.licenseUploading = false,
@@ -36,6 +37,7 @@ class FoodFlowState {
     this.deliveryFee = '100',
     this.minOrder = '500',
     this.prepTime = '20-30 د',
+    this.contactPhone = '',
     this.orderTab = OrderTab.newOrder,
     this.newOrders = const [],
     this.prepOrders = const [],
@@ -52,10 +54,17 @@ class FoodFlowState {
   final FoodScreen screen;
   final List<FoodScreen> hist;
 
-  final String email;
+  /// Local 8-digit Mauritanian mobile number, no country code (e.g.
+  /// `"46123456"`) — `+222` is prefixed only when calling Supabase Auth.
+  final String phone;
   final String password;
   final String confirmPassword;
   final String fullName;
+
+  /// 6 digits to match Supabase Auth's `sms_otp_length` (the code
+  /// Chinguisoft actually texts is whatever GoTrue generates, relayed as-is
+  /// by the `sms-hook` Edge Function).
+  final List<String> otp;
   final bool doc1;
   final bool doc2;
   final bool licenseUploading;
@@ -90,6 +99,10 @@ class FoodFlowState {
   final String deliveryFee;
   final String minOrder;
   final String prepTime;
+
+  /// Restaurant's client-facing support number — shown to the client during
+  /// food ordering/tracking, separate from the owner's own account phone.
+  final String contactPhone;
 
   final OrderTab orderTab;
 
@@ -158,10 +171,11 @@ class FoodFlowState {
   FoodFlowState copyWith({
     FoodScreen? screen,
     List<FoodScreen>? hist,
-    String? email,
+    String? phone,
     String? password,
     String? confirmPassword,
     String? fullName,
+    List<String>? otp,
     bool? doc1,
     bool? doc2,
     bool? licenseUploading,
@@ -189,6 +203,7 @@ class FoodFlowState {
     String? deliveryFee,
     String? minOrder,
     String? prepTime,
+    String? contactPhone,
     OrderTab? orderTab,
     List<Map<String, dynamic>>? newOrders,
     List<Map<String, dynamic>>? prepOrders,
@@ -204,10 +219,11 @@ class FoodFlowState {
     return FoodFlowState(
       screen: screen ?? this.screen,
       hist: hist ?? this.hist,
-      email: email ?? this.email,
+      phone: phone ?? this.phone,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       fullName: fullName ?? this.fullName,
+      otp: otp ?? this.otp,
       doc1: doc1 ?? this.doc1,
       doc2: doc2 ?? this.doc2,
       licenseUploading: licenseUploading ?? this.licenseUploading,
@@ -237,6 +253,7 @@ class FoodFlowState {
       deliveryFee: deliveryFee ?? this.deliveryFee,
       minOrder: minOrder ?? this.minOrder,
       prepTime: prepTime ?? this.prepTime,
+      contactPhone: contactPhone ?? this.contactPhone,
       orderTab: orderTab ?? this.orderTab,
       newOrders: newOrders ?? this.newOrders,
       prepOrders: prepOrders ?? this.prepOrders,

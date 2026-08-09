@@ -8,7 +8,9 @@ import '../widgets/back_circle_button.dart';
 import '../widgets/client_primary_button.dart';
 import '../core/context_ext.dart';
 
-/// Screen 6 — OTP confirmation.
+/// Screen 6 — OTP confirmation. 6 digits to match Supabase Auth's
+/// `sms_otp_length` — the real code Chinguisoft texts, verified for real by
+/// `confirmOtp()`.
 class OtpScreen extends ConsumerStatefulWidget {
   const OtpScreen({super.key});
 
@@ -17,13 +19,19 @@ class OtpScreen extends ConsumerStatefulWidget {
 }
 
 class _OtpScreenState extends ConsumerState<OtpScreen> {
-  late final List<TextEditingController> _controllers = List.generate(4, (_) => TextEditingController());
+  late final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
   Timer? _timer;
   int _countdown = 45;
 
   @override
   void initState() {
     super.initState();
+    _startCountdown();
+  }
+
+  void _startCountdown() {
+    _timer?.cancel();
+    setState(() => _countdown = 45);
     _timer = Timer.periodic(const Duration(seconds: 1), (t) {
       if (_countdown <= 0) {
         t.cancel();
@@ -31,6 +39,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
       }
       setState(() => _countdown--);
     });
+  }
+
+  Future<void> _resend() async {
+    if (_countdown > 0) return;
+    await ref.read(clientFlowControllerProvider.notifier).resendOtp();
+    _startCountdown();
   }
 
   @override
@@ -45,6 +59,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
+    final s = ref.watch(clientFlowControllerProvider);
 
     return Container(
       color: Colors.white,
@@ -56,23 +71,26 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
           const SizedBox(height: 20),
           const Text('تأكيد الرمز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
           const SizedBox(height: 8),
-          const Text('أدخل الرمز المكوّن من 4 أرقام المرسل إلى رقم هاتفك', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
+          const Text('أدخل الرمز المكوّن من 6 أرقام المرسل إلى رقم هاتفك', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
           const SizedBox(height: 28),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            children: List.generate(4, (i) {
+            children: List.generate(6, (i) {
               return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 6),
+                padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: SizedBox(
-                  width: 52,
-                  height: 60,
+                  width: 44,
+                  height: 56,
                   child: TextField(
                     controller: _controllers[i],
-                    onChanged: (v) => controller.setOtpDigit(i, v),
+                    onChanged: (v) {
+                      controller.setOtpDigit(i, v);
+                      if (v.isNotEmpty && i < 5) FocusScope.of(context).nextFocus();
+                    },
                     maxLength: 1,
                     textAlign: TextAlign.center,
                     keyboardType: TextInputType.number,
-                    style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22),
+                    style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 20),
                     decoration: InputDecoration(
                       counterText: '',
                       filled: true,
@@ -85,15 +103,22 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               );
             }),
           ),
+          if (s.authError != null) ...[
+            const SizedBox(height: 14),
+            Center(child: Text(s.authError!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFFDC2626)))),
+          ],
           const SizedBox(height: 24),
           Center(
-            child: Text(
-              _countdown > 0 ? 'إعادة الإرسال خلال $_countdown ثانية' : 'إعادة الإرسال',
-              style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: Color(0xFFA8A29E)),
+            child: InkWell(
+              onTap: _countdown > 0 ? null : _resend,
+              child: Text(
+                _countdown > 0 ? 'إعادة الإرسال خلال $_countdown ثانية' : 'إعادة الإرسال',
+                style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: _countdown > 0 ? const Color(0xFFA8A29E) : const Color(0xFF166534)),
+              ),
             ),
           ),
           const Spacer(),
-          ClientPrimaryButton(label: 'تأكيد', onPressed: controller.confirmOtp),
+          ClientPrimaryButton(label: 'تأكيد', isLoading: s.isSubmitting, onPressed: controller.confirmOtp),
         ],
       ),
     );

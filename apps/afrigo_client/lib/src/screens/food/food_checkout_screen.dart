@@ -21,6 +21,7 @@ class FoodCheckoutScreen extends ConsumerWidget {
     final paymentMethod = ref.watch(clientFlowControllerProvider.select((s) => s.paymentMethod));
     final dropoffAddress = ref.watch(clientFlowControllerProvider.select((s) => s.dropoffAddress));
     final isPickup = ref.watch(clientFlowControllerProvider.select((s) => s.foodIsPickup));
+    final minOrder = ref.watch(clientFlowControllerProvider.select((s) => s.selectedRestaurantMinOrder));
 
     Widget pickupOption(String label, String emoji, bool value) {
       final selected = isPickup == value;
@@ -104,6 +105,14 @@ class FoodCheckoutScreen extends ConsumerWidget {
               ],
             ),
           ),
+          if (!meetsMinOrder && minOrder != null && minOrder > 0) ...[
+            const SizedBox(height: 10),
+            Text(
+              'الحد الأدنى للطلب في هذا المطعم ${minOrder.toStringAsFixed(0)} أوقية',
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFFDC2626)),
+            ),
+          ],
           const Spacer(),
           ClientPrimaryButton(label: 'أرسل الطلب', onPressed: meetsMinOrder ? controller.placeFoodOrder : null),
         ],

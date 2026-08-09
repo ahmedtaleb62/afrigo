@@ -107,7 +107,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                       style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17),
                     ),
                     Text(
-                      s.profileEmail ?? '',
+                      s.profileEmail ?? s.profilePhone ?? '',
                       style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C)),
                     ),
                   ],

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -71,17 +72,34 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   }
 
   // ---------------------------------------------------------------------
-  // Auth
+  // Auth — real Supabase calls. Phone-first, matching the client app:
+  // login/signup identify the account by Mauritanian mobile number
+  // (Chinguisoft SMS OTP via the `sms-hook` Auth Hook Edge Function), not
+  // email — see that function's doc comment for the full wiring.
   // ---------------------------------------------------------------------
-  void setEmail(String v) => state = state.copyWith(email: v);
+  /// Mauritanian mobile numbers are 8 digits starting with 2, 3, or 4 (the
+  /// same shape Chinguisoft's API requires) — `null` when `local` doesn't
+  /// match, so every call site can treat that as "invalid, don't submit".
+  String? _toE164(String local) {
+    final trimmed = local.trim();
+    if (!RegExp(r'^[234]\d{7}$').hasMatch(trimmed)) return null;
+    return '+222$trimmed';
+  }
+
+  void setPhone(String v) => state = state.copyWith(phone: v);
   void setPassword(String v) => state = state.copyWith(password: v);
   void setConfirmPassword(String v) => state = state.copyWith(confirmPassword: v);
   void setFullName(String v) => state = state.copyWith(fullName: v);
 
   Future<void> doLogin() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'أدخل رقم هاتف موريتاني صحيح (8 أرقام) وكلمة المرور');
+      return;
+    }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      await _sb.auth.signInWithPassword(email: state.email.trim(), password: state.password);
+      await _sb.auth.signInWithPassword(phone: e164, password: state.password);
       state = state.copyWith(isSubmitting: false);
       unawaited(_ensureProfile());
       watchWallet();
@@ -89,7 +107,10 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       unawaited(PushNotifications.register());
       await _routeAfterAuth();
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر تسجيل الدخول، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر تسجيل الدخول، حاول مجددًا');
     }
@@ -167,40 +188,90 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   }
 
   Future<void> doSignup() async {
+    final e164 = _toE164(state.phone);
+    if (state.fullName.trim().isEmpty || e164 == null || state.password.isEmpty) {
+      state = state.copyWith(authError: 'يرجى تعبئة جميع الحقول (رقم هاتف موريتاني صحيح من 8 أرقام)');
+      return;
+    }
     if (state.password != state.confirmPassword) {
       state = state.copyWith(authError: 'كلمتا المرور غير متطابقتين');
       return;
     }
     state = state.copyWith(isSubmitting: true, authError: null);
     try {
-      // Only creates the auth.users row — profiles/wallets (role=
-      // 'restaurant_owner') are created by `register-provider` (Section 2).
-      await _sb.auth.signUp(email: state.email.trim(), password: state.password, data: {'full_name': state.fullName});
-      state = state.copyWith(isSubmitting: false);
+      // Only creates the auth.users row (unconfirmed until the OTP screen's
+      // `confirmOtp()` verifies the SMS code) — profiles/wallets (role=
+      // 'restaurant_owner') are created by `register-provider`, called from
+      // `confirmOtp()` below, not here.
+      await _sb.auth.signUp(phone: e164, password: state.password, data: {'full_name': state.fullName});
+      state = state.copyWith(isSubmitting: false, otp: const ['', '', '', '', '', '']);
       goTo(FoodScreen.otp);
     } on AuthException catch (e) {
-      state = state.copyWith(isSubmitting: false, authError: e.message);
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر إنشاء الحساب، حاول مجددًا'),
+      );
     } catch (_) {
       state = state.copyWith(isSubmitting: false, authError: 'تعذّر إنشاء الحساب، حاول مجددًا');
     }
   }
 
-  /// The original code here never actually called `register-provider` —
-  /// the comment above claiming profiles/wallets "are created by
-  /// register-provider" was aspirational, not real. Every restaurant-owner
-  /// signup ended up with an `auth.users` row but no `profiles` row, which
-  /// then made `submitRestaurantDocs`'s insert fail on the `restaurants
-  /// .owner_id` foreign key — a confusing "تعذّر إرسال بيانات المطعم" that
-  /// would fail identically on every retry since the real cause (no
-  /// profile) was never fixed by retrying.
+  void setOtpDigit(int index, String value) {
+    final otp = [...state.otp];
+    otp[index] = value;
+    state = state.copyWith(otp: otp);
+  }
+
+  /// Real verification via Supabase Auth's phone OTP (`sms_otp_length: 6`,
+  /// delivered by Chinguisoft through the `sms-hook` Auth Hook) — a wrong
+  /// or expired code throws an `AuthException` here, surfaced via
+  /// `authError`. Only once that succeeds do we call `register-provider` —
+  /// previously this screen never verified anything real and always went
+  /// on to call `register-provider` regardless of what (if anything) was
+  /// typed, so every restaurant-owner signup ended up with an unconfirmed
+  /// `auth.users` row silently promoted straight to a real profile.
   Future<void> confirmOtp() async {
+    final e164 = _toE164(state.phone);
+    final code = state.otp.join();
+    if (e164 == null || code.length < 6) {
+      state = state.copyWith(authError: 'أدخل الرمز المكوّن من 6 أرقام');
+      return;
+    }
+    state = state.copyWith(isSubmitting: true, authError: null);
+    try {
+      await _sb.auth.verifyOTP(phone: e164, token: code, type: OtpType.sms);
+    } on AuthException catch (e) {
+      state = state.copyWith(
+        isSubmitting: false,
+        authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'رمز غير صحيح أو منتهي الصلاحية'),
+      );
+      return;
+    } catch (_) {
+      state = state.copyWith(isSubmitting: false, authError: 'تعذّر تأكيد الرمز، حاول مجددًا');
+      return;
+    }
     try {
       await _sb.functions.invoke('register-provider', body: {'role': 'restaurant_owner', 'full_name': state.fullName});
     } catch (_) {
       // Non-fatal — restaurantDocs submission below still works even if
       // this races the auth session; register-provider is idempotent.
     }
+    state = state.copyWith(isSubmitting: false);
     goTo(FoodScreen.restaurantDocs);
+  }
+
+  /// Countdown-gated resend — `signInWithOtp` on an unconfirmed phone
+  /// re-triggers the same signup OTP flow (GoTrue treats it as a resend),
+  /// hitting the `sms-hook` again for a fresh Chinguisoft SMS.
+  Future<void> resendOtp() async {
+    final e164 = _toE164(state.phone);
+    if (e164 == null) return;
+    try {
+      await _sb.auth.signInWithOtp(phone: e164);
+      state = state.copyWith(otp: const ['', '', '', '', '', ''], authError: null);
+    } catch (_) {
+      state = state.copyWith(authError: 'تعذّر إعادة إرسال الرمز، حاول مجددًا');
+    }
   }
 
   /// Self-heals accounts stuck with an `auth.users` row but no `profiles`/
@@ -272,10 +343,14 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   Future<void> pickAndUploadLicense(ImageSource source) async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
-    if (picked == null) return;
-    state = state.copyWith(licenseUploading: true, authError: null);
+    // The picker call itself used to sit outside the try/catch below — if
+    // it failed (permission denial, platform exception) instead of just
+    // returning null, the exception was completely unhandled, which looks
+    // identical to "the gallery doesn't open at all" from the outside.
     try {
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+      if (picked == null) return;
+      state = state.copyWith(licenseUploading: true, authError: null);
       final bytes = await picked.readAsBytes();
       await _sb.storage.from('restaurant-docs').uploadBinary(
             '$uid/license.jpg',
@@ -284,7 +359,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
           );
       state = state.copyWith(licenseUploading: false, doc1: true);
     } catch (_) {
-      state = state.copyWith(licenseUploading: false, authError: 'تعذّر رفع الصورة، حاول مجددًا');
+      state = state.copyWith(licenseUploading: false, authError: 'تعذّر فتح المعرض أو رفع الصورة، تحقق من صلاحية الوصول للصور وحاول مجددًا');
     }
   }
 
@@ -299,10 +374,10 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   Future<void> pickAndUploadLogo(ImageSource source) async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
-    if (picked == null) return;
-    state = state.copyWith(logoUploading: true, authError: null);
     try {
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+      if (picked == null) return;
+      state = state.copyWith(logoUploading: true, authError: null);
       final bytes = await picked.readAsBytes();
       final path = '$uid/restaurant-logo.jpg';
       await _sb.storage.from('public-images').uploadBinary(
@@ -319,7 +394,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       }
       state = state.copyWith(logoUploading: false, logoUploaded: true);
     } catch (_) {
-      state = state.copyWith(logoUploading: false, authError: 'تعذّر رفع الصورة، حاول مجددًا');
+      state = state.copyWith(logoUploading: false, authError: 'تعذّر فتح المعرض أو رفع الصورة، تحقق من صلاحية الوصول للصور وحاول مجددًا');
     }
   }
 
@@ -514,7 +589,13 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   Future<void> loadMenu() async {
     final restaurantId = state.restaurantId;
     if (restaurantId == null) return;
-    state = state.copyWith(menuLoading: true);
+    // `addDishOpen` lives in the same app-wide state as everything else,
+    // not the screen's own widget state — leaving the menu screen with the
+    // add-dish panel open (back button, anything short of actually saving
+    // a dish) left it permanently open, so the very next visit to this
+    // screen showed the form fields already expanded. A fresh visit should
+    // always start closed.
+    state = state.copyWith(menuLoading: true, addDishOpen: false);
     try {
       final catRows = await _sb
           .from('restaurant_dish_categories')
@@ -664,34 +745,40 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
   }
 
   // ---------------------------------------------------------------------
-  // Delivery settings — real update. Simplified to just delivery_fee +
-  // prep_time_minutes per an explicit request — `delivery_method` was
-  // never actually read anywhere server-side (every delivery is matched
-  // through Afrigo's own livreur network regardless of this column, it's
-  // effectively dead), and `min_order` is a rarer, lower-value knob not
-  // worth the extra screen complexity right now; both stay at their DB
-  // defaults ('afrigo', 0) rather than being exposed here.
+  // Restaurant Policies (حسابي → سياسة المطعم) — real update. Consolidates
+  // delivery fee, prep time, min order, and a client-facing contact/support
+  // number into one screen. `delivery_method` is still never read anywhere
+  // server-side (every delivery is matched through Afrigo's own livreur
+  // network regardless of this column, it's effectively dead) and stays at
+  // its DB default ('afrigo') rather than being exposed here.
   // ---------------------------------------------------------------------
   void setDeliveryFee(String v) => state = state.copyWith(deliveryFee: v);
   void setPrepTime(String v) => state = state.copyWith(prepTime: v);
+  void setMinOrder(String v) => state = state.copyWith(minOrder: v);
+  void setContactPhone(String v) => state = state.copyWith(contactPhone: v);
 
-  /// Nothing ever populated `deliveryFee`/`prepTime` from the real
-  /// `restaurants` row before this — the screen always showed the
-  /// prototype's original hardcoded placeholders ('100', '20-30 د')
-  /// regardless of what was actually saved, and tapping "حفظ" without
-  /// touching anything would silently overwrite a real saved value with
-  /// that placeholder.
+  /// Nothing ever populated these from the real `restaurants` row before
+  /// this — the screen always showed the prototype's original hardcoded
+  /// placeholders regardless of what was actually saved, and tapping "حفظ"
+  /// without touching anything would silently overwrite a real saved value
+  /// with that placeholder.
   Future<void> loadDeliverySettings() async {
     final restaurantId = state.restaurantId;
     if (restaurantId == null) return;
     try {
-      final row = await _sb.from('restaurants').select('delivery_fee, prep_time_minutes').eq('id', restaurantId).single();
+      final row = await _sb
+          .from('restaurants')
+          .select('delivery_fee, prep_time_minutes, min_order, contact_phone')
+          .eq('id', restaurantId)
+          .single();
       state = state.copyWith(
         deliveryFee: (row['delivery_fee'] as num?)?.toStringAsFixed(0) ?? '0',
         prepTime: (row['prep_time_minutes'] as String?) ?? '',
+        minOrder: (row['min_order'] as num?)?.toStringAsFixed(0) ?? '0',
+        contactPhone: (row['contact_phone'] as String?) ?? '',
       );
     } catch (_) {
-      // Non-fatal — the field just shows whatever was last in local state.
+      // Non-fatal — the fields just show whatever was last in local state.
     }
   }
 
@@ -705,6 +792,8 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       await _sb.from('restaurants').update({
         'delivery_fee': num.tryParse(state.deliveryFee) ?? 0,
         'prep_time_minutes': state.prepTime,
+        'min_order': num.tryParse(state.minOrder) ?? 0,
+        'contact_phone': state.contactPhone.trim().isEmpty ? null : state.contactPhone.trim(),
       }).eq('id', restaurantId);
       back();
     } catch (_) {
@@ -712,7 +801,7 @@ class FoodFlowController extends StateNotifier<FoodFlowState> {
       // at all — a failed update threw before `back()` ever ran, leaving
       // "حفظ" looking like it just hung, with the settings never actually
       // saved.
-      state = state.copyWith(actionError: 'تعذّر حفظ إعدادات التوصيل، حاول مجددًا');
+      state = state.copyWith(actionError: 'تعذّر حفظ سياسة المطعم، حاول مجددًا');
     }
   }
 

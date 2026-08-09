@@ -52,7 +52,7 @@ class AfrigoClientApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Afrigo Client',
+      title: 'Afrigo',
       debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       supportedLocales: AfrigoLocalizations.supportedLocales,

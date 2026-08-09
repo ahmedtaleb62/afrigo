@@ -7,15 +7,15 @@ class ClientFlowState {
     this.hist = const [],
     this.langPick,
     this.onboardStep = 0,
-    this.email = '',
+    this.phone = '',
     this.password = '',
     this.confirmPassword = '',
     this.fullName = '',
     this.showPass = false,
-    this.otp = const ['', '', '', ''],
+    this.otp = const ['', '', '', '', '', ''],
     this.otpCountdown = 45,
     this.forgotStep = 0,
-    this.fpEmail = '',
+    this.fpPhone = '',
     this.fpCode = '',
     this.fpNewPassword = '',
     this.currentLat,
@@ -104,17 +104,22 @@ class ClientFlowState {
   final String? langPick;
   final int onboardStep;
 
-  final String email;
+  /// Local 8-digit Mauritanian mobile number, no country code (e.g.
+  /// `"46123456"`) — `+222` is prefixed only when calling Supabase Auth.
+  final String phone;
   final String password;
   final String confirmPassword;
   final String fullName;
   final bool showPass;
 
+  /// 6 digits to match Supabase Auth's `sms_otp_length` (the code Chinguisoft
+  /// actually texts is whatever GoTrue generates, relayed as-is by the
+  /// `sms-hook` Edge Function — see its doc comment).
   final List<String> otp;
   final int otpCountdown;
 
   final int forgotStep;
-  final String fpEmail;
+  final String fpPhone;
   final String fpCode;
   final String fpNewPassword;
 
@@ -322,7 +327,7 @@ class ClientFlowState {
     List<ClientScreen>? hist,
     Object? langPick = _unset,
     int? onboardStep,
-    String? email,
+    String? phone,
     String? password,
     String? confirmPassword,
     String? fullName,
@@ -330,7 +335,7 @@ class ClientFlowState {
     List<String>? otp,
     int? otpCountdown,
     int? forgotStep,
-    String? fpEmail,
+    String? fpPhone,
     String? fpCode,
     String? fpNewPassword,
     Object? currentLat = _unset,
@@ -417,7 +422,7 @@ class ClientFlowState {
       hist: hist ?? this.hist,
       langPick: identical(langPick, _unset) ? this.langPick : langPick as String?,
       onboardStep: onboardStep ?? this.onboardStep,
-      email: email ?? this.email,
+      phone: phone ?? this.phone,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       fullName: fullName ?? this.fullName,
@@ -425,7 +430,7 @@ class ClientFlowState {
       otp: otp ?? this.otp,
       otpCountdown: otpCountdown ?? this.otpCountdown,
       forgotStep: forgotStep ?? this.forgotStep,
-      fpEmail: fpEmail ?? this.fpEmail,
+      fpPhone: fpPhone ?? this.fpPhone,
       fpCode: fpCode ?? this.fpCode,
       fpNewPassword: fpNewPassword ?? this.fpNewPassword,
       currentLat: identical(currentLat, _unset) ? this.currentLat : currentLat as double?,

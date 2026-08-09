@@ -72,11 +72,13 @@ class LivreurFlowState {
   const LivreurFlowState({
     this.screen = LivreurScreen.splash,
     this.hist = const [],
-    this.email = '',
+    this.phone = '',
     this.password = '',
     this.confirmPassword = '',
     this.fullName = '',
     this.licensePhoto = false,
+    this.otp = const ['', '', '', '', '', ''],
+    this.otpCountdown = 45,
     this.online = false,
     this.lowBalanceDemo = false,
     this.balance,
@@ -95,11 +97,19 @@ class LivreurFlowState {
   final LivreurScreen screen;
   final List<LivreurScreen> hist;
 
-  final String email;
+  /// Local 8-digit Mauritanian mobile number, no country code (e.g.
+  /// `"46123456"`) — `+222` is prefixed only when calling Supabase Auth.
+  final String phone;
   final String password;
   final String confirmPassword;
   final String fullName;
   final bool licensePhoto;
+
+  /// 6 digits to match Supabase Auth's `sms_otp_length` (the code Chinguisoft
+  /// actually texts is whatever GoTrue generates, relayed as-is by the
+  /// `sms-hook` Edge Function).
+  final List<String> otp;
+  final int otpCountdown;
 
   final bool online;
   final bool lowBalanceDemo;
@@ -130,11 +140,13 @@ class LivreurFlowState {
   LivreurFlowState copyWith({
     LivreurScreen? screen,
     List<LivreurScreen>? hist,
-    String? email,
+    String? phone,
     String? password,
     String? confirmPassword,
     String? fullName,
     bool? licensePhoto,
+    List<String>? otp,
+    int? otpCountdown,
     bool? online,
     bool? lowBalanceDemo,
     Object? balance = _unset,
@@ -152,11 +164,13 @@ class LivreurFlowState {
     return LivreurFlowState(
       screen: screen ?? this.screen,
       hist: hist ?? this.hist,
-      email: email ?? this.email,
+      phone: phone ?? this.phone,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       fullName: fullName ?? this.fullName,
       licensePhoto: licensePhoto ?? this.licensePhoto,
+      otp: otp ?? this.otp,
+      otpCountdown: otpCountdown ?? this.otpCountdown,
       online: online ?? this.online,
       lowBalanceDemo: lowBalanceDemo ?? this.lowBalanceDemo,
       balance: identical(balance, _unset) ? this.balance : balance as double?,

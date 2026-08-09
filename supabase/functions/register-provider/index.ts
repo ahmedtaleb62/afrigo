@@ -40,7 +40,7 @@ Deno.serve(
       role: body.role,
       full_name: body.full_name.trim(),
       email: user.email,
-      phone: body.phone ?? null,
+      phone: body.phone ?? user.phone ?? null,
       language_pref: body.language_pref ?? 'ar',
     });
     if (profileError) throw new HttpError(500, `تعذّر إنشاء الملف الشخصي: ${profileError.message}`);

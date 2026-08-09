@@ -27,7 +27,7 @@ class SignupScreen extends ConsumerWidget {
           const SizedBox(height: 24),
           FoodTextField(label: 'اسم صاحب الحساب', hint: 'مثال: كريم عبابسة', onChanged: controller.setFullName),
           const SizedBox(height: 14),
-          FoodTextField(label: 'البريد الإلكتروني', onChanged: controller.setEmail),
+          FoodTextField(label: 'رقم الهاتف', hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setPhone),
           const SizedBox(height: 14),
           FoodTextField(label: 'كلمة المرور', obscureText: true, onChanged: controller.setPassword),
           const SizedBox(height: 14),

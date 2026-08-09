@@ -17,6 +17,7 @@ class ForgotScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final step = ref.watch(clientFlowControllerProvider.select((s) => s.forgotStep));
+    final authError = ref.watch(clientFlowControllerProvider.select((s) => s.authError));
 
     return Container(
       color: Colors.white,
@@ -35,6 +36,10 @@ class ForgotScreen extends ConsumerWidget {
           if (step == 0) _StepRequestCode(controller: controller),
           if (step == 1) _StepVerifyCode(controller: controller),
           if (step == 2) _StepNewPassword(controller: controller),
+          if (authError != null) ...[
+            const SizedBox(height: 12),
+            Text(authError, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFFDC2626))),
+          ],
         ],
       ),
     );
@@ -51,9 +56,9 @@ class _StepRequestCode extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('أدخل بريدك أو هاتفك وسنرسل رمز استعادة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
+        const Text('أدخل رقم هاتفك وسنرسل رمز استعادة عبر رسالة نصية', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))),
         const SizedBox(height: 14),
-        ClientTextField(hint: '46 12 34 56', onChanged: controller.setFpEmail),
+        ClientTextField(hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setFpPhone),
         const SizedBox(height: 20),
         ClientPrimaryButton(label: 'إرسال الرمز', onPressed: controller.sendResetCode),
       ],

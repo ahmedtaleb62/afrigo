@@ -243,21 +243,16 @@ class _MenuScreenState extends ConsumerState<MenuScreen> {
                         padding: const EdgeInsets.all(20),
                         children: [
                           for (final category in s.categories) ...[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(category.name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 13, color: Color(0xFF166534))),
-                                if (category == s.categories.first)
-                                  InkWell(
-                                    onTap: () => _promptNewCategory(context, controller),
-                                    child: const Text('+ تصنيف جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF78716C))),
-                                  ),
-                              ],
+                            _CategoryHeader(
+                              category: category,
+                              dishCount: s.dishes.where((d) => d.categoryId == category.id).length,
+                              showAddButton: category == s.categories.first,
+                              onAddCategory: () => _promptNewCategory(context, controller),
                             ),
                             const SizedBox(height: 8),
                             for (final dish in s.dishes.where((d) => d.categoryId == category.id))
                               _DishCard(dish: dish, controller: controller, onChangeImage: () => _changeExistingDishImage(dish)),
-                            const SizedBox(height: 14),
+                            const SizedBox(height: 18),
                           ],
                         ],
                       ),
@@ -282,6 +277,51 @@ Future<void> _promptNewCategory(BuildContext context, FoodFlowController control
     ),
   );
   if (name != null && name.trim().isNotEmpty) await controller.addCategory(name);
+}
+
+class _CategoryHeader extends StatelessWidget {
+  const _CategoryHeader({required this.category, required this.dishCount, required this.showAddButton, required this.onAddCategory});
+  final DishCategory category;
+  final int dishCount;
+  final bool showAddButton;
+  final VoidCallback onAddCategory;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE7E5E4))),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Expanded(
+            child: Row(
+              children: [
+                Container(width: 4, height: 18, decoration: BoxDecoration(color: const Color(0xFF16A34A), borderRadius: BorderRadius.circular(2))),
+                const SizedBox(width: 8),
+                Flexible(child: Text(category.name, overflow: TextOverflow.ellipsis, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15, color: Color(0xFF1C1917)))),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(999)),
+                  child: Text('$dishCount طبق', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 10, color: Color(0xFF166534))),
+                ),
+              ],
+            ),
+          ),
+          if (showAddButton)
+            InkWell(
+              onTap: onAddCategory,
+              child: const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: Text('+ تصنيف جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 11, color: Color(0xFF78716C))),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
 
 class _DishCard extends StatelessWidget {

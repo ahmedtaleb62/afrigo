@@ -63,7 +63,7 @@ class SignupScreen extends ConsumerWidget {
                   const SizedBox(height: 20),
                   ClientTextField(label: 'الاسم الكامل', hint: 'مثال: سارة بن علي', onChanged: controller.setFullName),
                   const SizedBox(height: 14),
-                  ClientTextField(label: 'البريد الإلكتروني أو رقم الهاتف', hint: 'example@afrigo.com', onChanged: controller.setEmail),
+                  ClientTextField(label: 'رقم الهاتف', hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setPhone),
                   const SizedBox(height: 14),
                   ClientTextField(label: 'كلمة المرور', hint: '••••••••', obscureText: true, onChanged: controller.setPassword),
                   const SizedBox(height: 14),

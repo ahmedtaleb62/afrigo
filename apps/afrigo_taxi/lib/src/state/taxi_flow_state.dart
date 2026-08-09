@@ -106,10 +106,12 @@ class TaxiFlowState {
   const TaxiFlowState({
     this.screen = TaxiScreen.splash,
     this.hist = const [],
-    this.email = '',
+    this.phone = '',
     this.password = '',
     this.confirmPassword = '',
     this.fullName = '',
+    this.otp = const ['', '', '', '', '', ''],
+    this.otpCountdown = 45,
     this.licensePhoto = false,
     this.licenseUploading = false,
     this.online = false,
@@ -142,10 +144,19 @@ class TaxiFlowState {
   final TaxiScreen screen;
   final List<TaxiScreen> hist;
 
-  final String email;
+  /// Local 8-digit Mauritanian mobile number, no country code (e.g.
+  /// `"46123456"`) — `+222` is prefixed only when calling Supabase Auth.
+  final String phone;
   final String password;
   final String confirmPassword;
   final String fullName;
+
+  /// 6 digits to match Supabase Auth's `sms_otp_length` (the code
+  /// Chinguisoft actually texts is whatever GoTrue generates, relayed as-is
+  /// by the `sms-hook` Edge Function — see its doc comment).
+  final List<String> otp;
+  final int otpCountdown;
+
   final bool licensePhoto;
   final bool licenseUploading;
 
@@ -225,10 +236,12 @@ class TaxiFlowState {
   TaxiFlowState copyWith({
     TaxiScreen? screen,
     List<TaxiScreen>? hist,
-    String? email,
+    String? phone,
     String? password,
     String? confirmPassword,
     String? fullName,
+    List<String>? otp,
+    int? otpCountdown,
     bool? licensePhoto,
     bool? licenseUploading,
     bool? online,
@@ -260,10 +273,12 @@ class TaxiFlowState {
     return TaxiFlowState(
       screen: screen ?? this.screen,
       hist: hist ?? this.hist,
-      email: email ?? this.email,
+      phone: phone ?? this.phone,
       password: password ?? this.password,
       confirmPassword: confirmPassword ?? this.confirmPassword,
       fullName: fullName ?? this.fullName,
+      otp: otp ?? this.otp,
+      otpCountdown: otpCountdown ?? this.otpCountdown,
       licensePhoto: licensePhoto ?? this.licensePhoto,
       licenseUploading: licenseUploading ?? this.licenseUploading,
       online: online ?? this.online,

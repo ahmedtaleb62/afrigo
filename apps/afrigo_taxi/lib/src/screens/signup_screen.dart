@@ -63,7 +63,7 @@ class SignupScreen extends ConsumerWidget {
                   const SizedBox(height: 20),
                   TaxiTextField(label: 'الاسم الكامل', hint: 'مثال: مراد بلحاج', onChanged: controller.setFullName),
                   const SizedBox(height: 14),
-                  TaxiTextField(label: 'البريد الإلكتروني', hint: 'driver@afrigo.com', onChanged: controller.setEmail),
+                  TaxiTextField(label: 'رقم الهاتف', hint: '46 12 34 56', keyboardType: TextInputType.phone, onChanged: controller.setPhone),
                   const SizedBox(height: 14),
                   TaxiTextField(label: 'كلمة المرور', hint: '••••••••', obscureText: true, onChanged: controller.setPassword),
                   const SizedBox(height: 14),
