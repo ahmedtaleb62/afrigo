@@ -28,16 +28,22 @@ class FoodListScreen extends ConsumerWidget {
     switch (filter) {
       case 'rating':
         list = [...list]..sort((a, b) => ((b['avg_rating'] as num?) ?? 0).compareTo((a['avg_rating'] as num?) ?? 0));
-      case 'nearest':
-        list = [...list]..sort((a, b) => ((a['distance_km'] as num?) ?? 999999).compareTo((b['distance_km'] as num?) ?? 999999));
       case 'price_low':
         list = [...list]..sort((a, b) => ((a['min_order'] as num?) ?? 0).compareTo((b['min_order'] as num?) ?? 0));
       case 'price_high':
         list = [...list]..sort((a, b) => ((b['min_order'] as num?) ?? 0).compareTo((a['min_order'] as num?) ?? 0));
       case 'open':
+        list = [...list]..sort((a, b) => ((a['distance_km'] as num?) ?? 999999).compareTo((b['distance_km'] as num?) ?? 999999));
         list = list.where((r) => r['is_open'] == true).toList();
       case 'closed':
+        list = [...list]..sort((a, b) => ((a['distance_km'] as num?) ?? 999999).compareTo((b['distance_km'] as num?) ?? 999999));
         list = list.where((r) => r['is_open'] != true).toList();
+      case 'nearest':
+      default:
+        // Nearest-first is the natural default order too, not just an
+        // explicit filter choice — a client opening the list for the first
+        // time should already see the closest restaurant on top.
+        list = [...list]..sort((a, b) => ((a['distance_km'] as num?) ?? 999999).compareTo((b['distance_km'] as num?) ?? 999999));
     }
     return list;
   }

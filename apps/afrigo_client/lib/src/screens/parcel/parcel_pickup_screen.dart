@@ -11,11 +11,25 @@ import '../../core/context_ext.dart';
 
 /// Screen 31 — Parcel pickup point. Real interactive map, same as
 /// `ride_origin_screen`.
-class ParcelPickupScreen extends ConsumerWidget {
+class ParcelPickupScreen extends ConsumerStatefulWidget {
   const ParcelPickupScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ParcelPickupScreen> createState() => _ParcelPickupScreenState();
+}
+
+class _ParcelPickupScreenState extends ConsumerState<ParcelPickupScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // See `ride_origin_screen.dart` — re-request on mount so a stale/never
+    // -resolved GPS fix from earlier doesn't leave the pin on the
+    // Nouakchott-center placeholder.
+    Future.microtask(() => ref.read(clientFlowControllerProvider.notifier).fetchCurrentLocation());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     // See `ride_origin_screen.dart` — a fresher GPS fix must win until the

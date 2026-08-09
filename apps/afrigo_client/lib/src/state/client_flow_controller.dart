@@ -1018,19 +1018,29 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   // ---------------------------------------------------------------------
   Future<void> goToFoodList() async {
     goTo(ClientScreen.foodList);
+    // A GPS fix requested earlier (Home's mount, onboarding) may still be
+    // unresolved by now — re-request so `loadRestaurants` below has the
+    // freshest fix available instead of falling straight back to the
+    // Nouakchott-center placeholder every time.
+    unawaited(fetchCurrentLocation());
     await loadRestaurants();
   }
 
   /// `nearby_restaurants` (see migration `20260802160001`) returns every
   /// verified restaurant (open or not — the food list screen's own
   /// open/closed filter chips need both) with a real `avg_rating` and a
-  /// real PostGIS `distance_km` from the placeholder pickup point, so the
-  /// screen's rating/nearest/price/open sort options all have real data to
-  /// sort by instead of being decorative.
+  /// real PostGIS `distance_km` from wherever `p_lat`/`p_lng` points —
+  /// previously always the fixed Nouakchott-center placeholder regardless
+  /// of whether a real GPS fix existed, so "nearest" and every displayed
+  /// distance were meaningless once the client wasn't standing exactly on
+  /// that point.
   Future<void> loadRestaurants() async {
     state = state.copyWith(restaurantsLoading: true);
     try {
-      final rows = await _sb.rpc('nearby_restaurants', params: {'p_lat': _placeholderPickup['lat'], 'p_lng': _placeholderPickup['lng']});
+      final rows = await _sb.rpc('nearby_restaurants', params: {
+        'p_lat': state.currentLat ?? _placeholderPickup['lat'],
+        'p_lng': state.currentLng ?? _placeholderPickup['lng'],
+      });
       state = state.copyWith(restaurants: List<Map<String, dynamic>>.from(rows as List), restaurantsLoading: false);
     } catch (_) {
       state = state.copyWith(restaurantsLoading: false);
@@ -1413,10 +1423,14 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   Future<void> pickAndUploadAvatar(ImageSource source) async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
-    if (picked == null) return;
-    state = state.copyWith(profileAvatarUploading: true);
     try {
+      // The picker call itself used to sit outside this try/catch — any
+      // failure (permission denial, platform exception) was completely
+      // unhandled, which looks identical to "the gallery doesn't open at
+      // all" from the outside.
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+      if (picked == null) return;
+      state = state.copyWith(profileAvatarUploading: true);
       final bytes = await picked.readAsBytes();
       final path = '$uid/profile.jpg';
       await _sb.storage.from('public-images').uploadBinary(
@@ -1432,7 +1446,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       await _sb.from('profiles').update({'avatar_url': bustedUrl}).eq('id', uid);
       state = state.copyWith(profileAvatarUrl: bustedUrl, profileAvatarUploading: false);
     } catch (_) {
-      state = state.copyWith(profileAvatarUploading: false, requestError: 'تعذّر رفع الصورة، حاول مجددًا');
+      state = state.copyWith(profileAvatarUploading: false, requestError: 'تعذّر فتح المعرض أو رفع الصورة، تحقق من صلاحية الوصول للصور وحاول مجددًا');
     }
   }
 

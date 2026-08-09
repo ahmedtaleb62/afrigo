@@ -14,11 +14,25 @@ import '../../core/context_ext.dart';
 /// `LocationPickerMap` pattern as ride-origin/parcel-pickup, writing to the
 /// same `dropoffLat`/`dropoffLng`/`dropoffAddress` state fields
 /// `placeFoodOrder` now actually reads.
-class FoodDeliveryAddressScreen extends ConsumerWidget {
+class FoodDeliveryAddressScreen extends ConsumerStatefulWidget {
   const FoodDeliveryAddressScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FoodDeliveryAddressScreen> createState() => _FoodDeliveryAddressScreenState();
+}
+
+class _FoodDeliveryAddressScreenState extends ConsumerState<FoodDeliveryAddressScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // See `ride_origin_screen.dart` — re-request on mount so a stale/never
+    // -resolved GPS fix from earlier doesn't leave the pin on the
+    // Nouakchott-center placeholder.
+    Future.microtask(() => ref.read(clientFlowControllerProvider.notifier).fetchCurrentLocation());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     final lat = s.dropoffLat ?? s.currentLat ?? 18.0858;

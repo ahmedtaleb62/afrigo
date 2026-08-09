@@ -221,7 +221,7 @@ abstract class AfrigoLocalizations {
   /// No description provided for @navOrders.
   ///
   /// In ar, this message translates to:
-  /// **'الطلبات'**
+  /// **'طلباتي'**
   String get navOrders;
 
   /// No description provided for @navWallet.
@@ -325,6 +325,36 @@ abstract class AfrigoLocalizations {
   /// In ar, this message translates to:
   /// **'مرحبًا'**
   String get commonGreetingFallback;
+
+  /// No description provided for @commonOk.
+  ///
+  /// In ar, this message translates to:
+  /// **'حسنًا'**
+  String get commonOk;
+
+  /// No description provided for @clientPaymentMethodTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طريقة الدفع'**
+  String get clientPaymentMethodTitle;
+
+  /// No description provided for @clientPaymentCash.
+  ///
+  /// In ar, this message translates to:
+  /// **'نقدًا'**
+  String get clientPaymentCash;
+
+  /// No description provided for @clientPaymentBankili.
+  ///
+  /// In ar, this message translates to:
+  /// **'بنكيلي'**
+  String get clientPaymentBankili;
+
+  /// No description provided for @clientPaymentBankTransfer.
+  ///
+  /// In ar, this message translates to:
+  /// **'سداد مصرفي'**
+  String get clientPaymentBankTransfer;
 
   /// No description provided for @clientLoginTitle.
   ///

@@ -1,13 +1,16 @@
+import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter/material.dart';
+
+import '../core/context_ext.dart';
 
 /// Cash / بنكيلي / bank settlement — no real payment gateway exists (or was
 /// asked for) yet, this just records which of the three the client picked
 /// so it lands on the order row instead of being silently assumed-cash.
-const kPaymentMethods = {
-  'cash': '💵 نقدًا',
-  'baridimob': '📱 بنكيلي',
-  'bank_transfer': '🏦 سداد مصرفي',
-};
+Map<String, String> kPaymentMethods(AfrigoLocalizations l10n) => {
+      'cash': '💵 ${l10n.clientPaymentCash}',
+      'baridimob': '📱 ${l10n.clientPaymentBankili}',
+      'bank_transfer': '🏦 ${l10n.clientPaymentBankTransfer}',
+    };
 
 class PaymentMethodField extends StatelessWidget {
   const PaymentMethodField({super.key, required this.value, required this.onChanged});
@@ -16,6 +19,8 @@ class PaymentMethodField extends StatelessWidget {
   final ValueChanged<String> onChanged;
 
   Future<void> _pick(BuildContext context) async {
+    final l10n = context.l10n;
+    final methods = kPaymentMethods(l10n);
     final picked = await showModalBottomSheet<String>(
       context: context,
       backgroundColor: Colors.white,
@@ -26,14 +31,14 @@ class PaymentMethodField extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Padding(
-                padding: EdgeInsets.fromLTRB(20, 6, 20, 10),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(20, 6, 20, 10),
                 child: Align(
                   alignment: Alignment.centerRight,
-                  child: Text('طريقة الدفع', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15)),
+                  child: Text(l10n.clientPaymentMethodTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 15)),
                 ),
               ),
-              for (final entry in kPaymentMethods.entries)
+              for (final entry in methods.entries)
                 InkWell(
                   onTap: () => Navigator.of(ctx).pop(entry.key),
                   child: Container(
@@ -57,6 +62,7 @@ class PaymentMethodField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final methods = kPaymentMethods(context.l10n);
     return InkWell(
       onTap: () => _pick(context),
       borderRadius: BorderRadius.circular(12),
@@ -67,7 +73,7 @@ class PaymentMethodField extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(kPaymentMethods[value] ?? kPaymentMethods['cash']!, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
+            Text(methods[value] ?? methods['cash']!, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13)),
             const Text('›', style: TextStyle(color: Color(0xFFA8A29E))),
           ],
         ),

@@ -26,7 +26,7 @@
   "badgeStopped": "متوقف",
 
   "navHome": "الرئيسية",
-  "navOrders": "الطلبات",
+  "navOrders": "طلباتي",
   "navWallet": "المحفظة",
   "navAccount": "الحساب",
 
@@ -50,6 +50,12 @@
   "commonVerify": "تحقق",
   "commonNotNow": "ليس الآن",
   "commonGreetingFallback": "مرحبًا",
+  "commonOk": "حسنًا",
+
+  "clientPaymentMethodTitle": "طريقة الدفع",
+  "clientPaymentCash": "نقدًا",
+  "clientPaymentBankili": "بنكيلي",
+  "clientPaymentBankTransfer": "سداد مصرفي",
 
   "clientLoginTitle": "تسجيل الدخول",
   "clientLoginSubtitle": "أدخل بياناتك للاستمرار في afrigo",

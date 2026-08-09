@@ -50,6 +50,12 @@
   "commonVerify": "Vérifier",
   "commonNotNow": "Plus tard",
   "commonGreetingFallback": "Bonjour",
+  "commonOk": "D'accord",
+
+  "clientPaymentMethodTitle": "Mode de paiement",
+  "clientPaymentCash": "Espèces",
+  "clientPaymentBankili": "Bankily",
+  "clientPaymentBankTransfer": "Virement bancaire",
 
   "clientLoginTitle": "Connexion",
   "clientLoginSubtitle": "Entrez vos informations pour continuer sur afrigo",

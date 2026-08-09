@@ -129,6 +129,21 @@ class AfrigoLocalizationsFr extends AfrigoLocalizations {
   String get commonGreetingFallback => 'Bonjour';
 
   @override
+  String get commonOk => 'D\'accord';
+
+  @override
+  String get clientPaymentMethodTitle => 'Mode de paiement';
+
+  @override
+  String get clientPaymentCash => 'Espèces';
+
+  @override
+  String get clientPaymentBankili => 'Bankily';
+
+  @override
+  String get clientPaymentBankTransfer => 'Virement bancaire';
+
+  @override
   String get clientLoginTitle => 'Connexion';
 
   @override

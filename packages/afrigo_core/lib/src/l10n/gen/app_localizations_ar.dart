@@ -70,7 +70,7 @@ class AfrigoLocalizationsAr extends AfrigoLocalizations {
   String get navHome => 'الرئيسية';
 
   @override
-  String get navOrders => 'الطلبات';
+  String get navOrders => 'طلباتي';
 
   @override
   String get navWallet => 'المحفظة';
@@ -125,6 +125,21 @@ class AfrigoLocalizationsAr extends AfrigoLocalizations {
 
   @override
   String get commonGreetingFallback => 'مرحبًا';
+
+  @override
+  String get commonOk => 'حسنًا';
+
+  @override
+  String get clientPaymentMethodTitle => 'طريقة الدفع';
+
+  @override
+  String get clientPaymentCash => 'نقدًا';
+
+  @override
+  String get clientPaymentBankili => 'بنكيلي';
+
+  @override
+  String get clientPaymentBankTransfer => 'سداد مصرفي';
 
   @override
   String get clientLoginTitle => 'تسجيل الدخول';

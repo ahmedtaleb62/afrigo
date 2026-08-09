@@ -12,11 +12,27 @@ import '../../core/context_ext.dart';
 /// Screen 12 — Ride origin. Real interactive map (drag to move the pin,
 /// real reverse-geocoded address) — was a static placeholder image with a
 /// hardcoded address before.
-class RideOriginScreen extends ConsumerWidget {
+class RideOriginScreen extends ConsumerStatefulWidget {
   const RideOriginScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RideOriginScreen> createState() => _RideOriginScreenState();
+}
+
+class _RideOriginScreenState extends ConsumerState<RideOriginScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // A GPS fix requested back at Home (or during onboarding) may still be
+    // unresolved or long stale by the time the client actually opens this
+    // screen — re-requesting here is what makes `LocationPickerMap`'s
+    // `didUpdateWidget` re-center onto the real fix instead of leaving the
+    // pin sitting on the Nouakchott-center placeholder the whole time.
+    Future.microtask(() => ref.read(clientFlowControllerProvider.notifier).fetchCurrentLocation());
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final controller = ref.read(clientFlowControllerProvider.notifier);
     final s = ref.watch(clientFlowControllerProvider);
     // Until the user deliberately moves the pin, a fresher GPS fix must
