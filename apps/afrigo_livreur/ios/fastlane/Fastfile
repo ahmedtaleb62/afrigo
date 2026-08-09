@@ -1,0 +1,63 @@
+# Builds the Livreur (courier) app and uploads it to TestFlight. Signing is
+# handled by match, backed by a private git repo of encrypted certs/profiles
+# — same pattern as afrigo_taxi/afrigo_client's Fastfiles. Unlike those two,
+# this app's bundle ID (`com.afrigo.livreur`) has never been registered
+# before, so `produce` runs first to create the Developer Portal App ID +
+# App Store Connect app record (idempotent — it checks first and skips if
+# either already exists, so this stays safe to leave in on every future run).
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload a new build to TestFlight"
+  lane :beta do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true,
+    )
+
+    setup_ci if ENV["CI"]
+
+    produce(
+      api_key: api_key,
+      app_identifier: "com.afrigo.livreur",
+      app_name: "Afrigo Livreur",
+      language: "AR",
+      sku: "afrigo-livreur-ios",
+      team_id: ENV["APPLE_TEAM_ID"],
+    )
+
+    match(
+      type: "appstore",
+      api_key: api_key,
+      readonly: false,
+      git_basic_authorization: ENV["MATCH_GIT_BASIC_AUTHORIZATION"],
+    )
+
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "Runner.xcodeproj",
+      team_id: ENV["APPLE_TEAM_ID"],
+      code_sign_identity: "Apple Distribution",
+      bundle_identifier: "com.afrigo.livreur",
+      profile_name: ENV["sigh_com.afrigo.livreur_appstore_profile-name"],
+    )
+
+    build_number = (latest_testflight_build_number(api_key: api_key) + 1).to_s
+    increment_build_number(xcodeproj: "Runner.xcodeproj", build_number: build_number)
+
+    build_app(
+      workspace: "Runner.xcworkspace",
+      scheme: "Runner",
+      export_method: "app-store",
+      output_directory: "build",
+      xcodebuild_formatter: "",
+    )
+
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true,
+    )
+  end
+end
