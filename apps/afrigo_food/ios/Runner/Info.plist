@@ -51,5 +51,7 @@
 	<string>نحتاج الوصول لمكتبة الصور لاختيار صورة الشعار، رخصة النشاط، أو صورة الطبق.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>نحتاج موقعك لتحديد عنوان المطعم على الخريطة.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نحتاج موقعك لتحديد عنوان المطعم على الخريطة.</string>
 </dict>
 </plist>

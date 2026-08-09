@@ -45,6 +45,10 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>نحتاج موقعك لعرض الطلبات القريبة منك وتحديد موقعك بدقة أثناء الرحلات</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>نحتاج موقعك لعرض الطلبات القريبة منك وتحديد موقعك بدقة أثناء الرحلات</string>
 	<key>NSCameraUsageDescription</key>
 	<string>نستخدم الكاميرا لالتقاط صورة رخصة القيادة عند توثيق مركبتك.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
