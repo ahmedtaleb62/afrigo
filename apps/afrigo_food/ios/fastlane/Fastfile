@@ -22,13 +22,20 @@ platform :ios do
     # `produce` reads the API key from the shared lane context that
     # `app_store_connect_api_key` above already populated — passing
     # `api_key:` directly isn't a valid `produce` parameter and fails with
-    # "Could not find option 'api_key'".
+    # "Could not find option 'api_key'". `skip_devcenter: true` because by
+    # default `produce` ALSO registers the bundle ID via the classic
+    # Developer Portal API, which (unlike App Store Connect) demands an
+    # Apple ID `username` even when an API key is set — `match` right below
+    # already registers the App ID as part of creating the distribution
+    # profile, so this step only needs to create the App Store Connect app
+    # record itself.
     produce(
       app_identifier: "com.afrigo.food",
       app_name: "Afrigo Food",
       language: "AR",
       sku: "afrigo-food-ios",
       team_id: ENV["APPLE_TEAM_ID"],
+      skip_devcenter: true,
     )
 
     match(
