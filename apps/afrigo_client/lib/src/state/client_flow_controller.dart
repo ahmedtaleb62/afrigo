@@ -7,6 +7,7 @@ import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/push_notifications.dart';
@@ -69,7 +70,27 @@ FoodStage? _statusToFoodStage(String? status) {
 /// environment regardless — see supabase/README.md and
 /// apps/afrigo_client/README.md.
 class ClientFlowController extends StateNotifier<ClientFlowState> {
-  ClientFlowController() : super(const ClientFlowState());
+  ClientFlowController() : super(const ClientFlowState()) {
+    _loadSavedLang();
+  }
+
+  static const _langPrefsKey = 'afrigo_client_lang';
+
+  /// `settingsLang` used to only ever start at its hardcoded 'ar' default —
+  /// a French-speaking user who switched languages lost that choice on
+  /// every cold start (splash/login/signup always reverted to Arabic) since
+  /// nothing persisted it locally; `profiles.language_pref` alone doesn't
+  /// help here because it's only readable *after* the user is already
+  /// signed in.
+  Future<void> _loadSavedLang() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_langPrefsKey);
+      if (saved != null) state = state.copyWith(settingsLang: saved);
+    } catch (_) {
+      // Non-fatal — stays on the 'ar' default.
+    }
+  }
 
   Timer? _voiceTimer;
   Timer? _searchTimeoutTimer;
@@ -438,7 +459,9 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     await _orderSub?.cancel();
     await _foodOrderSub?.cancel();
     await _sb.auth.signOut();
-    state = const ClientFlowState();
+    // Preserve the language choice across sign-out — it's a device
+    // preference, not part of the account session being cleared.
+    state = ClientFlowState(settingsLang: state.settingsLang);
   }
 
   void setOtpDigit(int index, String value) {
@@ -1346,6 +1369,13 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   /// toggle.
   Future<void> setSettingsLang(String lang) async {
     state = state.copyWith(settingsLang: lang);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_langPrefsKey, lang);
+    } catch (_) {
+      // Non-fatal — the in-memory state change above still applies for
+      // the rest of this session even if the write itself failed.
+    }
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
     try {

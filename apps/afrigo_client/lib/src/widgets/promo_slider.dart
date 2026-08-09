@@ -85,11 +85,20 @@ class _PromoSliderState extends State<PromoSlider> {
       child: Stack(
         children: [
           for (var i = 0; i < slides.length; i++)
-            AnimatedOpacity(
-              opacity: i == _index ? 1 : 0,
-              duration: const Duration(milliseconds: 600),
-              curve: Curves.easeInOut,
-              child: _SlideCard(slide: slides[i]),
+            // `Positioned` must be Stack's *direct* child — it was
+            // previously returned from inside `_SlideCard.build()`, one
+            // level below `AnimatedOpacity`, which isn't a Stack child
+            // itself. Flutter can't apply StackParentData through that
+            // extra layer, and throws (repeatedly, every rebuild) instead
+            // of just laying it out wrong — which froze the whole home
+            // screen the moment this widget first mounted.
+            Positioned.fill(
+              child: AnimatedOpacity(
+                opacity: i == _index ? 1 : 0,
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeInOut,
+                child: _SlideCard(slide: slides[i]),
+              ),
             ),
           Positioned(
             left: 0,
@@ -130,27 +139,25 @@ class _SlideCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(gradient: slide.gradient),
-        padding: const EdgeInsets.all(20),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(slide.title, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16, color: slide.textColor)),
-                  const SizedBox(height: 6),
-                  Text(slide.subtitle, style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: slide.subColor)),
-                ],
-              ),
+    return Container(
+      decoration: BoxDecoration(gradient: slide.gradient),
+      padding: const EdgeInsets.all(20),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(slide.title, style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16, color: slide.textColor)),
+                const SizedBox(height: 6),
+                Text(slide.subtitle, style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: slide.subColor)),
+              ],
             ),
-            Text(slide.icon, style: const TextStyle(fontSize: 38)),
-          ],
-        ),
+          ),
+          Text(slide.icon, style: const TextStyle(fontSize: 38)),
+        ],
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../state/client_flow_controller.dart';
@@ -20,6 +21,7 @@ class OtpScreen extends ConsumerStatefulWidget {
 
 class _OtpScreenState extends ConsumerState<OtpScreen> {
   late final List<TextEditingController> _controllers = List.generate(6, (_) => TextEditingController());
+  late final List<FocusNode> _focusNodes = List.generate(6, (_) => FocusNode());
   Timer? _timer;
   int _countdown = 45;
 
@@ -47,11 +49,31 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     _startCountdown();
   }
 
+  // A single field's `onChanged` only fires while it still has a character
+  // to remove — backspacing an already-empty box fires nothing at all, so
+  // without this the user had to tap back into the previous box by hand
+  // every time. Listening for the raw backspace key instead lets one
+  // continuous stream of backspace presses walk back through every box.
+  KeyEventResult _handleBackspace(int i, KeyEvent event) {
+    if (event is! KeyDownEvent || event.logicalKey != LogicalKeyboardKey.backspace) {
+      return KeyEventResult.ignored;
+    }
+    if (_controllers[i].text.isNotEmpty) return KeyEventResult.ignored;
+    if (i == 0) return KeyEventResult.ignored;
+    _controllers[i - 1].clear();
+    ref.read(clientFlowControllerProvider.notifier).setOtpDigit(i - 1, '');
+    _focusNodes[i - 1].requestFocus();
+    return KeyEventResult.handled;
+  }
+
   @override
   void dispose() {
     _timer?.cancel();
     for (final c in _controllers) {
       c.dispose();
+    }
+    for (final f in _focusNodes) {
+      f.dispose();
     }
     super.dispose();
   }
@@ -83,22 +105,27 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 child: SizedBox(
                   width: 44,
                   height: 56,
-                  child: TextField(
-                    controller: _controllers[i],
-                    onChanged: (v) {
-                      controller.setOtpDigit(i, v);
-                      if (v.isNotEmpty && i < 5) FocusScope.of(context).nextFocus();
-                    },
-                    maxLength: 1,
-                    textAlign: TextAlign.center,
-                    keyboardType: TextInputType.number,
-                    style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 20),
-                    decoration: InputDecoration(
-                      counterText: '',
-                      filled: true,
-                      fillColor: const Color(0xFFFAFAF9),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
-                      enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+                  child: Focus(
+                    onKeyEvent: (node, event) => _handleBackspace(i, event),
+                    child: TextField(
+                      controller: _controllers[i],
+                      focusNode: _focusNodes[i],
+                      onChanged: (v) {
+                        controller.setOtpDigit(i, v);
+                        if (v.isNotEmpty && i < 5) _focusNodes[i + 1].requestFocus();
+                      },
+                      maxLength: 1,
+                      textAlign: TextAlign.center,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                      style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 20),
+                      decoration: InputDecoration(
+                        counterText: '',
+                        filled: true,
+                        fillColor: const Color(0xFFFAFAF9),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+                        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: Color(0xFFE7E5E4), width: 1.5)),
+                      ),
                     ),
                   ),
                 ),
