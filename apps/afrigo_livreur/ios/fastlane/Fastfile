@@ -19,8 +19,11 @@ platform :ios do
 
     setup_ci if ENV["CI"]
 
+    # `produce` reads the API key from the shared lane context that
+    # `app_store_connect_api_key` above already populated — passing
+    # `api_key:` directly isn't a valid `produce` parameter and fails with
+    # "Could not find option 'api_key'".
     produce(
-      api_key: api_key,
       app_identifier: "com.afrigo.livreur",
       app_name: "Afrigo Livreur",
       language: "AR",
