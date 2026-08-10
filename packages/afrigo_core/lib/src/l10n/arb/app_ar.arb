@@ -84,6 +84,8 @@
   "clientLocationPermTitle": "تفعيل الموقع الجغرافي",
   "clientLocationPermDesc": "نحتاج موقعك لعرض الخدمات القريبة منك وتحديد نقطة انطلاقك بدقة",
   "clientLocationPermAllow": "السماح بالوصول للموقع",
+  "clientLocationPermDeniedBanner": "تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع",
+  "clientLocationPermanentlyDeniedBanner": "تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع",
   "clientNotifPermTitle": "تفعيل الإشعارات",
   "clientNotifPermDesc": "ابقَ على اطلاع بحالة طلباتك، عروض خاصة، وتحديثات مهمة",
   "clientNotifPermAllow": "تفعيل الإشعارات",

@@ -218,6 +218,14 @@ class AfrigoLocalizationsAr extends AfrigoLocalizations {
   String get clientLocationPermAllow => 'السماح بالوصول للموقع';
 
   @override
+  String get clientLocationPermDeniedBanner =>
+      'تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع';
+
+  @override
+  String get clientLocationPermanentlyDeniedBanner =>
+      'تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع';
+
+  @override
   String get clientNotifPermTitle => 'تفعيل الإشعارات';
 
   @override

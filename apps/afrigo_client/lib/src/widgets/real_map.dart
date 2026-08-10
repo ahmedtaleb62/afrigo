@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
+
+import '../core/context_ext.dart';
 
 /// Real interactive "drag the map to move the pin" location picker — the
 /// fixed-center-pin pattern the design's own copy already promised
@@ -57,11 +60,30 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
   /// and incorrectly set `_userMoved`.
   bool _programmaticMove = false;
 
+  /// Every location failure in this app (permission never granted, denied
+  /// forever, GPS off) used to fail completely silently — the pin just sat
+  /// on the Nouakchott-center placeholder forever with zero indication why,
+  /// which reads as "the app doesn't know my location" even hundreds of km
+  /// away from that point. `null` = still checking, `true`/`false` once
+  /// known, refreshed after every permission-request attempt.
+  bool? _permissionDenied;
+  bool _permanentlyDenied = false;
+
   @override
   void initState() {
     super.initState();
     _center = LatLng(widget.initialLat, widget.initialLng);
     WidgetsBinding.instance.addPostFrameCallback((_) => _resolveAddress(_center, isUserAction: false));
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final status = await Permission.locationWhenInUse.status;
+    if (!mounted) return;
+    setState(() {
+      _permissionDenied = !status.isGranted;
+      _permanentlyDenied = status.isPermanentlyDenied;
+    });
   }
 
   @override
@@ -98,6 +120,13 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
     if (_locating) return;
     setState(() => _locating = true);
     try {
+      if (_permanentlyDenied) {
+        // A second in-app request is a silent no-op once denied forever —
+        // only the OS Settings screen can flip it back, same reasoning as
+        // every other "فتح الإعدادات" fallback in this app family.
+        await openAppSettings();
+        return;
+      }
       if (!await Geolocator.isLocationServiceEnabled()) return;
       var permission = await Geolocator.checkPermission();
       if (permission == LocationPermission.denied) {
@@ -114,6 +143,7 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
       // No fix available (permission just denied, GPS off mid-flight, etc.) —
       // the user can still drag the pin manually, so fail silently.
     } finally {
+      await _checkPermission();
       if (mounted) setState(() => _locating = false);
     }
   }
@@ -179,6 +209,37 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
               ),
             ),
           ),
+          if (_permissionDenied == true)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Material(
+                color: const Color(0xFF1C1917),
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: _useMyLocation,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        const Text('📍', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _permanentlyDenied
+                                ? context.l10n.clientLocationPermanentlyDeniedBanner
+                                : context.l10n.clientLocationPermDeniedBanner,
+                            style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ?widget.overlay,
         ],
       ),

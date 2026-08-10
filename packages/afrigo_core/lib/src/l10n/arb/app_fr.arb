@@ -84,6 +84,8 @@
   "clientLocationPermTitle": "Activer la localisation",
   "clientLocationPermDesc": "Nous avons besoin de votre position pour afficher les services à proximité et déterminer précisément votre point de départ",
   "clientLocationPermAllow": "Autoriser l'accès à la position",
+  "clientLocationPermDeniedBanner": "Impossible de déterminer votre position — appuyez pour autoriser l'accès à la localisation",
+  "clientLocationPermanentlyDeniedBanner": "Impossible de déterminer votre position — appuyez pour ouvrir les paramètres et activer la localisation",
   "clientNotifPermTitle": "Activer les notifications",
   "clientNotifPermDesc": "Restez informé de l'état de vos commandes, des offres spéciales et des mises à jour importantes",
   "clientNotifPermAllow": "Activer les notifications",

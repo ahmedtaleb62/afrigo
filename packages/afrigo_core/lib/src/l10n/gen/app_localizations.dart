@@ -500,6 +500,18 @@ abstract class AfrigoLocalizations {
   /// **'السماح بالوصول للموقع'**
   String get clientLocationPermAllow;
 
+  /// No description provided for @clientLocationPermDeniedBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع'**
+  String get clientLocationPermDeniedBanner;
+
+  /// No description provided for @clientLocationPermanentlyDeniedBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع'**
+  String get clientLocationPermanentlyDeniedBanner;
+
   /// No description provided for @clientNotifPermTitle.
   ///
   /// In ar, this message translates to:

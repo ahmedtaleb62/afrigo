@@ -222,6 +222,14 @@ class AfrigoLocalizationsFr extends AfrigoLocalizations {
   String get clientLocationPermAllow => 'Autoriser l\'accès à la position';
 
   @override
+  String get clientLocationPermDeniedBanner =>
+      'Impossible de déterminer votre position — appuyez pour autoriser l\'accès à la localisation';
+
+  @override
+  String get clientLocationPermanentlyDeniedBanner =>
+      'Impossible de déterminer votre position — appuyez pour ouvrir les paramètres et activer la localisation';
+
+  @override
   String get clientNotifPermTitle => 'Activer les notifications';
 
   @override

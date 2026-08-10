@@ -1252,7 +1252,15 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   /// longer offered — see the gating on `FoodWaitingScreen`/`FoodTrackingScreen`.
   Future<void> cancelFoodOrder() async {
     final orderId = state.foodOrderId;
-    if (orderId == null) return;
+    if (orderId == null) {
+      // No real order was ever created (still in flight, or creation
+      // failed and this screen was somehow still reached) — nothing to
+      // cancel server-side. Previously this just silently returned, which
+      // left "إلغاء الطلب" as a dead button and the client stuck on the
+      // waiting screen with no way out at all.
+      goTo(ClientScreen.home, patch: (s) => s.copyWith(foodStage: FoodStage.waiting));
+      return;
+    }
     try {
       await _sb.functions.invoke(
         'update-order-status',
