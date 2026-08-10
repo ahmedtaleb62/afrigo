@@ -513,14 +513,25 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   /// Countdown-gated resend — `signInWithOtp` on an unconfirmed phone
   /// re-triggers the same signup OTP flow (GoTrue treats it as a resend),
   /// hitting the `sms-hook` again for a fresh Chinguisoft SMS.
-  Future<void> resendOtp() async {
+  /// Returns whether a fresh code actually went out — the OTP screen's own
+  /// 45s countdown used to restart unconditionally regardless of this
+  /// result, which silently hid a failed resend behind another 45s of a
+  /// disabled button with no new SMS ever sent, looking indistinguishable
+  /// from "resend doesn't work" even though `authError` was technically
+  /// set (easy to miss under the OTP boxes).
+  Future<bool> resendOtp() async {
     final e164 = _toE164(state.phone);
-    if (e164 == null) return;
+    if (e164 == null) return false;
     try {
       await _sb.auth.signInWithOtp(phone: e164);
       state = state.copyWith(otp: const ['', '', '', '', '', ''], otpCountdown: 45, authError: null);
+      return true;
+    } on AuthException catch (e) {
+      state = state.copyWith(authError: friendlyAuthError(code: e.code, message: e.message, fallback: 'تعذّر إعادة إرسال الرمز، حاول مجددًا'));
+      return false;
     } catch (_) {
       state = state.copyWith(authError: 'تعذّر إعادة إرسال الرمز، حاول مجددًا');
+      return false;
     }
   }
 

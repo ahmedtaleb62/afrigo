@@ -45,8 +45,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
 
   Future<void> _resend() async {
     if (_countdown > 0) return;
-    await ref.read(clientFlowControllerProvider.notifier).resendOtp();
-    _startCountdown();
+    // Only restart the 45s countdown when a code actually went out — this
+    // used to restart unconditionally, which silently hid a failed resend
+    // (rate limit, network error) behind another 45s of a disabled button
+    // with no new SMS ever sent, indistinguishable from "resend is broken".
+    final sent = await ref.read(clientFlowControllerProvider.notifier).resendOtp();
+    if (sent) _startCountdown();
   }
 
   // A single field's `onChanged` only fires while it still has a character
