@@ -32,7 +32,14 @@ class FoodRejectedScreen extends ConsumerWidget {
             style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C)),
           ),
           const SizedBox(height: 24),
-          ClientPrimaryButton(label: l10n.clientFoodChooseAnotherRestaurantButton, onPressed: () => controller.goTo(ClientScreen.foodList)),
+          ClientPrimaryButton(
+            label: l10n.clientFoodChooseAnotherRestaurantButton,
+            // Without clearing `hist`, this pushes the dead-end rejected
+            // screen onto the stack — food list's own back button then
+            // pops straight back into it, trapping the client in a
+            // rejected↔foodList loop with no way to actually leave.
+            onPressed: () => controller.goTo(ClientScreen.foodList, patch: (s) => s.copyWith(hist: const [])),
+          ),
         ],
       ),
     );
