@@ -98,12 +98,45 @@ platform :ios do
       is_key_content_base64: true,
     )
 
+    app = Spaceship::ConnectAPI::App.find("com.afrigo.client")
+
+    # Afrigo doesn't include any third-party creative content (music,
+    # video, etc.) it needs distribution rights for -- it's a utility
+    # app end to end. Also sets the price to free (tier 0) -- Afrigo has
+    # no purchase price, all payment is cash/bank transfer to the
+    # provider, outside Apple's IAP system entirely.
+    app.update(attributes: { contentRightsDeclaration: "DOES_NOT_USE_THIRD_PARTY_CONTENT" }, app_price_tier_id: 0)
+
+    # App Privacy declaration. Afrigo collects: full name, phone number
+    # (the sign-in identifier), precise location (pickup/dropoff/live
+    # tracking), the account's user ID, and photos (avatar, parcel
+    # photo) -- all tied to the signed-in account and used solely to
+    # run the service, never for advertising/tracking or shared with
+    # data brokers. Idempotent: clears any prior declaration first so
+    # reruns don't create duplicate rows.
+    Spaceship::ConnectAPI::AppDataUsage.all(app_id: app.id).each(&:delete!)
+    [
+      ["NAME", "APP_FUNCTIONALITY"],
+      ["PHONE_NUMBER", "APP_FUNCTIONALITY"],
+      ["PRECISE_LOCATION", "APP_FUNCTIONALITY"],
+      ["USER_ID", "APP_FUNCTIONALITY"],
+      ["PHOTOS_OR_VIDEOS", "APP_FUNCTIONALITY"],
+    ].each do |category, purpose|
+      Spaceship::ConnectAPI::AppDataUsage.create(
+        app_id: app.id,
+        app_data_usage_category_id: category,
+        app_data_usage_protection_id: "DATA_LINKED_TO_YOU",
+        app_data_usage_purpose_id: purpose,
+      )
+    end
+    Spaceship::ConnectAPI::AppDataUsagesPublishState.get(app_id: app.id).publish!
+
     # Afrigo has no violence/sexual/gambling/mature content, no ads, no
     # social features, no user-generated content visible to other users
     # (ratings are private numeric scores, not public posts) — every
     # descriptor is genuinely "none"/false for a ride-hailing + food +
     # parcel delivery utility app.
-    app_info = Spaceship::ConnectAPI::App.find("com.afrigo.client").fetch_edit_app_info
+    app_info = app.fetch_edit_app_info
 
     # deliver's own "activate version language" step auto-creates the
     # App Info localization for any new locale using the primary
