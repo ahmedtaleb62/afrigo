@@ -115,6 +115,7 @@ platform :ios do
       violenceRealisticProlongedGraphicOrSadistic: "NONE",
       violenceRealistic: "NONE",
       advertising: false,
+      ageAssurance: false,
       gambling: false,
       healthOrWellnessTopics: false,
       lootBox: false,
