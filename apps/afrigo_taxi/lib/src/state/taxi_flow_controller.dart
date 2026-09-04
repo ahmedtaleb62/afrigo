@@ -205,7 +205,12 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
         return;
       }
       if (status == 'rejected') {
-        goTo(TaxiScreen.rejected);
+        // Without clearing `hist`, resubmitting from Rejected (below) pushes
+        // this dead-end screen onto the stack — the driver's own back
+        // button then pops straight back into it, trapped in a loop with
+        // no way out. Same bug class fixed in client's food_rejected_screen
+        // this session.
+        goTo(TaxiScreen.rejected, patch: (s) => s.copyWith(hist: const []));
         return;
       }
       // The server's `vehicles.is_online` survives an app restart even
@@ -432,10 +437,15 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   Future<void> pickAndUploadLicense(ImageSource source) async {
     final uid = _sb.auth.currentUser?.id;
     if (uid == null) return;
-    final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
-    if (picked == null) return;
-    state = state.copyWith(licenseUploading: true, authError: null);
     try {
+      // The picker call itself used to sit outside this try/catch — any
+      // failure (permission denial, platform exception) was completely
+      // unhandled, which looks identical to "the gallery doesn't open at
+      // all" from the outside (same bug already fixed this session in
+      // client/food's photo pickers).
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+      if (picked == null) return;
+      state = state.copyWith(licenseUploading: true, authError: null);
       final bytes = await picked.readAsBytes();
       await _sb.storage.from('vehicle-docs').uploadBinary(
             '$uid/license.jpg',
@@ -444,7 +454,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
           );
       state = state.copyWith(licenseUploading: false, licensePhoto: true);
     } catch (_) {
-      state = state.copyWith(licenseUploading: false, authError: 'تعذّر رفع الصورة، حاول مجددًا');
+      state = state.copyWith(licenseUploading: false, authError: 'تعذّر فتح المعرض أو رفع الصورة، تحقق من صلاحية الوصول للصور وحاول مجددًا');
     }
   }
 
@@ -536,7 +546,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
         vehicleRejectionReason: latest['rejection_reason'] as String?,
       );
       if (status == 'rejected' && state.screen == TaxiScreen.pendingApproval) {
-        goTo(TaxiScreen.rejected);
+        goTo(TaxiScreen.rejected, patch: (s) => s.copyWith(hist: const []));
       } else if (status == 'verified' && state.screen == TaxiScreen.pendingApproval) {
         goTo(TaxiScreen.home);
       }

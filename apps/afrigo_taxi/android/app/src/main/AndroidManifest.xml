@@ -2,13 +2,11 @@
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <!-- Keeps live location updates flowing while an active trip is on and
-         the app is backgrounded (driver switched to a real navigation app,
-         screen off, etc.): without these, Android suspends the plain
-         Dart Timer that used to drive location updates the moment the app
-         leaves the foreground, silently freezing the client's live map. -->
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_LOCATION"/>
+    <!-- Ride-offer / status push notifications (firebase_messaging) —
+         without this, Android 13+ never even shows the permission prompt,
+         so pushes silently never arrive. Client already had this;
+         taxi used firebase_messaging without ever declaring it. -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <!-- Vehicle verification doc upload (license photo) -->
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>

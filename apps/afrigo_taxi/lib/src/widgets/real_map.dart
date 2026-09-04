@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 /// Real interactive Google Map — replaces `MapPlaceholder`'s fake grid
 /// background on the home/navigate-to-pickup/trip-ongoing screens. The
@@ -35,6 +36,39 @@ class LiveMap extends StatefulWidget {
 class _LiveMapState extends State<LiveMap> {
   GoogleMapController? _map;
 
+  /// A driver whose location permission was never granted (or denied
+  /// forever) used to see this map silently centered on the Nouakchott
+  /// placeholder with zero indication why — same class of bug fixed in the
+  /// client app's `real_map.dart` this session, ported here since the
+  /// underlying gap (a silently-failing `fetchCurrentLocation()` upstream)
+  /// is identical.
+  bool? _permissionDenied;
+  bool _permanentlyDenied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final status = await Permission.locationWhenInUse.status;
+    if (!mounted) return;
+    setState(() {
+      _permissionDenied = !status.isGranted;
+      _permanentlyDenied = status.isPermanentlyDenied;
+    });
+  }
+
+  Future<void> _requestPermission() async {
+    if (_permanentlyDenied) {
+      await openAppSettings();
+    } else {
+      await Permission.locationWhenInUse.request();
+    }
+    await _checkPermission();
+  }
+
   @override
   void didUpdateWidget(LiveMap old) {
     super.didUpdateWidget(old);
@@ -62,6 +96,37 @@ class _LiveMapState extends State<LiveMap> {
           zoomControlsEnabled: false,
           mapToolbarEnabled: false,
         ),
+        if (_permissionDenied == true)
+          Positioned(
+            top: 16,
+            left: 16,
+            right: 16,
+            child: Material(
+              color: const Color(0xFF1C1917),
+              borderRadius: BorderRadius.circular(12),
+              child: InkWell(
+                onTap: _requestPermission,
+                borderRadius: BorderRadius.circular(12),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  child: Row(
+                    children: [
+                      const Text('📍', style: TextStyle(fontSize: 16)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          _permanentlyDenied
+                              ? 'تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع'
+                              : 'تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع',
+                          style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Colors.white),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
         ?widget.overlay,
       ],
     );
