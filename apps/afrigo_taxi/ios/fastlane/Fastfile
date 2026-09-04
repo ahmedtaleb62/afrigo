@@ -77,29 +77,16 @@ platform :ios do
     # (Pricing and Availability -> Free), a few seconds either way.
     app.update(attributes: { contentRightsDeclaration: "DOES_NOT_USE_THIRD_PARTY_CONTENT" })
 
-    # App Privacy declaration. Afrigo Taxi collects: full name, phone
-    # number (the sign-in identifier), precise location (required to go
-    # Online and receive/navigate ride requests), the account's user ID,
-    # and photos (avatar, driving license, vehicle docs) -- all tied to
-    # the signed-in driver account and used solely to run the service,
-    # never for advertising/tracking. Idempotent: clears any prior
-    # declaration first so reruns don't create duplicate rows.
-    Spaceship::ConnectAPI::AppDataUsage.all(app_id: app.id).each(&:delete!)
-    [
-      ["NAME", "APP_FUNCTIONALITY"],
-      ["PHONE_NUMBER", "APP_FUNCTIONALITY"],
-      ["PRECISE_LOCATION", "APP_FUNCTIONALITY"],
-      ["USER_ID", "APP_FUNCTIONALITY"],
-      ["PHOTOS_OR_VIDEOS", "APP_FUNCTIONALITY"],
-    ].each do |category, purpose|
-      Spaceship::ConnectAPI::AppDataUsage.create(
-        app_id: app.id,
-        app_data_usage_category_id: category,
-        app_data_usage_protection_id: "DATA_LINKED_TO_YOU",
-        app_data_usage_purpose_id: purpose,
-      )
-    end
-    Spaceship::ConnectAPI::AppDataUsagesPublishState.get(app_id: app.id).publish!
+    # App Privacy (the data-usage nutrition label) is NOT set here --
+    # fastlane's own AppDataUsage client hits `apps/#{id}/dataUsages`,
+    # which Apple's API now rejects outright ("relationship 'dataUsages'
+    # does not exist"): the gem's implementation is stale against
+    # Apple's current API shape here, not just something we got wrong.
+    # This is also the one section ASC itself gates to an Admin account
+    # rather than any API key -- set it once in the App Store Connect UI
+    # (App Privacy tab): Name, Phone Number, Precise Location, User ID,
+    # and Photos, each "Linked to You" / "Used for App Functionality"
+    # only, nothing used for tracking or advertising.
 
     # Afrigo Taxi has no violence/sexual/gambling/mature content, no ads,
     # no social features, no user-generated content visible to other
