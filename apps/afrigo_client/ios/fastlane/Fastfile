@@ -70,18 +70,17 @@ platform :ios do
     app = Spaceship::ConnectAPI::App.find("com.afrigo.client")
     UI.message("App id: #{app.id}, primary locale: #{app.primaryLocale}")
 
-    app.get_app_infos.each do |info|
+    info = app.fetch_edit_app_info
+    if info.nil?
+      UI.message("No editable AppInfo found")
+    else
       UI.message("AppInfo #{info.id} state=#{info.appStoreState}")
       info.get_app_info_localizations.each do |loc|
         UI.message("  [name] #{loc.locale}: #{loc.name.inspect} subtitle=#{loc.subtitle.inspect}")
       end
-    end
 
-    app.get_app_store_versions.each do |v|
-      UI.message("Version #{v.versionString} (#{v.appStoreState}):")
-      v.get_app_store_version_localizations.each do |loc|
-        UI.message("  [version loc] #{loc.locale}: whatsNew=#{loc.whatsNew.inspect}")
-      end
+      rating = info.fetch_age_rating_declaration
+      UI.message("Age rating declaration id: #{rating&.id}")
     end
   end
 
