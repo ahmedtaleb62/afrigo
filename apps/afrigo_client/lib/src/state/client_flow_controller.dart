@@ -783,7 +783,13 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         });
         final data = res.data as Map;
         if (data['status'] == 'no_driver_found') {
-          goTo(ClientScreen.noProvider);
+          // Clears `hist` (not just this one call, see the others below in
+          // this method/`_subscribeOrderTracking`) — without it, `hist`
+          // silently accumulates dead confirm/searching/noProvider entries
+          // across retries with no live back-button exploit today, but a
+          // future one (or a hardware-back handler) would immediately hit
+          // it. Same bug class as `food_rejected_screen.dart` this session.
+          goTo(ClientScreen.noProvider, patch: (s) => s.copyWith(hist: const []));
           return;
         }
         state = state.copyWith(
@@ -805,11 +811,12 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
           'recipient_phone': state.recipientPhone.trim(),
           'package_type': state.parcelType,
           'package_notes': state.parcelNotes.trim().isEmpty ? null : state.parcelNotes.trim(),
+          'package_image_url': state.parcelPhotoUrl,
           'payment_method': state.paymentMethod,
         });
         final data = res.data as Map;
         if (data['status'] == 'no_livreur_found') {
-          goTo(ClientScreen.noProvider);
+          goTo(ClientScreen.noProvider, patch: (s) => s.copyWith(hist: const []));
           return;
         }
         state = state.copyWith(
@@ -823,7 +830,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       }
     } catch (e) {
       state = state.copyWith(requestError: _functionErrorMessage(e));
-      goTo(ClientScreen.noProvider);
+      goTo(ClientScreen.noProvider, patch: (s) => s.copyWith(hist: const []));
     }
   }
 
@@ -840,7 +847,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
       _orderSub?.cancel();
       unawaited(_cancelActiveOrderOnServer());
       state = state.copyWith(activeOrderId: null, activeOrderStatus: null);
-      goTo(ClientScreen.noProvider);
+      goTo(ClientScreen.noProvider, patch: (s) => s.copyWith(hist: const []));
     });
   }
 
@@ -900,7 +907,10 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         state = state.copyWith(providerId: providerId);
         unawaited(_fetchProviderContact(orderType, id));
         _subscribeDriverLocation(orderType, id);
-        goTo(ClientScreen.providerFound);
+        // A driver accepting is a clean checkpoint — nothing before this
+        // point (confirm/searching) is ever meaningful to go back to once
+        // there's a real matched provider, so reset `hist` here too.
+        goTo(ClientScreen.providerFound, patch: (s) => s.copyWith(hist: const []));
       } else if (status == 'completed' &&
           (state.screen == ClientScreen.providerFound || state.screen == ClientScreen.tracking)) {
         state = state.copyWith(
@@ -909,7 +919,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
           orderPrice: (row['price'] as num?)?.toDouble() ?? state.orderPrice,
         );
         _unsubscribeDriverLocation();
-        goTo(ClientScreen.tripEnd);
+        goTo(ClientScreen.tripEnd, patch: (s) => s.copyWith(hist: const []));
       } else if ((status == 'cancelled_by_driver' || status == 'cancelled_by_client') &&
           state.screen != ClientScreen.home) {
         // Must cancel `_orderSub` and clear `activeOrderId`/`activeOrderStatus`
@@ -921,7 +931,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         // live.
         _orderSub?.cancel();
         _unsubscribeDriverLocation();
-        goTo(ClientScreen.home, patch: (s) => s.copyWith(activeOrderId: null, activeOrderStatus: null));
+        goTo(ClientScreen.home, patch: (s) => s.copyWith(activeOrderId: null, activeOrderStatus: null, hist: const []));
       }
     });
   }
@@ -952,7 +962,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   Future<void> cancelActiveOrder() async {
     final orderId = state.activeOrderId;
     if (orderId == null) {
-      goTo(ClientScreen.home);
+      goTo(ClientScreen.home, patch: (s) => s.copyWith(hist: const []));
       return;
     }
     final orderType = state.flowType == ClientFlowType.taxi ? 'ride' : 'delivery_request';
@@ -972,7 +982,7 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
     }
     _orderSub?.cancel();
     _unsubscribeDriverLocation();
-    goTo(ClientScreen.home, patch: (s) => s.copyWith(activeOrderId: null, activeOrderStatus: null));
+    goTo(ClientScreen.home, patch: (s) => s.copyWith(activeOrderId: null, activeOrderStatus: null, hist: const []));
   }
 
   void payCashDone() => goTo(ClientScreen.tripRating);
@@ -1365,7 +1375,26 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
   // Parcel
   // ---------------------------------------------------------------------
   void setParcelType(String v) => state = state.copyWith(parcelType: v);
-  void togglePhoto() => state = state.copyWith(parcelPhoto: !state.parcelPhoto);
+  Future<void> pickAndUploadParcelPhoto(ImageSource source) async {
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      final picked = await ImagePicker().pickImage(source: source, imageQuality: 85);
+      if (picked == null) return;
+      state = state.copyWith(parcelPhotoUploading: true);
+      final bytes = await picked.readAsBytes();
+      final path = '$uid/parcels/${DateTime.now().millisecondsSinceEpoch}.jpg';
+      await _sb.storage.from('public-images').uploadBinary(
+            path,
+            bytes,
+            fileOptions: const FileOptions(contentType: 'image/jpeg'),
+          );
+      final url = _sb.storage.from('public-images').getPublicUrl(path);
+      state = state.copyWith(parcelPhotoUrl: url, parcelPhotoUploading: false);
+    } catch (_) {
+      state = state.copyWith(parcelPhotoUploading: false, requestError: 'تعذّر فتح المعرض أو رفع الصورة، تحقق من صلاحية الوصول للصور وحاول مجددًا');
+    }
+  }
 
   // ---------------------------------------------------------------------
   // Voice — UI-only (see class doc comment for why)

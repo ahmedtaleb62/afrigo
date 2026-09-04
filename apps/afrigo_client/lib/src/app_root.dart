@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/context_ext.dart';
 import 'screens/food/cart_screen.dart';
 import 'screens/food/dish_detail_screen.dart';
 import 'screens/food/food_checkout_screen.dart';
@@ -120,17 +121,17 @@ class AppRoot extends ConsumerWidget {
       ClientScreen.notificationsList => const NotificationsListScreen(),
       ClientScreen.support => const SupportScreen(),
       ClientScreen.about => LegalTextScreen(
-          title: 'عن التطبيق',
+          title: context.l10n.clientSettingsAbout,
           body: ref.watch(clientFlowControllerProvider.select((s) => s.aboutText)),
           onBack: () => ref.read(clientFlowControllerProvider.notifier).back(),
         ),
       ClientScreen.terms => LegalTextScreen(
-          title: 'الشروط والأحكام',
+          title: context.l10n.clientSettingsTerms,
           body: ref.watch(clientFlowControllerProvider.select((s) => s.termsText)),
           onBack: () => ref.read(clientFlowControllerProvider.notifier).back(),
         ),
       ClientScreen.privacy => LegalTextScreen(
-          title: 'سياسة الخصوصية',
+          title: context.l10n.clientSettingsPrivacy,
           body: ref.watch(clientFlowControllerProvider.select((s) => s.privacyText)),
           onBack: () => ref.read(clientFlowControllerProvider.notifier).back(),
         ),

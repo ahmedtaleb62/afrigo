@@ -281,6 +281,37 @@ class LiveMapPreview extends StatefulWidget {
 class _LiveMapPreviewState extends State<LiveMapPreview> {
   GoogleMapController? _map;
 
+  /// Same silent-failure gap `LocationPickerMap` had — a client whose
+  /// location permission is denied/permanently-denied used to see this
+  /// (read-only) map silently centered on whatever placeholder the caller
+  /// fell back to, with zero indication why. Ported the same banner here.
+  bool? _permissionDenied;
+  bool _permanentlyDenied = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkPermission();
+  }
+
+  Future<void> _checkPermission() async {
+    final status = await Permission.locationWhenInUse.status;
+    if (!mounted) return;
+    setState(() {
+      _permissionDenied = !status.isGranted;
+      _permanentlyDenied = status.isPermanentlyDenied;
+    });
+  }
+
+  Future<void> _requestPermission() async {
+    if (_permanentlyDenied) {
+      await openAppSettings();
+    } else {
+      await Permission.locationWhenInUse.request();
+    }
+    await _checkPermission();
+  }
+
   @override
   void didUpdateWidget(LiveMapPreview old) {
     super.didUpdateWidget(old);
@@ -315,6 +346,37 @@ class _LiveMapPreviewState extends State<LiveMapPreview> {
             tiltGesturesEnabled: widget.interactive,
             liteModeEnabled: !widget.interactive,
           ),
+          if (_permissionDenied == true)
+            Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: Material(
+                color: const Color(0xFF1C1917),
+                borderRadius: BorderRadius.circular(12),
+                child: InkWell(
+                  onTap: _requestPermission,
+                  borderRadius: BorderRadius.circular(12),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                    child: Row(
+                      children: [
+                        const Text('📍', style: TextStyle(fontSize: 16)),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            _permanentlyDenied
+                                ? context.l10n.clientLocationPermanentlyDeniedBanner
+                                : context.l10n.clientLocationPermDeniedBanner,
+                            style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ?widget.overlay,
         ],
       ),

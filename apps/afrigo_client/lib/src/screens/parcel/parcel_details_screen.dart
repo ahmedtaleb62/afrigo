@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../state/client_flow_controller.dart';
 import '../../state/client_screen.dart';
@@ -11,6 +12,23 @@ import '../../core/context_ext.dart';
 /// Screen 33 — Parcel type/size/photo.
 class ParcelDetailsScreen extends ConsumerWidget {
   const ParcelDetailsScreen({super.key});
+
+  Future<void> _pickPhoto(BuildContext context, WidgetRef ref) async {
+    final l10n = context.l10n;
+    final source = await showModalBottomSheet<ImageSource>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(leading: const Text('📷'), title: Text(l10n.clientProfileTakePhoto, style: const TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
+            ListTile(leading: const Text('🖼️'), title: Text(l10n.clientProfilePickFromGallery, style: const TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+          ],
+        ),
+      ),
+    );
+    if (source != null) await ref.read(clientFlowControllerProvider.notifier).pickAndUploadParcelPhoto(source);
+  }
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -80,15 +98,27 @@ class ParcelDetailsScreen extends ConsumerWidget {
           ClientTextField(hint: l10n.clientParcelNotesHint, onChanged: controller.setParcelNotes),
           const SizedBox(height: 14),
           InkWell(
-            onTap: controller.togglePhoto,
+            onTap: s.parcelPhotoUploading ? null : () => _pickPhoto(context, ref),
             child: Container(
               padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(border: Border.all(color: const Color(0xFFD6D3D1), width: 1.5), borderRadius: BorderRadius.circular(12)),
+              decoration: BoxDecoration(
+                border: Border.all(color: const Color(0xFFD6D3D1), width: 1.5),
+                borderRadius: BorderRadius.circular(12),
+                image: s.parcelPhotoUrl != null
+                    ? DecorationImage(image: NetworkImage(s.parcelPhotoUrl!), fit: BoxFit.cover, colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.25), BlendMode.darken))
+                    : null,
+              ),
               child: Column(
                 children: [
-                  Text(s.parcelPhoto ? '✅' : '📷', style: const TextStyle(fontSize: 22)),
+                  if (s.parcelPhotoUploading)
+                    const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.4))
+                  else
+                    Text(s.parcelPhotoUrl != null ? '✅' : '📷', style: const TextStyle(fontSize: 22)),
                   const SizedBox(height: 6),
-                  Text(s.parcelPhoto ? l10n.clientParcelPhotoAttached : l10n.clientParcelPhotoAddHint, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C))),
+                  Text(
+                    s.parcelPhotoUrl != null ? l10n.clientParcelPhotoAttached : l10n.clientParcelPhotoAddHint,
+                    style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: s.parcelPhotoUrl != null ? Colors.white : const Color(0xFF78716C)),
+                  ),
                 ],
               ),
             ),

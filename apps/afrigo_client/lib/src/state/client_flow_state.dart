@@ -54,7 +54,8 @@ class ClientFlowState {
     this.foodOrderTotal,
     this.foodOrderFailureReason,
     this.parcelType = 'وثائق',
-    this.parcelPhoto = false,
+    this.parcelPhotoUrl,
+    this.parcelPhotoUploading = false,
     this.recipientName = '',
     this.recipientPhone = '',
     this.parcelNotes = '',
@@ -213,7 +214,8 @@ class ClientFlowState {
   final String? foodOrderFailureReason;
 
   final String parcelType;
-  final bool parcelPhoto;
+  final String? parcelPhotoUrl;
+  final bool parcelPhotoUploading;
   final String recipientName;
   final String recipientPhone;
   final String parcelNotes;
@@ -374,7 +376,8 @@ class ClientFlowState {
     Object? foodOrderTotal = _unset,
     Object? foodOrderFailureReason = _unset,
     String? parcelType,
-    bool? parcelPhoto,
+    Object? parcelPhotoUrl = _unset,
+    bool? parcelPhotoUploading,
     String? recipientName,
     String? recipientPhone,
     String? parcelNotes,
@@ -475,7 +478,8 @@ class ClientFlowState {
       foodOrderFailureReason:
           identical(foodOrderFailureReason, _unset) ? this.foodOrderFailureReason : foodOrderFailureReason as String?,
       parcelType: parcelType ?? this.parcelType,
-      parcelPhoto: parcelPhoto ?? this.parcelPhoto,
+      parcelPhotoUrl: identical(parcelPhotoUrl, _unset) ? this.parcelPhotoUrl : parcelPhotoUrl as String?,
+      parcelPhotoUploading: parcelPhotoUploading ?? this.parcelPhotoUploading,
       recipientName: recipientName ?? this.recipientName,
       recipientPhone: recipientPhone ?? this.recipientPhone,
       parcelNotes: parcelNotes ?? this.parcelNotes,
