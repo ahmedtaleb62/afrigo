@@ -68,6 +68,20 @@ platform :ios do
     # users — every descriptor is genuinely "none"/false for a driver
     # utility app.
     app_info = Spaceship::ConnectAPI::App.find("com.afrigo.taxi").fetch_edit_app_info
+
+    # deliver's own "activate version language" step auto-creates the
+    # App Info localization for any new locale using the primary
+    # locale's name verbatim, which collides with an unrelated app
+    # already registered as "Afrigo Taxi" — pre-create it ourselves with
+    # a disambiguated name so deliver just finds and reuses it instead.
+    unless app_info.get_app_info_localizations.any? { |l| l.locale == "fr-FR" }
+      app_info.create_app_info_localization(attributes: {
+        locale: "fr-FR",
+        name: "Afrigo Taxi Mauritanie",
+        subtitle: "Application chauffeurs",
+      })
+    end
+
     rating = app_info.fetch_age_rating_declaration
     rating.update(attributes: {
       alcoholTobaccoOrDrugUseOrReferences: "NONE",
@@ -106,6 +120,11 @@ platform :ios do
       skip_screenshots: true,
       skip_metadata: false,
       force: true,
+      # Afrigo Taxi has no in-app purchases, and precheck can't inspect
+      # IAPs via API-key auth anyway (a known fastlane limitation, not a
+      # real problem with our metadata) — would otherwise hard-fail
+      # every run.
+      run_precheck_before_submit: false,
       app_review_information: {
         first_name: "Ahmed",
         last_name: "Taleb",
