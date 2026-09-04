@@ -105,7 +105,12 @@ platform :ios do
     # app end to end. Also sets the price to free (tier 0) -- Afrigo has
     # no purchase price, all payment is cash/bank transfer to the
     # provider, outside Apple's IAP system entirely.
-    app.update(attributes: { contentRightsDeclaration: "DOES_NOT_USE_THIRD_PARTY_CONTENT" }, app_price_tier_id: 0)
+    # Pricing isn't set here -- Apple removed the legacy `prices`
+    # relationship this used to go through (appPriceSchedules is a much
+    # more involved multi-territory API for very little payoff on a
+    # free app) -- set it once in the App Store Connect UI instead
+    # (Pricing and Availability -> Free), a few seconds either way.
+    app.update(attributes: { contentRightsDeclaration: "DOES_NOT_USE_THIRD_PARTY_CONTENT" })
 
     # App Privacy declaration. Afrigo collects: full name, phone number
     # (the sign-in identifier), precise location (pickup/dropoff/live

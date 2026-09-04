@@ -70,7 +70,12 @@ platform :ios do
     # (tier 0) -- the app itself costs nothing; drivers only pay/get
     # paid through the platform's own cash/bank-transfer flow, outside
     # Apple's IAP system entirely.
-    app.update(attributes: { contentRightsDeclaration: "DOES_NOT_USE_THIRD_PARTY_CONTENT" }, app_price_tier_id: 0)
+    # Pricing isn't set here -- Apple removed the legacy `prices`
+    # relationship this used to go through (appPriceSchedules is a much
+    # more involved multi-territory API for very little payoff on a
+    # free app) -- set it once in the App Store Connect UI instead
+    # (Pricing and Availability -> Free), a few seconds either way.
+    app.update(attributes: { contentRightsDeclaration: "DOES_NOT_USE_THIRD_PARTY_CONTENT" })
 
     # App Privacy declaration. Afrigo Taxi collects: full name, phone
     # number (the sign-in identifier), precise location (required to go
