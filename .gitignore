@@ -48,7 +48,6 @@ supabase/.temp
 # Fastlane
 **/fastlane/report.xml
 **/fastlane/Preview.html
-**/fastlane/screenshots/**/*.png
 **/fastlane/test_output
 **/*.mobileprovision
 **/*.p12
