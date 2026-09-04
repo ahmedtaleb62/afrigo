@@ -93,6 +93,39 @@ platform :ios do
       is_key_content_base64: true,
     )
 
+    # Afrigo has no violence/sexual/gambling/mature content, no ads, no
+    # social features, no user-generated content visible to other users
+    # (ratings are private numeric scores, not public posts) — every
+    # descriptor is genuinely "none"/false for a ride-hailing + food +
+    # parcel delivery utility app.
+    app_info = Spaceship::ConnectAPI::App.find("com.afrigo.client").fetch_edit_app_info
+    rating = app_info.fetch_age_rating_declaration
+    rating.update(attributes: {
+      alcoholTobaccoOrDrugUseOrReferences: "NONE",
+      contests: "NONE",
+      gamblingSimulated: "NONE",
+      gunsOrOtherWeapons: "NONE",
+      horrorOrFearThemes: "NONE",
+      matureOrSuggestiveThemes: "NONE",
+      medicalOrTreatmentInformation: "NONE",
+      profanityOrCrudeHumor: "NONE",
+      sexualContentGraphicAndNudity: "NONE",
+      sexualContentOrNudity: "NONE",
+      violenceCartoonOrFantasy: "NONE",
+      violenceRealisticProlongedGraphicOrSadistic: "NONE",
+      violenceRealistic: "NONE",
+      advertising: false,
+      gambling: false,
+      healthOrWellnessTopics: false,
+      lootBox: false,
+      messagingAndChat: false,
+      parentalControls: false,
+      socialMedia: false,
+      socialMediaAgeRestricted: false,
+      unrestrictedWebAccess: false,
+      userGeneratedContent: false,
+    })
+
     # demo_user/demo_password are a real account's login (not throwaway
     # dummy data) so they're never written to metadata/review_information —
     # this repo is public. Passed as CI-only secrets instead.

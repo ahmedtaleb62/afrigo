@@ -26,4 +26,4 @@ jobs:
           ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
           ASC_DEMO_USER: ${{ secrets.ASC_DEMO_USER_CLIENT }}
           ASC_DEMO_PASSWORD: ${{ secrets.ASC_DEMO_PASSWORD_CLIENT }}
-        run: bundle exec fastlane debug_app_info
+        run: bundle exec fastlane metadata
