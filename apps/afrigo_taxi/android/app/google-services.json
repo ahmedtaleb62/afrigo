@@ -7,6 +7,44 @@
   "client": [
     {
       "client_info": {
+        "mobilesdk_app_id": "1:877223063837:android:5c556f630ea1399776f1f4",
+        "android_client_info": {
+          "package_name": "com.afrigo.client"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDVyFxus1Z1CP9fIt7ms3q3f-9_wbdR-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:877223063837:android:8785890333f3b79a76f1f4",
+        "android_client_info": {
+          "package_name": "com.afrigo.taxi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDVyFxus1Z1CP9fIt7ms3q3f-9_wbdR-c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:877223063837:android:9a7148bc03e540a976f1f4",
         "android_client_info": {
           "package_name": "com.example.afrigo_client"

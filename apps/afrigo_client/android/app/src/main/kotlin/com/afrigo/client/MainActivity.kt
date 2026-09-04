@@ -1,4 +1,4 @@
-package com.example.afrigo_client
+package com.afrigo.client
 
 import io.flutter.embedding.android.FlutterActivity
 

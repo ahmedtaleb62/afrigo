@@ -1,4 +1,4 @@
-package com.example.afrigo_taxi
+package com.afrigo.taxi
 
 import io.flutter.embedding.android.FlutterActivity
 

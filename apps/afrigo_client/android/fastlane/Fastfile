@@ -1,0 +1,22 @@
+# Builds the Client app's release App Bundle and uploads it to the Play
+# Console "internal testing" track. Signing uses the real upload-keystore
+# (key.properties, gitignored) wired into app/build.gradle.kts -- CI must
+# have both present as repo secrets/artifacts, same as locally.
+# Auth to Play Console uses a service account JSON key (Release Manager
+# access), no Google account login/2FA in CI.
+default_platform(:android)
+
+platform :android do
+  desc "Build and upload a new App Bundle to Play Console internal testing"
+  lane :internal do
+    gradle(task: "clean bundleRelease", project_dir: ".")
+
+    upload_to_play_store(
+      track: "internal",
+      aab: "app/build/outputs/bundle/release/app-release.aab",
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+    )
+  end
+end
