@@ -1,0 +1,421 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Afrigo — سياسة الخصوصية والشروط</title>
+<meta name="description" content="Politique de confidentialité et conditions d'utilisation de la plateforme Afrigo (Client, Taxi, Food, Livreur) — سياسة الخصوصية وشروط استخدام منصة Afrigo.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='24' fill='%23178a44'/%3E%3Ctext x='50' y='68' font-size='58' font-weight='900' fill='white' text-anchor='middle' font-family='sans-serif'%3EA%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #faf9f7;
+    --surface: #ffffff;
+    --surface-2: #f5f4f2;
+    --text: #201c19;
+    --muted: #7c7367;
+    --border: #e8e4de;
+    --accent: #178a44;
+    --accent-ink: #0d6b34;
+    --accent-tint: #e9f7ee;
+    --ring: rgba(23, 138, 68, 0.35);
+    --shadow: 0 1px 2px rgba(32, 28, 25, 0.04), 0 8px 24px -12px rgba(32, 28, 25, 0.12);
+    --radius: 14px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17140f;
+      --surface: #201c17;
+      --surface-2: #262019;
+      --text: #f3ece2;
+      --muted: #a89d8d;
+      --border: #362f26;
+      --accent: #3ecb7c;
+      --accent-ink: #6fe0a0;
+      --accent-tint: rgba(62, 203, 124, 0.13);
+      --ring: rgba(62, 203, 124, 0.35);
+      --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 32px -14px rgba(0, 0, 0, 0.55);
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Tajawal', 'Segoe UI', system-ui, sans-serif;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  html[dir="rtl"] body { direction: rtl; }
+  html[dir="ltr"] body { direction: ltr; }
+
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  header.top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 32px;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand .mark {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    background: linear-gradient(155deg, var(--accent), var(--accent-ink));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-weight: 900;
+    font-size: 17px;
+    box-shadow: var(--shadow);
+    flex-shrink: 0;
+  }
+
+  .brand .name {
+    font-weight: 800;
+    font-size: 17px;
+    letter-spacing: 0.01em;
+  }
+
+  .brand .name small {
+    display: block;
+    font-weight: 500;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+
+  .langtoggle {
+    display: flex;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 3px;
+    gap: 2px;
+  }
+
+  .langtoggle button {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font-family: inherit;
+    font-weight: 700;
+    font-size: 12.5px;
+    padding: 7px 14px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .langtoggle button.active {
+    background: var(--accent);
+    color: #fff;
+  }
+
+  .langtoggle button:focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .lede {
+    font-size: 14.5px;
+    color: var(--muted);
+    margin: 0 0 28px;
+    max-width: 60ch;
+  }
+
+  .lede strong { color: var(--text); font-weight: 700; }
+
+  nav.jump {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 32px;
+  }
+
+  nav.jump a {
+    font-size: 12.5px;
+    font-weight: 700;
+    color: var(--text);
+    text-decoration: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 7px 13px;
+    border-radius: 999px;
+    box-shadow: var(--shadow);
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  nav.jump a:hover { border-color: var(--accent); color: var(--accent-ink); }
+
+  section.card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 26px 26px 24px;
+    margin-bottom: 20px;
+    scroll-margin-top: 20px;
+  }
+
+  section.card .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--accent-ink);
+    background: var(--accent-tint);
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+  }
+
+  section.card h2 {
+    margin: 0 0 12px;
+    font-size: 20px;
+    font-weight: 800;
+    text-wrap: balance;
+  }
+
+  section.card p {
+    margin: 0 0 12px;
+    font-size: 14.5px;
+    color: var(--text);
+    max-width: 62ch;
+  }
+
+  section.card p:last-child { margin-bottom: 0; }
+  section.card p.muted { color: var(--muted); font-size: 13.5px; }
+
+  ul.rights {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    gap: 10px;
+  }
+
+  ul.rights li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    font-size: 14px;
+  }
+
+  ul.rights li::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-top: 7px;
+    flex-shrink: 0;
+  }
+
+  .apps-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 14px;
+  }
+
+  .apps-row span {
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 5px 11px;
+    border-radius: 8px;
+    color: var(--muted);
+  }
+
+  footer.bottom {
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  footer.bottom a {
+    color: var(--accent-ink);
+    font-weight: 700;
+    text-decoration: none;
+    font-variant-numeric: tabular-nums;
+  }
+
+  footer.bottom a:hover { text-decoration: underline; }
+
+  @media (max-width: 480px) {
+    section.card { padding: 20px 18px; }
+    .brand .name { font-size: 15.5px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div class="mark">A</div>
+      <div class="name" id="brandName">Afrigo<small id="brandSub">النقل والتوصيل في نواكشوط</small></div>
+    </div>
+    <div class="langtoggle" role="group" aria-label="Language">
+      <button type="button" data-lang="ar" id="btn-ar">العربية</button>
+      <button type="button" data-lang="fr" id="btn-fr">Français</button>
+    </div>
+  </header>
+
+  <p class="lede" id="lede"></p>
+
+  <nav class="jump">
+    <a href="#about" data-t="navAbout"></a>
+    <a href="#privacy" data-t="navPrivacy"></a>
+    <a href="#terms" data-t="navTerms"></a>
+  </nav>
+
+  <section class="card" id="about">
+    <span class="eyebrow" data-t="eyebrowAbout"></span>
+    <h2 data-t="aboutTitle"></h2>
+    <p data-t="aboutBody"></p>
+    <div class="apps-row">
+      <span>Afrigo</span>
+      <span>Afrigo Taxi</span>
+      <span>Afrigo Food</span>
+      <span>Afrigo Livreur</span>
+    </div>
+  </section>
+
+  <section class="card" id="privacy">
+    <span class="eyebrow" data-t="eyebrowPrivacy"></span>
+    <h2 data-t="privacyTitle"></h2>
+    <p data-t="privacyBody"></p>
+    <ul class="rights">
+      <li data-t="privacyPoint1"></li>
+      <li data-t="privacyPoint2"></li>
+      <li data-t="privacyPoint3"></li>
+    </ul>
+  </section>
+
+  <section class="card" id="terms">
+    <span class="eyebrow" data-t="eyebrowTerms"></span>
+    <h2 data-t="termsTitle"></h2>
+    <p data-t="termsBody"></p>
+    <p class="muted" data-t="termsFooter"></p>
+  </section>
+
+  <footer class="bottom">
+    <span data-t="lastUpdated"></span>
+    <a href="tel:+22242740370">+222 42 74 03 70</a>
+  </footer>
+</div>
+
+<script>
+(function () {
+  var STRINGS = {
+    ar: {
+      brandSub: "النقل والتوصيل في نواكشوط",
+      lede: "تنطبق هذه الصفحة على جميع تطبيقات منصة <strong>Afrigo</strong> (Afrigo، Afrigo Taxi، Afrigo Food، Afrigo Livreur) وتوضّح البيانات التي نجمعها وكيف نستخدمها، إضافة إلى شروط استخدام الخدمة.",
+      navAbout: "عن التطبيق",
+      navPrivacy: "سياسة الخصوصية",
+      navTerms: "شروط الاستخدام",
+      eyebrowAbout: "عن Afrigo",
+      aboutTitle: "منصة موريتانية للنقل والتوصيل",
+      aboutBody: "Afrigo منصة موريتانية تجمع خدمات التكسي وتوصيل الطعام والطرود في تطبيق واحد، تربط الركاب والزبائن بسائقين ومطاعم ومندوبي توصيل موثّقين.",
+      eyebrowPrivacy: "الخصوصية",
+      privacyTitle: "سياسة الخصوصية",
+      privacyBody: "تُستخدم بياناتك (الاسم، رقم الهاتف، الموقع التقريبي، سجل الطلبات) فقط لتشغيل الخدمة (المطابقة مع مزوّدي الخدمة، حساب الأسعار، التواصل بخصوص الطلب)، ولا تُشارك مع أي جهة خارجية لأغراض تسويقية.",
+      privacyPoint1: "لا نبيع بياناتك ولا نشاركها مع طرف ثالث لأغراض إعلانية.",
+      privacyPoint2: "الموقع الجغرافي يُستخدم فقط أثناء الطلب النشط لمطابقتك مع أقرب مزوّد خدمة.",
+      privacyPoint3: "يمكنك حذف حسابك وكل بياناتك نهائيًا من داخل التطبيق في أي وقت، من صفحة الحساب.",
+      eyebrowTerms: "الشروط",
+      termsTitle: "شروط الاستخدام",
+      termsBody: "باستخدامك تطبيق Afrigo فإنك توافق على استخدام الخدمة بحسن نية، ودفع مستحقات الرحلات والطلبات المكتملة، وعلى أن التطبيق وسيط بين المستخدم ومقدّمي الخدمة (السائقين والمطاعم ومندوبي التوصيل) دون تحمّل مسؤولية مباشرة عن جودة تنفيذهم.",
+      termsFooter: "لأي استفسار بخصوص الخصوصية أو الشروط، تواصل معنا عبر الرقم أدناه.",
+      lastUpdated: "آخر تحديث: 4 سبتمبر 2026"
+    },
+    fr: {
+      brandSub: "Transport et livraison à Nouakchott",
+      lede: "Cette page s'applique à toutes les applications de la plateforme <strong>Afrigo</strong> (Afrigo, Afrigo Taxi, Afrigo Food, Afrigo Livreur) et précise les données que nous collectons, leur usage, ainsi que les conditions d'utilisation du service.",
+      navAbout: "À propos",
+      navPrivacy: "Confidentialité",
+      navTerms: "Conditions d'utilisation",
+      eyebrowAbout: "À propos d'Afrigo",
+      aboutTitle: "Une plateforme mauritanienne de transport et livraison",
+      aboutBody: "Afrigo est une plateforme mauritanienne qui réunit les services de taxi, de livraison de repas et de colis en une seule application, mettant en relation passagers et clients avec des chauffeurs, restaurants et livreurs vérifiés.",
+      eyebrowPrivacy: "Confidentialité",
+      privacyTitle: "Politique de confidentialité",
+      privacyBody: "Vos données (nom, numéro de téléphone, position approximative, historique des commandes) sont utilisées uniquement pour assurer le service (mise en relation avec les prestataires, calcul des tarifs, communication au sujet de votre commande) et ne sont partagées avec aucun tiers à des fins commerciales.",
+      privacyPoint1: "Nous ne vendons ni ne partageons vos données avec des tiers à des fins publicitaires.",
+      privacyPoint2: "La position géographique n'est utilisée que pendant une commande active, pour vous mettre en relation avec le prestataire le plus proche.",
+      privacyPoint3: "Vous pouvez supprimer définitivement votre compte et vos données depuis l'application, à tout moment, dans la page Compte.",
+      eyebrowTerms: "Conditions",
+      termsTitle: "Conditions d'utilisation",
+      termsBody: "En utilisant l'application Afrigo, vous acceptez d'utiliser le service de bonne foi, de régler les courses et commandes effectuées, et reconnaissez qu'Afrigo agit en tant qu'intermédiaire entre vous et les prestataires (chauffeurs, restaurants, livreurs) sans assumer de responsabilité directe quant à la qualité de leur exécution.",
+      termsFooter: "Pour toute question sur la confidentialité ou les présentes conditions, contactez-nous au numéro ci-dessous.",
+      lastUpdated: "Dernière mise à jour : 4 septembre 2026"
+    }
+  };
+
+  function applyLang(lang) {
+    document.documentElement.setAttribute('lang', lang);
+    document.documentElement.setAttribute('dir', lang === 'ar' ? 'rtl' : 'ltr');
+    var s = STRINGS[lang];
+    document.querySelectorAll('[data-t]').forEach(function (el) {
+      var key = el.getAttribute('data-t');
+      if (s[key] !== undefined) el.innerHTML = s[key];
+    });
+    document.getElementById('brandSub').textContent = s.brandSub;
+    document.getElementById('lede').innerHTML = s.lede;
+    document.title = lang === 'ar' ? 'Afrigo — سياسة الخصوصية' : 'Afrigo — Confidentialité';
+    document.getElementById('btn-ar').classList.toggle('active', lang === 'ar');
+    document.getElementById('btn-fr').classList.toggle('active', lang === 'fr');
+    try { localStorage.setItem('afrigo_legal_lang', lang); } catch (e) {}
+  }
+
+  document.getElementById('btn-ar').addEventListener('click', function () { applyLang('ar'); });
+  document.getElementById('btn-fr').addEventListener('click', function () { applyLang('fr'); });
+
+  var initial = 'ar';
+  try {
+    var saved = localStorage.getItem('afrigo_legal_lang');
+    if (saved === 'ar' || saved === 'fr') initial = saved;
+    else if ((navigator.language || '').toLowerCase().indexOf('fr') === 0) initial = 'fr';
+  } catch (e) {}
+  applyLang(initial);
+})();
+</script>
+</body>
+</html>
