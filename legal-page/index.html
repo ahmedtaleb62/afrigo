@@ -247,14 +247,19 @@
   }
 
   .apps-row span {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
     font-size: 12px;
     font-weight: 700;
     background: var(--surface-2);
     border: 1px solid var(--border);
-    padding: 5px 11px;
+    padding: 5px 12px;
     border-radius: 8px;
     color: var(--muted);
   }
+
+  .apps-row svg { flex-shrink: 0; border-radius: 5px; }
 
   footer.bottom {
     margin-top: 28px;
@@ -289,7 +294,13 @@
 <div class="wrap">
   <header class="top">
     <div class="brand">
-      <div class="mark">A</div>
+      <div class="mark" aria-hidden="true">
+        <svg width="26" height="26" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="22" fill="none" stroke="#fff" stroke-width="5"/>
+          <circle cx="41" cy="15" r="4" fill="#FACC15"/>
+          <text x="28" y="36" font-size="22" text-anchor="middle" fill="#fff" font-family="Poppins,'Segoe UI',sans-serif" font-weight="800">A</text>
+        </svg>
+      </div>
       <div class="name" id="brandName">Afrigo<small id="brandSub">النقل والتوصيل في نواكشوط</small></div>
     </div>
     <div class="langtoggle" role="group" aria-label="Language">
@@ -311,10 +322,41 @@
     <h2 data-t="aboutTitle"></h2>
     <p data-t="aboutBody"></p>
     <div class="apps-row">
-      <span>Afrigo</span>
-      <span>Afrigo Taxi</span>
-      <span>Afrigo Food</span>
-      <span>Afrigo Livreur</span>
+      <span>
+        <svg width="20" height="20" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" fill="#16A34A"/>
+          <circle cx="28" cy="28" r="18" fill="none" stroke="#fff" stroke-width="4.5"/>
+          <circle cx="39" cy="16" r="3.5" fill="#FACC15"/>
+        </svg>
+        Afrigo
+      </span>
+      <span>
+        <svg width="20" height="20" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+          <rect width="512" height="512" rx="130" fill="#1C1917"/>
+          <g transform="translate(256 268)">
+            <path d="M-118 42 L-118 4 Q-118 -14 -100 -22 L-76 -76 Q-66 -98 -40 -98 L40 -98 Q66 -98 76 -76 L100 -22 Q118 -14 118 4 L118 42 Q118 58 102 58 L96 58 Q96 76 78 76 Q60 76 60 58 L-60 58 Q-60 76 -78 76 Q-96 76 -96 58 L-102 58 Q-118 58 -118 42 Z" fill="#fff"/>
+            <rect x="-14" y="-118" width="28" height="16" rx="4" fill="#FACC15"/>
+          </g>
+        </svg>
+        Afrigo Taxi
+      </span>
+      <span>
+        <svg width="20" height="20" viewBox="0 0 56 56" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" fill="#2563EB"/>
+          <circle cx="25" cy="28" r="9" fill="none" stroke="#fff" stroke-width="3"/>
+          <rect x="35" y="18" width="3" height="20" fill="#FACC15"/>
+          <rect x="40" y="18" width="3" height="9" fill="#FACC15"/>
+        </svg>
+        Afrigo Food
+      </span>
+      <span>
+        <svg width="20" height="20" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+          <rect width="72" height="72" rx="16" fill="#CA8A04"/>
+          <circle cx="36" cy="35" r="18" fill="none" stroke="#fff" stroke-width="4"/>
+          <circle cx="49" cy="18" r="5" fill="#166534"/>
+        </svg>
+        Afrigo Livreur
+      </span>
     </div>
   </section>
 
