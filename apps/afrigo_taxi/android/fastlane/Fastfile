@@ -1,20 +1,24 @@
-# Builds the Taxi (driver) app's release App Bundle and uploads it to the
-# Play Console "internal testing" track. Signing uses the real
-# upload-keystore (key.properties, gitignored) wired into
-# app/build.gradle.kts -- CI must have both present as repo
-# secrets/artifacts, same as locally.
+# Uploads the Taxi (driver) app's release App Bundle to the Play Console
+# "internal testing" track. The AAB itself is built by `flutter build
+# appbundle` in the CI workflow (not the raw `gradle` fastlane action --
+# gradlew is gitignored here like the rest of a stock Flutter project, so
+# only Flutter's own tooling, which regenerates it on demand, can build
+# this from a fresh checkout). Signing uses the real upload-keystore
+# (key.properties, gitignored) wired into app/build.gradle.kts -- CI must
+# have both present as repo secrets/artifacts, same as locally.
 # Auth to Play Console uses a service account JSON key (Release Manager
-# access), no Google account login/2FA in CI.
+# access), no Google account login/2FA in CI. Passed directly to the
+# action rather than via Appfile's `json_key_data` -- that DSL method
+# doesn't exist in this fastlane version.
 default_platform(:android)
 
 platform :android do
-  desc "Build and upload a new App Bundle to Play Console internal testing"
+  desc "Upload the Flutter-built App Bundle to Play Console internal testing"
   lane :internal do
-    gradle(task: "clean bundleRelease", project_dir: ".")
-
     upload_to_play_store(
       track: "internal",
-      aab: "app/build/outputs/bundle/release/app-release.aab",
+      aab: "../build/app/outputs/bundle/release/app-release.aab",
+      json_key_data: ENV["PLAY_STORE_SERVICE_ACCOUNT_JSON"],
       skip_upload_metadata: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
