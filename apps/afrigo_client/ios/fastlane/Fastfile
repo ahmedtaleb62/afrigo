@@ -70,6 +70,11 @@ platform :ios do
     app = Spaceship::ConnectAPI::App.find("com.afrigo.client")
     UI.message("App id: #{app.id}, primary locale: #{app.primaryLocale}")
 
+    v = app.get_edit_app_store_version(includes: "build")
+    UI.message("Edit version #{v&.versionString}, build attached: #{v&.build.inspect}")
+    builds = app.get_builds(filter: { processingState: "VALID" }, limit: 5)
+    builds.each { |b| UI.message("  Available build: #{b.version} (#{b.processingState})") }
+
     info = app.fetch_edit_app_info
     if info.nil?
       UI.message("No editable AppInfo found")
