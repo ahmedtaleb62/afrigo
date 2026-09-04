@@ -1,0 +1,17 @@
+Afrigo Taxi est l'application des chauffeurs de taxi de la plateforme Afrigo à Nouakchott. Recevez les demandes de course près de vous, suivez vos revenus, et gérez vos courses quotidiennes depuis un seul endroit.
+
+Recevoir des courses
+Passez en statut "En ligne" pour commencer à recevoir des demandes de course de passagers proches de vous, avec le détail du point de départ et de la destination avant d'accepter.
+
+Se rendre au passager
+Suivez l'itinéraire en direct sur la carte depuis votre position jusqu'au point de prise en charge, puis jusqu'à la destination.
+
+Revenus et courses
+Consultez l'historique de vos courses terminées et vos revenus quotidiens, et gérez les informations de votre véhicule et vos documents depuis votre profil.
+
+Pensé pour les chauffeurs de Nouakchott
+- Connexion directe par numéro de téléphone mauritanien.
+- Vérification du véhicule et des documents directement dans l'application.
+- Interface entièrement disponible en arabe et en français.
+
+Afrigo Taxi — rejoignez le réseau de chauffeurs Afrigo et commencez dès aujourd'hui.

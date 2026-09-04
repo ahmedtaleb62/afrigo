@@ -52,4 +52,34 @@ platform :ios do
       skip_waiting_for_build_processing: true,
     )
   end
+
+  desc "Push App Store Connect listing metadata (no binary/screenshots)"
+  lane :metadata do
+    api_key = app_store_connect_api_key(
+      key_id: ENV["ASC_KEY_ID"],
+      issuer_id: ENV["ASC_ISSUER_ID"],
+      key_content: ENV["ASC_KEY_CONTENT"],
+      is_key_content_base64: true,
+    )
+
+    # demo_user/demo_password are a real account's login (not throwaway
+    # dummy data) so they're never written to metadata/review_information —
+    # this repo is public. Passed as CI-only secrets instead.
+    upload_to_app_store(
+      api_key: api_key,
+      skip_binary_upload: true,
+      skip_screenshots: true,
+      skip_metadata: false,
+      force: true,
+      app_review_information: {
+        first_name: "Ahmed",
+        last_name: "Taleb",
+        phone_number: "+222 42740370",
+        email_address: "ahmedelkentawi@gmail.com",
+        demo_user: ENV["ASC_DEMO_USER"],
+        demo_password: ENV["ASC_DEMO_PASSWORD"],
+        notes: "To sign in, use the Login screen (not Sign Up) with the demo phone number and password provided in App Review Information. This is a pre-verified Mauritanian account, so no SMS/OTP code is required. The app's default language is Arabic (right-to-left); a language toggle (Arabic/French) is available from the Home screen. Please allow location access when prompted for the best review experience.",
+      },
+    )
+  end
 end

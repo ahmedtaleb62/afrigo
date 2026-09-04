@@ -1,0 +1,1 @@
+taxi,chauffeur,emploi,Nouakchott,Mauritanie,transport,courses,revenus,VTC

@@ -1,0 +1,1 @@
+Améliorations de la géolocalisation, de la connexion, et du classement des restaurants par proximité, ainsi que diverses corrections.

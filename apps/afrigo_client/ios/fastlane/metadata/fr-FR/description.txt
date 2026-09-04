@@ -1,0 +1,18 @@
+Afrigo est votre application de transport et de livraison à Nouakchott — réservez une course en taxi, commandez votre repas préféré, ou envoyez un colis, le tout depuis une seule application.
+
+Transport en taxi
+Réservez votre course en un geste, et suivez votre chauffeur en direct sur la carte. Votre point de départ est détecté automatiquement, ou choisissez-en un autre manuellement sur la carte.
+
+Livraison de repas
+Parcourez les restaurants proches de vous (classés par distance réelle), choisissez votre repas, et suivez votre commande en temps réel jusqu'à sa livraison — ou récupérez-la vous-même sur place.
+
+Livraison de colis
+Envoyez vos documents ou petits colis n'importe où en ville via des livreurs vérifiés, avec la possibilité de joindre une photo du colis.
+
+Pensé pour Nouakchott
+- Connexion directe par numéro de téléphone mauritanien, avec code de vérification instantané par SMS.
+- Paiement en espèces ou par virement bancaire.
+- Interface entièrement disponible en arabe et en français.
+- Suivi en direct de chaque course et commande sur la carte.
+
+Afrigo — tout ce dont vous avez besoin pour vous déplacer et vous faire livrer, en une seule application.

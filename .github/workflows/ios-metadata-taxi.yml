@@ -1,0 +1,29 @@
+name: iOS Metadata - Taxi
+
+on:
+  workflow_dispatch:
+
+jobs:
+  metadata:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/afrigo_taxi/ios
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: "3.3"
+          bundler-cache: true
+          working-directory: apps/afrigo_taxi/ios
+
+      - name: Push App Store Connect metadata
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_CONTENT: ${{ secrets.ASC_KEY_CONTENT }}
+          ASC_DEMO_USER: ${{ secrets.ASC_DEMO_USER_TAXI }}
+          ASC_DEMO_PASSWORD: ${{ secrets.ASC_DEMO_PASSWORD_TAXI }}
+        run: bundle exec fastlane metadata
