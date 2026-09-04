@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/context_ext.dart';
 import '../widgets/back_circle_button.dart';
 
 /// Shared layout for the three simple legal/info pages (عن التطبيق، الشروط
@@ -31,7 +32,7 @@ class LegalTextScreen extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Text(
-                body.isNotEmpty ? body : 'لا يوجد محتوى بعد.',
+                body.isNotEmpty ? body : context.l10n.taxiLegalNoContent,
                 style: const TextStyle(fontFamily: 'Tajawal', fontSize: 14, height: 1.9, color: Color(0xFF44403C)),
               ),
             ),

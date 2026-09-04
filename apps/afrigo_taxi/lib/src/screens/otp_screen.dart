@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/taxi_primary_button.dart';
 
@@ -60,15 +61,16 @@ class _OtpScreenState extends State<OtpScreen> {
       builder: (context, ref, _) {
         final controller = ref.read(taxiFlowControllerProvider.notifier);
         final s = ref.watch(taxiFlowControllerProvider);
+        final l10n = context.l10n;
         return Container(
           color: Colors.white,
           padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 36, 24, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('تأكيد الرمز', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
+              Text(l10n.commonOtpTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 22)),
               const SizedBox(height: 8),
-              const Text('أدخل الرمز المكوّن من 6 أرقام المرسل إلى رقم هاتفك', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
+              Text(l10n.commonOtpDesc, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6, color: Color(0xFF78716C))),
               const SizedBox(height: 28),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -110,13 +112,13 @@ class _OtpScreenState extends State<OtpScreen> {
                 child: InkWell(
                   onTap: _countdown > 0 ? null : () => _resend(controller),
                   child: Text(
-                    _countdown > 0 ? 'إعادة الإرسال خلال $_countdown ثانية' : 'إعادة الإرسال',
+                    _countdown > 0 ? l10n.commonResendIn(_countdown) : l10n.commonResend,
                     style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 13, color: _countdown > 0 ? const Color(0xFFA8A29E) : const Color(0xFF166534)),
                   ),
                 ),
               ),
               const Spacer(),
-              TaxiPrimaryButton(label: 'تأكيد', isLoading: s.isSubmitting, onPressed: controller.confirmOtp),
+              TaxiPrimaryButton(label: l10n.commonConfirm, isLoading: s.isSubmitting, onPressed: controller.confirmOtp),
             ],
           ),
         );

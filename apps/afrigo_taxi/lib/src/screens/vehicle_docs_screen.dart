@@ -2,21 +2,27 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/taxi_primary_button.dart';
 import '../widgets/taxi_text_field.dart';
 
+// Car brand names (plus the trailing 'أخرى'/"Other" entry) are persisted
+// verbatim to `vehicles.car_type` — kept as fixed, unlocalized values (not
+// routed through l10n) so the data written to the DB doesn't change
+// depending on which language the driver happened to have selected.
 const _carTypes = ['Dacia Logan', 'Renault Symbol', 'Hyundai Accent', 'Peugeot 301', 'أخرى'];
 
 Future<void> _pickLicenseSource(BuildContext context, TaxiFlowController controller) async {
+  final l10n = context.l10n;
   final source = await showModalBottomSheet<ImageSource>(
     context: context,
     builder: (ctx) => SafeArea(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          ListTile(leading: const Icon(Icons.camera_alt_outlined), title: const Text('التقاط صورة', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
-          ListTile(leading: const Icon(Icons.photo_library_outlined), title: const Text('اختيار من المعرض', style: TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
+          ListTile(leading: const Icon(Icons.camera_alt_outlined), title: Text(l10n.taxiTakePhoto, style: const TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.camera)),
+          ListTile(leading: const Icon(Icons.photo_library_outlined), title: Text(l10n.taxiPickFromGallery, style: const TextStyle(fontFamily: 'Tajawal')), onTap: () => Navigator.pop(ctx, ImageSource.gallery)),
         ],
       ),
     ),
@@ -71,19 +77,20 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
   Widget build(BuildContext context) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final s = ref.watch(taxiFlowControllerProvider);
+    final l10n = context.l10n;
 
     return Container(
       color: Colors.white,
       padding: EdgeInsets.fromLTRB(20, MediaQuery.of(context).padding.top + 30, 20, 20),
       child: ListView(
         children: [
-          const Text('توثيق المركبة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+          Text(l10n.taxiVehicleDocsTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 6),
-          const Text('أدخل بيانات مركبتك لمراجعتها من طرف الإدارة', style: TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
+          Text(l10n.taxiVehicleDocsDesc, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
           const SizedBox(height: 20),
-          TaxiTextField(controller: _vehicleName, hint: 'اسم صاحب المركبة'),
+          TaxiTextField(controller: _vehicleName, hint: l10n.taxiVehicleOwnerNameHint),
           const SizedBox(height: 10),
-          TaxiTextField(controller: _address, hint: 'العنوان'),
+          TaxiTextField(controller: _address, hint: l10n.taxiAddressHint),
           const SizedBox(height: 10),
           InkWell(
             onTap: s.licenseUploading ? null : () => _pickLicenseSource(context, controller),
@@ -98,7 +105,7 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
                     Text(s.licensePhoto ? '✅' : '📷', style: const TextStyle(fontSize: 20)),
                   const SizedBox(height: 4),
                   Text(
-                    s.licenseUploading ? 'جارٍ الرفع...' : (s.licensePhoto ? 'تم رفع صورة رخصة القيادة — اضغط للتغيير' : 'رفع صورة رخصة القيادة'),
+                    s.licenseUploading ? l10n.taxiUploading : (s.licensePhoto ? l10n.taxiLicenseUploadedHint : l10n.taxiLicenseUploadPrompt),
                     style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Color(0xFF78716C)),
                   ),
                 ],
@@ -114,22 +121,22 @@ class _VehicleDocsScreenState extends ConsumerState<VehicleDocsScreen> {
                 value: _carType,
                 isExpanded: true,
                 style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF1C1917)),
-                items: _carTypes.map((t) => DropdownMenuItem(value: t, child: Text('نوع السيارة: $t'))).toList(),
+                items: _carTypes.map((t) => DropdownMenuItem(value: t, child: Text(l10n.taxiCarTypePrefix(t)))).toList(),
                 onChanged: (v) => setState(() => _carType = v ?? _carType),
               ),
             ),
           ),
           const SizedBox(height: 10),
-          TaxiTextField(controller: _plateNumber, hint: 'رقم اللوحة'),
+          TaxiTextField(controller: _plateNumber, hint: l10n.taxiPlateNumberHint),
           const SizedBox(height: 10),
-          TaxiTextField(controller: _notes, hint: 'ملاحظات'),
+          TaxiTextField(controller: _notes, hint: l10n.taxiNotesHint),
           if (s.authError != null) ...[
             const SizedBox(height: 10),
             Text(s.authError!, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFFDC2626))),
           ],
           const SizedBox(height: 20),
           TaxiPrimaryButton(
-            label: 'إرسال للمراجعة',
+            label: l10n.taxiSubmitForReviewBtn,
             isLoading: s.isSubmitting,
             onPressed: () => controller.submitVehicleDocs(
               vehicleName: _vehicleName.text.trim(),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../state/taxi_screen.dart';
 import '../widgets/taxi_bottom_nav.dart';
@@ -33,14 +34,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   }
 
   Future<void> _confirmDeleteAccount() async {
+    final l10n = context.l10n;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
-        content: const Text('سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6)),
+        title: Text(l10n.taxiDeleteAccountTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+        content: Text(l10n.taxiDeleteAccountMessage, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.6)),
         actions: [
-          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: const Text('إلغاء', style: TextStyle(fontFamily: 'Tajawal'))),
-          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: const Text('حذف نهائيًا', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626)))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(l10n.taxiCancel, style: const TextStyle(fontFamily: 'Tajawal'))),
+          TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(l10n.taxiDeleteConfirm, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, color: Color(0xFFDC2626)))),
         ],
       ),
     );
@@ -50,9 +52,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
       showDialog<void>(
         context: context,
         builder: (ctx) => AlertDialog(
-          title: const Text('تعذّر الحذف', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+          title: Text(l10n.taxiDeleteFailedTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
           content: Text(error, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13)),
-          actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: const Text('حسنًا', style: TextStyle(fontFamily: 'Tajawal')))],
+          actions: [TextButton(onPressed: () => Navigator.of(ctx).pop(), child: Text(l10n.commonOk, style: const TextStyle(fontFamily: 'Tajawal')))],
         ),
       );
     }
@@ -61,6 +63,8 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
+    final s = ref.watch(taxiFlowControllerProvider);
+    final l10n = context.l10n;
 
     Widget menuRow(String label, {VoidCallback? onTap, String trailing = '›', bool divider = true}) => InkWell(
           onTap: onTap,
@@ -91,7 +95,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     const SizedBox(height: 10),
                     Text(_name, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
                     Text(
-                      _ratingCount == 0 ? 'لا يوجد تقييمات بعد' : '⭐ ${_avgRating.toStringAsFixed(1)} · $_ratingCount رحلة مقيَّمة',
+                      _ratingCount == 0 ? l10n.taxiNoRatingsYet : l10n.taxiRatingSummary(_avgRating.toStringAsFixed(1), _ratingCount),
                       style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C)),
                     ),
                   ],
@@ -103,8 +107,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      menuRow('تعديل بيانات المركبة', onTap: () => controller.goTo(TaxiScreen.vehicleDocs)),
-                      menuRow('اللغة', trailing: 'عربي ›', divider: false),
+                      menuRow(l10n.taxiEditVehicleInfo, onTap: () => controller.goTo(TaxiScreen.vehicleDocs)),
+                      menuRow(
+                        l10n.taxiLanguageLabel,
+                        onTap: () => controller.setSettingsLang(s.settingsLang == 'ar' ? 'fr' : 'ar'),
+                        trailing: '${s.settingsLang == 'ar' ? 'العربية' : 'Français'} ›',
+                        divider: false,
+                      ),
                     ],
                   ),
                 ),
@@ -114,10 +123,10 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   clipBehavior: Clip.antiAlias,
                   child: Column(
                     children: [
-                      menuRow('الدعم والمساعدة', onTap: () => controller.goToInfo(TaxiScreen.support)),
-                      menuRow('عن التطبيق', onTap: () => controller.goToInfo(TaxiScreen.about)),
-                      menuRow('الشروط والأحكام', onTap: () => controller.goToInfo(TaxiScreen.terms)),
-                      menuRow('سياسة الخصوصية', onTap: () => controller.goToInfo(TaxiScreen.privacy), divider: false),
+                      menuRow(l10n.taxiSupportMenuLabel, onTap: () => controller.goToInfo(TaxiScreen.support)),
+                      menuRow(l10n.taxiLegalAboutTitle, onTap: () => controller.goToInfo(TaxiScreen.about)),
+                      menuRow(l10n.taxiLegalTermsTitle, onTap: () => controller.goToInfo(TaxiScreen.terms)),
+                      menuRow(l10n.taxiLegalPrivacyTitle, onTap: () => controller.goToInfo(TaxiScreen.privacy), divider: false),
                     ],
                   ),
                 ),
@@ -127,7 +136,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.all(16),
-                    child: const Text('تسجيل الخروج', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                    child: Text(l10n.taxiLogout, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
                   ),
                 ),
                 InkWell(
@@ -135,7 +144,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> {
                   child: Container(
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14)),
                     padding: const EdgeInsets.all(16),
-                    child: const Text('حذف الحساب', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFA8A29E))),
+                    child: Text(l10n.taxiDeleteAccountTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFA8A29E))),
                   ),
                 ),
               ],

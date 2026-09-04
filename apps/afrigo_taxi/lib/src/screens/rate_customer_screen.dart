@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/taxi_primary_button.dart';
 import '../widgets/taxi_text_field.dart';
@@ -27,6 +28,7 @@ class _RateCustomerScreenState extends ConsumerState<RateCustomerScreen> {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final rating = ref.watch(taxiFlowControllerProvider.select((s) => s.custRating));
     final clientName = ref.watch(taxiFlowControllerProvider.select((s) => s.clientName)) ?? '';
+    final l10n = context.l10n;
 
     return Container(
       color: Colors.white,
@@ -36,7 +38,7 @@ class _RateCustomerScreenState extends ConsumerState<RateCustomerScreen> {
         children: [
           Container(width: 64, height: 64, alignment: Alignment.center, decoration: const BoxDecoration(color: Color(0xFFF5F5F4), shape: BoxShape.circle), child: const Text('👩', style: TextStyle(fontSize: 26))),
           const SizedBox(height: 14),
-          Text('قيّم الزبون${clientName.isNotEmpty ? ': $clientName' : ''}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+          Text('${l10n.taxiRateCustomerTitle}${clientName.isNotEmpty ? ': $clientName' : ''}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -49,9 +51,9 @@ class _RateCustomerScreenState extends ConsumerState<RateCustomerScreen> {
             }),
           ),
           const SizedBox(height: 24),
-          TaxiTextField(hint: 'تعليق (اختياري)', controller: _commentController),
+          TaxiTextField(hint: l10n.taxiCommentHint, controller: _commentController),
           const Spacer(),
-          TaxiPrimaryButton(label: 'إرسال', onPressed: () => controller.finishRateCustomer(comment: _commentController.text)),
+          TaxiPrimaryButton(label: l10n.taxiSendBtn, onPressed: () => controller.finishRateCustomer(comment: _commentController.text)),
         ],
       ),
     );

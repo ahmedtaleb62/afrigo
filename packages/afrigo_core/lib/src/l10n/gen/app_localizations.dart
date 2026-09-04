@@ -2015,6 +2015,672 @@ abstract class AfrigoLocalizations {
   /// In ar, this message translates to:
   /// **'🆘 الدعم والمساعدة'**
   String get clientProfileSupportMenu;
+
+  /// No description provided for @taxiAccountCreatingTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ إنشاء حسابك...'**
+  String get taxiAccountCreatingTitle;
+
+  /// No description provided for @taxiAccountCreatingDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'سننتقل الآن لتوثيق مركبتك'**
+  String get taxiAccountCreatingDesc;
+
+  /// No description provided for @taxiAccountCreatingContinueBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'متابعة إلى التوثيق'**
+  String get taxiAccountCreatingContinueBtn;
+
+  /// No description provided for @taxiBalanceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرصيد الحالي'**
+  String get taxiBalanceLabel;
+
+  /// No description provided for @taxiAmountMru.
+  ///
+  /// In ar, this message translates to:
+  /// **'{amount} أوقية'**
+  String taxiAmountMru(String amount);
+
+  /// No description provided for @taxiLowBalanceWarning.
+  ///
+  /// In ar, this message translates to:
+  /// **'رصيدك غير كافٍ، يرجى الشحن لاستقبال الطلبات'**
+  String get taxiLowBalanceWarning;
+
+  /// No description provided for @taxiContactCompanyBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'📞 تواصل مع الشركة'**
+  String get taxiContactCompanyBtn;
+
+  /// No description provided for @taxiStatusOnlineUnavailable.
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل غير متاح (رصيد منخفض)'**
+  String get taxiStatusOnlineUnavailable;
+
+  /// No description provided for @taxiStatusOnlineReceiving.
+  ///
+  /// In ar, this message translates to:
+  /// **'متصل — تستقبل الطلبات'**
+  String get taxiStatusOnlineReceiving;
+
+  /// No description provided for @taxiTodayTripsLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'رحلات اليوم'**
+  String get taxiTodayTripsLabel;
+
+  /// No description provided for @taxiTodayEarningsLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'أرباح اليوم (أ.م)'**
+  String get taxiTodayEarningsLabel;
+
+  /// No description provided for @taxiIncomingRideTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'طلب رحلة جديد'**
+  String get taxiIncomingRideTitle;
+
+  /// No description provided for @taxiIncomingRideFrom.
+  ///
+  /// In ar, this message translates to:
+  /// **'من: {address}'**
+  String taxiIncomingRideFrom(String address);
+
+  /// No description provided for @taxiIncomingRideTo.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلى: {address} · {km} كم'**
+  String taxiIncomingRideTo(String address, String km);
+
+  /// No description provided for @taxiIncomingRideEstimatedPrice.
+  ///
+  /// In ar, this message translates to:
+  /// **'{price} أوقية تقديريًا'**
+  String taxiIncomingRideEstimatedPrice(String price);
+
+  /// No description provided for @taxiReject.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفض'**
+  String get taxiReject;
+
+  /// No description provided for @taxiAccept.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبول'**
+  String get taxiAccept;
+
+  /// No description provided for @taxiLegalNoContent.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد محتوى بعد.'**
+  String get taxiLegalNoContent;
+
+  /// No description provided for @taxiLegalAboutTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'عن التطبيق'**
+  String get taxiLegalAboutTitle;
+
+  /// No description provided for @taxiLegalTermsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الشروط والأحكام'**
+  String get taxiLegalTermsTitle;
+
+  /// No description provided for @taxiLegalPrivacyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سياسة الخصوصية'**
+  String get taxiLegalPrivacyTitle;
+
+  /// No description provided for @taxiLoginTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل دخول السائق'**
+  String get taxiLoginTitle;
+
+  /// No description provided for @taxiPhoneHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'46 12 34 56'**
+  String get taxiPhoneHint;
+
+  /// No description provided for @taxiPasswordHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'••••••••'**
+  String get taxiPasswordHint;
+
+  /// No description provided for @taxiNewDriverPrompt.
+  ///
+  /// In ar, this message translates to:
+  /// **'سائق جديد؟ '**
+  String get taxiNewDriverPrompt;
+
+  /// No description provided for @taxiNavToPickupBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'في الطريق لاستلام الزبون'**
+  String get taxiNavToPickupBanner;
+
+  /// No description provided for @taxiArrivedStartTripBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'وصلت / بدء الرحلة'**
+  String get taxiArrivedStartTripBtn;
+
+  /// No description provided for @taxiCancelTripBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء الرحلة'**
+  String get taxiCancelTripBtn;
+
+  /// No description provided for @taxiNotifMinutesAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل {minutes} دقيقة'**
+  String taxiNotifMinutesAgo(int minutes);
+
+  /// No description provided for @taxiNotifHoursAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل {hours} ساعة'**
+  String taxiNotifHoursAgo(int hours);
+
+  /// No description provided for @taxiNotifDaysAgo.
+  ///
+  /// In ar, this message translates to:
+  /// **'قبل {days} يوم'**
+  String taxiNotifDaysAgo(int days);
+
+  /// No description provided for @taxiNotifTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'الإشعارات'**
+  String get taxiNotifTitle;
+
+  /// No description provided for @taxiNotifEmptyTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد إشعارات بعد'**
+  String get taxiNotifEmptyTitle;
+
+  /// No description provided for @taxiNotifEmptyMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'ستظهر هنا آخر التحديثات على طلباتك'**
+  String get taxiNotifEmptyMessage;
+
+  /// No description provided for @taxiPendingTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'بانتظار موافقة الإدارة'**
+  String get taxiPendingTitle;
+
+  /// No description provided for @taxiPendingDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيتم إشعارك فور مراجعة ملفك من طرف فريق Afrigo. لا يمكنك استقبال الطلبات في هذه الأثناء'**
+  String get taxiPendingDesc;
+
+  /// No description provided for @taxiDeleteAccountTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف الحساب'**
+  String get taxiDeleteAccountTitle;
+
+  /// No description provided for @taxiDeleteAccountMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟'**
+  String get taxiDeleteAccountMessage;
+
+  /// No description provided for @taxiDeleteFailedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر الحذف'**
+  String get taxiDeleteFailedTitle;
+
+  /// No description provided for @taxiDeleteConfirm.
+  ///
+  /// In ar, this message translates to:
+  /// **'حذف نهائيًا'**
+  String get taxiDeleteConfirm;
+
+  /// No description provided for @taxiCancel.
+  ///
+  /// In ar, this message translates to:
+  /// **'إلغاء'**
+  String get taxiCancel;
+
+  /// No description provided for @taxiNoRatingsYet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا يوجد تقييمات بعد'**
+  String get taxiNoRatingsYet;
+
+  /// No description provided for @taxiRatingSummary.
+  ///
+  /// In ar, this message translates to:
+  /// **'⭐ {rating} · {count} رحلة مقيَّمة'**
+  String taxiRatingSummary(String rating, int count);
+
+  /// No description provided for @taxiEditVehicleInfo.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعديل بيانات المركبة'**
+  String get taxiEditVehicleInfo;
+
+  /// No description provided for @taxiLanguageLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'اللغة'**
+  String get taxiLanguageLabel;
+
+  /// No description provided for @taxiSupportMenuLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الدعم والمساعدة'**
+  String get taxiSupportMenuLabel;
+
+  /// No description provided for @taxiLogout.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الخروج'**
+  String get taxiLogout;
+
+  /// No description provided for @taxiRateCustomerTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'قيّم الزبون'**
+  String get taxiRateCustomerTitle;
+
+  /// No description provided for @taxiCommentHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعليق (اختياري)'**
+  String get taxiCommentHint;
+
+  /// No description provided for @taxiSendBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال'**
+  String get taxiSendBtn;
+
+  /// No description provided for @taxiRejectedDefaultReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'صورة رخصة القيادة غير واضحة، الرجاء رفع صورة أوضح'**
+  String get taxiRejectedDefaultReason;
+
+  /// No description provided for @taxiRejectedTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم رفض طلب التوثيق'**
+  String get taxiRejectedTitle;
+
+  /// No description provided for @taxiRejectedReasonLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'سبب الرفض: {reason}'**
+  String taxiRejectedReasonLabel(String reason);
+
+  /// No description provided for @taxiResubmitBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إعادة تقديم الطلب'**
+  String get taxiResubmitBtn;
+
+  /// No description provided for @taxiSignupTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء حساب سائق'**
+  String get taxiSignupTitle;
+
+  /// No description provided for @taxiFullNameLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الاسم الكامل'**
+  String get taxiFullNameLabel;
+
+  /// No description provided for @taxiFullNameHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'مثال: مراد بلحاج'**
+  String get taxiFullNameHint;
+
+  /// No description provided for @taxiConfirmPasswordLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'تأكيد كلمة المرور'**
+  String get taxiConfirmPasswordLabel;
+
+  /// No description provided for @taxiCreateAccountBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنشاء الحساب'**
+  String get taxiCreateAccountBtn;
+
+  /// No description provided for @taxiHaveAccountPrompt.
+  ///
+  /// In ar, this message translates to:
+  /// **'لديك حساب؟ '**
+  String get taxiHaveAccountPrompt;
+
+  /// No description provided for @taxiLoginLink.
+  ///
+  /// In ar, this message translates to:
+  /// **'تسجيل الدخول'**
+  String get taxiLoginLink;
+
+  /// No description provided for @taxiSupportFaqLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'الأسئلة الشائعة'**
+  String get taxiSupportFaqLabel;
+
+  /// No description provided for @taxiFaqWallet.
+  ///
+  /// In ar, this message translates to:
+  /// **'كيف أشحن رصيد محفظتي؟'**
+  String get taxiFaqWallet;
+
+  /// No description provided for @taxiFaqNoRides.
+  ///
+  /// In ar, this message translates to:
+  /// **'لماذا لا تصلني طلبات رحلات؟'**
+  String get taxiFaqNoRides;
+
+  /// No description provided for @taxiFaqEditVehicle.
+  ///
+  /// In ar, this message translates to:
+  /// **'كيف أعدّل بيانات مركبتي؟'**
+  String get taxiFaqEditVehicle;
+
+  /// No description provided for @taxiSupportWhatsapp.
+  ///
+  /// In ar, this message translates to:
+  /// **'تواصل عبر واتساب'**
+  String get taxiSupportWhatsapp;
+
+  /// No description provided for @taxiSupportCallUs.
+  ///
+  /// In ar, this message translates to:
+  /// **'اتصل بنا'**
+  String get taxiSupportCallUs;
+
+  /// No description provided for @taxiTripEndTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم إنهاء الرحلة'**
+  String get taxiTripEndTitle;
+
+  /// No description provided for @taxiDistanceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المسافة'**
+  String get taxiDistanceLabel;
+
+  /// No description provided for @taxiDistanceKmValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'{km} كم'**
+  String taxiDistanceKmValue(String km);
+
+  /// No description provided for @taxiDurationLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'المدة'**
+  String get taxiDurationLabel;
+
+  /// No description provided for @taxiDurationMinValue.
+  ///
+  /// In ar, this message translates to:
+  /// **'{min} دقيقة'**
+  String taxiDurationMinValue(String min);
+
+  /// No description provided for @taxiTotalPriceLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'السعر الإجمالي'**
+  String get taxiTotalPriceLabel;
+
+  /// No description provided for @taxiCommissionDeductedLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'العمولة المخصومة ({pct}%)'**
+  String taxiCommissionDeductedLabel(String pct);
+
+  /// No description provided for @taxiCashReceivedBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم الاستلام نقدًا'**
+  String get taxiCashReceivedBtn;
+
+  /// No description provided for @taxiTripStatusCompleted.
+  ///
+  /// In ar, this message translates to:
+  /// **'مكتملة'**
+  String get taxiTripStatusCompleted;
+
+  /// No description provided for @taxiTripStatusCancelled.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملغاة'**
+  String get taxiTripStatusCancelled;
+
+  /// No description provided for @taxiTripStatusNoDriver.
+  ///
+  /// In ar, this message translates to:
+  /// **'لم يُعثر على سائق'**
+  String get taxiTripStatusNoDriver;
+
+  /// No description provided for @taxiTodayAtTime.
+  ///
+  /// In ar, this message translates to:
+  /// **'اليوم {time}'**
+  String taxiTodayAtTime(String time);
+
+  /// No description provided for @taxiTripHistoryTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل الرحلات'**
+  String get taxiTripHistoryTitle;
+
+  /// No description provided for @taxiTripHistoryEmpty.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد رحلات بعد'**
+  String get taxiTripHistoryEmpty;
+
+  /// No description provided for @taxiDefaultClientName.
+  ///
+  /// In ar, this message translates to:
+  /// **'زبون'**
+  String get taxiDefaultClientName;
+
+  /// No description provided for @taxiTripOngoingBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرحلة جارية إلى: {dropoff}'**
+  String taxiTripOngoingBanner(String dropoff);
+
+  /// No description provided for @taxiEndTripBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إنهاء الرحلة'**
+  String get taxiEndTripBtn;
+
+  /// No description provided for @taxiTakePhoto.
+  ///
+  /// In ar, this message translates to:
+  /// **'التقاط صورة'**
+  String get taxiTakePhoto;
+
+  /// No description provided for @taxiPickFromGallery.
+  ///
+  /// In ar, this message translates to:
+  /// **'اختيار من المعرض'**
+  String get taxiPickFromGallery;
+
+  /// No description provided for @taxiVehicleDocsTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'توثيق المركبة'**
+  String get taxiVehicleDocsTitle;
+
+  /// No description provided for @taxiVehicleDocsDesc.
+  ///
+  /// In ar, this message translates to:
+  /// **'أدخل بيانات مركبتك لمراجعتها من طرف الإدارة'**
+  String get taxiVehicleDocsDesc;
+
+  /// No description provided for @taxiVehicleOwnerNameHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'اسم صاحب المركبة'**
+  String get taxiVehicleOwnerNameHint;
+
+  /// No description provided for @taxiAddressHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'العنوان'**
+  String get taxiAddressHint;
+
+  /// No description provided for @taxiUploading.
+  ///
+  /// In ar, this message translates to:
+  /// **'جارٍ الرفع...'**
+  String get taxiUploading;
+
+  /// No description provided for @taxiLicenseUploadedHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'تم رفع صورة رخصة القيادة — اضغط للتغيير'**
+  String get taxiLicenseUploadedHint;
+
+  /// No description provided for @taxiLicenseUploadPrompt.
+  ///
+  /// In ar, this message translates to:
+  /// **'رفع صورة رخصة القيادة'**
+  String get taxiLicenseUploadPrompt;
+
+  /// No description provided for @taxiCarTypePrefix.
+  ///
+  /// In ar, this message translates to:
+  /// **'نوع السيارة: {type}'**
+  String taxiCarTypePrefix(String type);
+
+  /// No description provided for @taxiPlateNumberHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'رقم اللوحة'**
+  String get taxiPlateNumberHint;
+
+  /// No description provided for @taxiNotesHint.
+  ///
+  /// In ar, this message translates to:
+  /// **'ملاحظات'**
+  String get taxiNotesHint;
+
+  /// No description provided for @taxiSubmitForReviewBtn.
+  ///
+  /// In ar, this message translates to:
+  /// **'إرسال للمراجعة'**
+  String get taxiSubmitForReviewBtn;
+
+  /// No description provided for @taxiWalletTitle.
+  ///
+  /// In ar, this message translates to:
+  /// **'المحفظة'**
+  String get taxiWalletTitle;
+
+  /// No description provided for @taxiCommissionRateLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'نسبة العمولة: {pct}%'**
+  String taxiCommissionRateLabel(String pct);
+
+  /// No description provided for @taxiTopupActionLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'شحن رصيد'**
+  String get taxiTopupActionLabel;
+
+  /// No description provided for @taxiWithdrawActionLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب رصيد'**
+  String get taxiWithdrawActionLabel;
+
+  /// No description provided for @taxiTopupReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'شحن'**
+  String get taxiTopupReason;
+
+  /// No description provided for @taxiWithdrawReason.
+  ///
+  /// In ar, this message translates to:
+  /// **'سحب'**
+  String get taxiWithdrawReason;
+
+  /// No description provided for @taxiWalletWhatsappMessage.
+  ///
+  /// In ar, this message translates to:
+  /// **'مرحبًا، أريد {reason} رصيد محفظتي في تطبيق Afrigo Taxi.'**
+  String taxiWalletWhatsappMessage(String reason);
+
+  /// No description provided for @taxiTransactionHistoryLabel.
+  ///
+  /// In ar, this message translates to:
+  /// **'سجل الحركات'**
+  String get taxiTransactionHistoryLabel;
+
+  /// No description provided for @taxiNoTransactionsYet.
+  ///
+  /// In ar, this message translates to:
+  /// **'لا توجد حركات بعد'**
+  String get taxiNoTransactionsYet;
+
+  /// No description provided for @taxiTxnTypeCommission.
+  ///
+  /// In ar, this message translates to:
+  /// **'عمولة رحلة'**
+  String get taxiTxnTypeCommission;
+
+  /// No description provided for @taxiTxnTypeGeneric.
+  ///
+  /// In ar, this message translates to:
+  /// **'حركة'**
+  String get taxiTxnTypeGeneric;
+
+  /// No description provided for @taxiLocationPermanentlyDeniedBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع'**
+  String get taxiLocationPermanentlyDeniedBanner;
+
+  /// No description provided for @taxiLocationPermDeniedBanner.
+  ///
+  /// In ar, this message translates to:
+  /// **'تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع'**
+  String get taxiLocationPermDeniedBanner;
+
+  /// No description provided for @taxiNavTrips.
+  ///
+  /// In ar, this message translates to:
+  /// **'الرحلات'**
+  String get taxiNavTrips;
 }
 
 class _AfrigoLocalizationsDelegate

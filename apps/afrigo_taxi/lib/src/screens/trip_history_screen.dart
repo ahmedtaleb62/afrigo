@@ -1,23 +1,25 @@
+import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/back_circle_button.dart';
 
-const _statusLabel = {
-  'completed': 'مكتملة',
-  'cancelled_by_client': 'ملغاة',
-  'cancelled_by_driver': 'ملغاة',
-  'no_driver_found': 'لم يُعثر على سائق',
-};
+Map<String, String> _statusLabel(AfrigoLocalizations l10n) => {
+      'completed': l10n.taxiTripStatusCompleted,
+      'cancelled_by_client': l10n.taxiTripStatusCancelled,
+      'cancelled_by_driver': l10n.taxiTripStatusCancelled,
+      'no_driver_found': l10n.taxiTripStatusNoDriver,
+    };
 
-String _formatTripTime(String? iso) {
+String _formatTripTime(AfrigoLocalizations l10n, String? iso) {
   final d = iso == null ? null : DateTime.tryParse(iso)?.toLocal();
   if (d == null) return '';
   final now = DateTime.now();
   final isToday = d.year == now.year && d.month == now.month && d.day == now.day;
   final time = '${d.hour.toString().padLeft(2, '0')}:${d.minute.toString().padLeft(2, '0')}';
-  return isToday ? 'اليوم $time' : '${d.year}/${d.month}/${d.day} $time';
+  return isToday ? l10n.taxiTodayAtTime(time) : '${d.year}/${d.month}/${d.day} $time';
 }
 
 /// Screen 59 — Trip history. Real `rides` rows for this driver
@@ -30,6 +32,8 @@ class TripHistoryScreen extends ConsumerWidget {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final trips = ref.watch(taxiFlowControllerProvider.select((s) => s.tripHistory));
     final loading = ref.watch(taxiFlowControllerProvider.select((s) => s.tripHistoryLoading));
+    final l10n = context.l10n;
+    final statusLabel = _statusLabel(l10n);
 
     Widget trip(String name, String price, String meta) => Container(
           padding: const EdgeInsets.all(14),
@@ -62,7 +66,7 @@ class TripHistoryScreen extends ConsumerWidget {
               children: [
                 BackCircleButton(onTap: controller.back),
                 const SizedBox(width: 12),
-                const Text('سجل الرحلات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
+                Text(l10n.taxiTripHistoryTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 17)),
               ],
             ),
           ),
@@ -70,15 +74,15 @@ class TripHistoryScreen extends ConsumerWidget {
             child: loading && trips.isEmpty
                 ? const Center(child: CircularProgressIndicator())
                 : trips.isEmpty
-                    ? const Center(child: Text('لا توجد رحلات بعد', style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))))
+                    ? Center(child: Text(l10n.taxiTripHistoryEmpty, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C))))
                     : ListView(
                         padding: const EdgeInsets.all(20),
                         children: [
                           for (final r in trips)
                             trip(
-                              r['client_name'] as String? ?? 'زبون',
-                              r['price'] == null ? (_statusLabel[r['status']] ?? r['status'] as String? ?? '') : '${(r['price'] as num).toStringAsFixed(0)} أوقية',
-                              '${_formatTripTime(r['created_at'] as String?)} · ${r['distance_km'] == null ? '—' : '${(r['distance_km'] as num).toStringAsFixed(1)} كم'}',
+                              r['client_name'] as String? ?? l10n.taxiDefaultClientName,
+                              r['price'] == null ? (statusLabel[r['status']] ?? r['status'] as String? ?? '') : l10n.taxiAmountMru((r['price'] as num).toStringAsFixed(0)),
+                              '${_formatTripTime(l10n, r['created_at'] as String?)} · ${r['distance_km'] == null ? '—' : l10n.taxiDistanceKmValue((r['distance_km'] as num).toStringAsFixed(1))}',
                             ),
                         ],
                       ),

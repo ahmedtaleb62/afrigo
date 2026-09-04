@@ -9,6 +9,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/app_root.dart';
 import 'src/core/env.dart';
+import 'src/state/taxi_flow_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -46,19 +47,26 @@ Future<void> main() async {
   runApp(const ProviderScope(child: AfrigoTaxiApp()));
 }
 
-class AfrigoTaxiApp extends StatelessWidget {
+class AfrigoTaxiApp extends ConsumerWidget {
   const AfrigoTaxiApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // `settingsLang` ('ar'/'fr') already persists to `profiles.language_pref`
+    // (see `TaxiFlowController.setSettingsLang`) — reusing it here as the
+    // single source of truth for the app's actual `Locale`/`Directionality`
+    // means the profile screen's language row now really does switch the
+    // whole app, not just record a preference.
+    final lang = ref.watch(taxiFlowControllerProvider.select((s) => s.settingsLang));
+    final locale = Locale(lang);
     return MaterialApp(
       title: 'Afrigo Taxi',
       debugShowCheckedModeBanner: false,
-      locale: const Locale('ar'),
+      locale: locale,
       supportedLocales: AfrigoLocalizations.supportedLocales,
       localizationsDelegates: AfrigoLocalizations.localizationsDelegates,
-      theme: AfrigoTheme.light(locale: AfrigoLocale.ar),
-      builder: (context, child) => Directionality(textDirection: TextDirection.rtl, child: child!),
+      theme: AfrigoTheme.light(locale: lang == 'fr' ? AfrigoLocale.fr : AfrigoLocale.ar),
+      builder: (context, child) => Directionality(textDirection: lang == 'fr' ? TextDirection.ltr : TextDirection.rtl, child: child!),
       home: const AppRoot(),
     );
   }

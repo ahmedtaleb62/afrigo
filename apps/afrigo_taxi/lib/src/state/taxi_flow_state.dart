@@ -139,6 +139,7 @@ class TaxiFlowState {
     this.currentLat,
     this.currentLng,
     this.platformSettings = const {},
+    this.settingsLang = 'ar',
   });
 
   final TaxiScreen screen;
@@ -225,6 +226,12 @@ class TaxiFlowState {
   /// admin-editable, no app release needed to change). Empty until
   /// `loadPlatformSettings()` runs (after login).
   final Map<String, dynamic> platformSettings;
+
+  /// 'ar'/'fr' — persisted locally (`SharedPreferences`) and to
+  /// `profiles.language_pref`; drives the whole app's `Locale`/
+  /// `Directionality` (see `AfrigoTaxiApp.build` in `main.dart`).
+  final String settingsLang;
+
   String get supportPhone => (platformSettings['support_phone'] as String?)?.trim().isNotEmpty == true ? platformSettings['support_phone'] as String : '+22245000000';
   String get aboutText => (platformSettings['about_ar'] as String?) ?? '';
   String get termsText => (platformSettings['terms_and_conditions_ar'] as String?) ?? '';
@@ -269,6 +276,7 @@ class TaxiFlowState {
     Object? currentLat = _unset,
     Object? currentLng = _unset,
     Map<String, dynamic>? platformSettings,
+    String? settingsLang,
   }) {
     return TaxiFlowState(
       screen: screen ?? this.screen,
@@ -307,6 +315,7 @@ class TaxiFlowState {
       currentLat: identical(currentLat, _unset) ? this.currentLat : currentLat as double?,
       currentLng: identical(currentLng, _unset) ? this.currentLng : currentLng as double?,
       platformSettings: platformSettings ?? this.platformSettings,
+      settingsLang: settingsLang ?? this.settingsLang,
     );
   }
 }

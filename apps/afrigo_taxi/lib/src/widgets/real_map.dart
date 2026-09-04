@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:permission_handler/permission_handler.dart';
 
+import '../core/context_ext.dart';
+
 /// Real interactive Google Map — replaces `MapPlaceholder`'s fake grid
 /// background on the home/navigate-to-pickup/trip-ongoing screens. The
 /// driver never picks a point here (unlike the Client app's
@@ -116,8 +118,8 @@ class _LiveMapState extends State<LiveMap> {
                       Expanded(
                         child: Text(
                           _permanentlyDenied
-                              ? 'تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع'
-                              : 'تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع',
+                              ? context.l10n.taxiLocationPermanentlyDeniedBanner
+                              : context.l10n.taxiLocationPermDeniedBanner,
                           style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 12, color: Colors.white),
                         ),
                       ),

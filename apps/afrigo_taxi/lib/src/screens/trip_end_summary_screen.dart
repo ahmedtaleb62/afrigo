@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/taxi_primary_button.dart';
 
@@ -12,6 +13,7 @@ class TripEndSummaryScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final s = ref.watch(taxiFlowControllerProvider);
+    final l10n = context.l10n;
     final ride = s.activeRide;
     final commissionPct = s.commissionPct ?? 0;
     final commission = (ride?.price ?? 0) * commissionPct / 100;
@@ -32,7 +34,7 @@ class TripEndSummaryScreen extends ConsumerWidget {
       padding: EdgeInsets.fromLTRB(24, MediaQuery.of(context).padding.top + 36, 24, 24),
       child: Column(
         children: [
-          const Column(children: [Text('✅', style: TextStyle(fontSize: 44)), SizedBox(height: 8), Text('تم إنهاء الرحلة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18))]),
+          Column(children: [const Text('✅', style: TextStyle(fontSize: 44)), const SizedBox(height: 8), Text(l10n.taxiTripEndTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18))]),
           const SizedBox(height: 20),
           Container(
             width: double.infinity,
@@ -40,21 +42,21 @@ class TripEndSummaryScreen extends ConsumerWidget {
             decoration: BoxDecoration(color: const Color(0xFFFAFAF9), borderRadius: BorderRadius.circular(14)),
             child: Column(
               children: [
-                row('المسافة', '${(ride?.distanceKm ?? 0).toStringAsFixed(1)} كم'),
-                row('المدة', '${(ride?.durationMin ?? 0).toStringAsFixed(0)} دقيقة'),
-                row('السعر الإجمالي', '${(ride?.price ?? 0).toStringAsFixed(0)} أوقية'),
+                row(l10n.taxiDistanceLabel, l10n.taxiDistanceKmValue((ride?.distanceKm ?? 0).toStringAsFixed(1))),
+                row(l10n.taxiDurationLabel, l10n.taxiDurationMinValue((ride?.durationMin ?? 0).toStringAsFixed(0))),
+                row(l10n.taxiTotalPriceLabel, l10n.taxiAmountMru((ride?.price ?? 0).toStringAsFixed(0))),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('العمولة المخصومة (${commissionPct.toStringAsFixed(0)}%)', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14)),
-                    Text('-${commission.toStringAsFixed(0)} أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFFDC2626))),
+                    Text(l10n.taxiCommissionDeductedLabel(commissionPct.toStringAsFixed(0)), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14)),
+                    Text('-${l10n.taxiAmountMru(commission.toStringAsFixed(0))}', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14, color: Color(0xFFDC2626))),
                   ],
                 ),
               ],
             ),
           ),
           const Spacer(),
-          TaxiPrimaryButton(label: 'تم الاستلام نقدًا', onPressed: controller.payReceivedCash),
+          TaxiPrimaryButton(label: l10n.taxiCashReceivedBtn, onPressed: controller.payReceivedCash),
         ],
       ),
     );

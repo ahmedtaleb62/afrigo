@@ -5,6 +5,7 @@ import 'package:afrigo_core/afrigo_core.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../core/push_notifications.dart';
@@ -28,6 +29,25 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     // lifetime, not just while logged in, since a push can arrive/be
     // tapped before `doLogin`'s subscriptions are set up.
     _rideOfferSub = PushNotifications.rideOfferRideIds.listen(showIncomingRideById);
+    _loadSavedLang();
+  }
+
+  static const _langPrefsKey = 'afrigo_taxi_lang';
+
+  /// `settingsLang` used to only ever start at its hardcoded 'ar' default —
+  /// a French-speaking driver who switched languages lost that choice on
+  /// every cold start (splash/login/signup always reverted to Arabic) since
+  /// nothing persisted it locally; `profiles.language_pref` alone doesn't
+  /// help here because it's only readable *after* the driver is already
+  /// signed in. Mirrors `ClientFlowController._loadSavedLang`.
+  Future<void> _loadSavedLang() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final saved = prefs.getString(_langPrefsKey);
+      if (saved != null) state = state.copyWith(settingsLang: saved);
+    } catch (_) {
+      // Non-fatal — stays on the 'ar' default.
+    }
   }
 
   StreamSubscription<List<Map<String, dynamic>>>? _vehicleSub;
@@ -78,6 +98,29 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
   }
 
   void clearActionError() => state = state.copyWith(actionError: null);
+
+  /// Persists to `SharedPreferences` (survives across sessions/sign-outs —
+  /// see `signOut`/`deleteAccount` preserving `settingsLang` below) and to
+  /// `profiles.language_pref` for the signed-in driver. `AfrigoTaxiApp`
+  /// watches `settingsLang` directly, so this is the single source of truth
+  /// driving the app's real `Locale`/`Directionality`, not just a recorded
+  /// preference — mirrors `ClientFlowController.setSettingsLang` exactly.
+  Future<void> setSettingsLang(String lang) async {
+    state = state.copyWith(settingsLang: lang);
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_langPrefsKey, lang);
+    } catch (_) {
+      // Non-fatal — the in-memory state already switched for this session.
+    }
+    final uid = _sb.auth.currentUser?.id;
+    if (uid == null) return;
+    try {
+      await _sb.from('profiles').update({'language_pref': lang}).eq('id', uid);
+    } catch (_) {
+      // Non-fatal — purely a preference record.
+    }
+  }
 
   /// `FunctionException.details` is the parsed JSON error body
   /// (`{"error": "..."}`) whenever the Edge Function returned one — see
@@ -372,7 +415,9 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     }
     _stopBroadcastingLocation();
     await _sb.auth.signOut();
-    state = const TaxiFlowState();
+    // Preserve the language choice across sign-out — it's a device
+    // preference, not part of the account session being cleared.
+    state = TaxiFlowState(settingsLang: state.settingsLang);
   }
 
   /// `support_phone`/`terms_and_conditions_ar`/`privacy_policy_ar`/`about_ar`
@@ -420,7 +465,7 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
     } catch (_) {
       // Best-effort — the server-side account is already gone either way.
     }
-    state = const TaxiFlowState();
+    state = TaxiFlowState(settingsLang: state.settingsLang);
     return null;
   }
 

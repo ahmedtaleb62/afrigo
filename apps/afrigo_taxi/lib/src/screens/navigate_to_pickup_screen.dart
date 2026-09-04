@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/real_map.dart';
 
@@ -14,6 +15,7 @@ class NavigateToPickupScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final s = ref.watch(taxiFlowControllerProvider);
+    final l10n = context.l10n;
     final clientName = s.clientName ?? '...';
     final pickupLat = s.activeRide?.pickupLat ?? s.currentLat ?? 18.0858;
     final pickupLng = s.activeRide?.pickupLng ?? s.currentLng ?? -15.9785;
@@ -36,7 +38,7 @@ class NavigateToPickupScreen extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(color: const Color(0xFF1C1917), borderRadius: BorderRadius.circular(10)),
-                child: const Text('في الطريق لاستلام الزبون', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
+                child: Text(l10n.taxiNavToPickupBanner, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
               ),
             ),
           ),
@@ -76,13 +78,13 @@ class NavigateToPickupScreen extends ConsumerWidget {
                   child: ElevatedButton(
                     onPressed: controller.startTripOngoing,
                     style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF16A34A), foregroundColor: Colors.white, padding: const EdgeInsets.all(16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                    child: const Text('وصلت / بدء الرحلة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
+                    child: Text(l10n.taxiArrivedStartTripBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
                   ),
                 ),
                 const SizedBox(height: 10),
                 TextButton(
                   onPressed: controller.cancelRide,
-                  child: const Text('إلغاء الرحلة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
+                  child: Text(l10n.taxiCancelTripBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 13, color: Color(0xFFDC2626))),
                 ),
               ],
             ),

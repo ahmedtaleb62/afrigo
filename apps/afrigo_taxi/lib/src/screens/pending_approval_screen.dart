@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/context_ext.dart';
+
 /// Screen 49 — Pending approval.
 ///
 /// Watches the driver's `vehicles` row live via Realtime
@@ -10,6 +12,7 @@ class PendingApprovalScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = context.l10n;
     return Container(
       color: Colors.white,
       padding: const EdgeInsets.all(24),
@@ -21,11 +24,11 @@ class PendingApprovalScreen extends StatelessWidget {
             margin: const EdgeInsets.symmetric(vertical: 16),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
             decoration: BoxDecoration(color: const Color(0xFFFEF9C3), borderRadius: BorderRadius.circular(999)),
-            child: const Text('قيد المراجعة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFFA16207))),
+            child: Text(l10n.badgePending, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFFA16207))),
           ),
-          const Text('بانتظار موافقة الإدارة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
+          Text(l10n.taxiPendingTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 18)),
           const SizedBox(height: 8),
-          const Text('سيتم إشعارك فور مراجعة ملفك من طرف فريق Afrigo. لا يمكنك استقبال الطلبات في هذه الأثناء', textAlign: TextAlign.center, style: TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
+          Text(l10n.taxiPendingDesc, textAlign: TextAlign.center, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, height: 1.7, color: Color(0xFF78716C))),
         ],
       ),
     );

@@ -1035,4 +1035,379 @@ class AfrigoLocalizationsAr extends AfrigoLocalizations {
 
   @override
   String get clientProfileSupportMenu => '🆘 الدعم والمساعدة';
+
+  @override
+  String get taxiAccountCreatingTitle => 'جارٍ إنشاء حسابك...';
+
+  @override
+  String get taxiAccountCreatingDesc => 'سننتقل الآن لتوثيق مركبتك';
+
+  @override
+  String get taxiAccountCreatingContinueBtn => 'متابعة إلى التوثيق';
+
+  @override
+  String get taxiBalanceLabel => 'الرصيد الحالي';
+
+  @override
+  String taxiAmountMru(String amount) {
+    return '$amount أوقية';
+  }
+
+  @override
+  String get taxiLowBalanceWarning =>
+      'رصيدك غير كافٍ، يرجى الشحن لاستقبال الطلبات';
+
+  @override
+  String get taxiContactCompanyBtn => '📞 تواصل مع الشركة';
+
+  @override
+  String get taxiStatusOnlineUnavailable => 'متصل غير متاح (رصيد منخفض)';
+
+  @override
+  String get taxiStatusOnlineReceiving => 'متصل — تستقبل الطلبات';
+
+  @override
+  String get taxiTodayTripsLabel => 'رحلات اليوم';
+
+  @override
+  String get taxiTodayEarningsLabel => 'أرباح اليوم (أ.م)';
+
+  @override
+  String get taxiIncomingRideTitle => 'طلب رحلة جديد';
+
+  @override
+  String taxiIncomingRideFrom(String address) {
+    return 'من: $address';
+  }
+
+  @override
+  String taxiIncomingRideTo(String address, String km) {
+    return 'إلى: $address · $km كم';
+  }
+
+  @override
+  String taxiIncomingRideEstimatedPrice(String price) {
+    return '$price أوقية تقديريًا';
+  }
+
+  @override
+  String get taxiReject => 'رفض';
+
+  @override
+  String get taxiAccept => 'قبول';
+
+  @override
+  String get taxiLegalNoContent => 'لا يوجد محتوى بعد.';
+
+  @override
+  String get taxiLegalAboutTitle => 'عن التطبيق';
+
+  @override
+  String get taxiLegalTermsTitle => 'الشروط والأحكام';
+
+  @override
+  String get taxiLegalPrivacyTitle => 'سياسة الخصوصية';
+
+  @override
+  String get taxiLoginTitle => 'تسجيل دخول السائق';
+
+  @override
+  String get taxiPhoneHint => '46 12 34 56';
+
+  @override
+  String get taxiPasswordHint => '••••••••';
+
+  @override
+  String get taxiNewDriverPrompt => 'سائق جديد؟ ';
+
+  @override
+  String get taxiNavToPickupBanner => 'في الطريق لاستلام الزبون';
+
+  @override
+  String get taxiArrivedStartTripBtn => 'وصلت / بدء الرحلة';
+
+  @override
+  String get taxiCancelTripBtn => 'إلغاء الرحلة';
+
+  @override
+  String taxiNotifMinutesAgo(int minutes) {
+    return 'قبل $minutes دقيقة';
+  }
+
+  @override
+  String taxiNotifHoursAgo(int hours) {
+    return 'قبل $hours ساعة';
+  }
+
+  @override
+  String taxiNotifDaysAgo(int days) {
+    return 'قبل $days يوم';
+  }
+
+  @override
+  String get taxiNotifTitle => 'الإشعارات';
+
+  @override
+  String get taxiNotifEmptyTitle => 'لا توجد إشعارات بعد';
+
+  @override
+  String get taxiNotifEmptyMessage => 'ستظهر هنا آخر التحديثات على طلباتك';
+
+  @override
+  String get taxiPendingTitle => 'بانتظار موافقة الإدارة';
+
+  @override
+  String get taxiPendingDesc =>
+      'سيتم إشعارك فور مراجعة ملفك من طرف فريق Afrigo. لا يمكنك استقبال الطلبات في هذه الأثناء';
+
+  @override
+  String get taxiDeleteAccountTitle => 'حذف الحساب';
+
+  @override
+  String get taxiDeleteAccountMessage =>
+      'سيتم حذف حسابك وكل بياناتك نهائيًا. لا يمكن التراجع عن هذا الإجراء. هل أنت متأكد؟';
+
+  @override
+  String get taxiDeleteFailedTitle => 'تعذّر الحذف';
+
+  @override
+  String get taxiDeleteConfirm => 'حذف نهائيًا';
+
+  @override
+  String get taxiCancel => 'إلغاء';
+
+  @override
+  String get taxiNoRatingsYet => 'لا يوجد تقييمات بعد';
+
+  @override
+  String taxiRatingSummary(String rating, int count) {
+    return '⭐ $rating · $count رحلة مقيَّمة';
+  }
+
+  @override
+  String get taxiEditVehicleInfo => 'تعديل بيانات المركبة';
+
+  @override
+  String get taxiLanguageLabel => 'اللغة';
+
+  @override
+  String get taxiSupportMenuLabel => 'الدعم والمساعدة';
+
+  @override
+  String get taxiLogout => 'تسجيل الخروج';
+
+  @override
+  String get taxiRateCustomerTitle => 'قيّم الزبون';
+
+  @override
+  String get taxiCommentHint => 'تعليق (اختياري)';
+
+  @override
+  String get taxiSendBtn => 'إرسال';
+
+  @override
+  String get taxiRejectedDefaultReason =>
+      'صورة رخصة القيادة غير واضحة، الرجاء رفع صورة أوضح';
+
+  @override
+  String get taxiRejectedTitle => 'تم رفض طلب التوثيق';
+
+  @override
+  String taxiRejectedReasonLabel(String reason) {
+    return 'سبب الرفض: $reason';
+  }
+
+  @override
+  String get taxiResubmitBtn => 'إعادة تقديم الطلب';
+
+  @override
+  String get taxiSignupTitle => 'إنشاء حساب سائق';
+
+  @override
+  String get taxiFullNameLabel => 'الاسم الكامل';
+
+  @override
+  String get taxiFullNameHint => 'مثال: مراد بلحاج';
+
+  @override
+  String get taxiConfirmPasswordLabel => 'تأكيد كلمة المرور';
+
+  @override
+  String get taxiCreateAccountBtn => 'إنشاء الحساب';
+
+  @override
+  String get taxiHaveAccountPrompt => 'لديك حساب؟ ';
+
+  @override
+  String get taxiLoginLink => 'تسجيل الدخول';
+
+  @override
+  String get taxiSupportFaqLabel => 'الأسئلة الشائعة';
+
+  @override
+  String get taxiFaqWallet => 'كيف أشحن رصيد محفظتي؟';
+
+  @override
+  String get taxiFaqNoRides => 'لماذا لا تصلني طلبات رحلات؟';
+
+  @override
+  String get taxiFaqEditVehicle => 'كيف أعدّل بيانات مركبتي؟';
+
+  @override
+  String get taxiSupportWhatsapp => 'تواصل عبر واتساب';
+
+  @override
+  String get taxiSupportCallUs => 'اتصل بنا';
+
+  @override
+  String get taxiTripEndTitle => 'تم إنهاء الرحلة';
+
+  @override
+  String get taxiDistanceLabel => 'المسافة';
+
+  @override
+  String taxiDistanceKmValue(String km) {
+    return '$km كم';
+  }
+
+  @override
+  String get taxiDurationLabel => 'المدة';
+
+  @override
+  String taxiDurationMinValue(String min) {
+    return '$min دقيقة';
+  }
+
+  @override
+  String get taxiTotalPriceLabel => 'السعر الإجمالي';
+
+  @override
+  String taxiCommissionDeductedLabel(String pct) {
+    return 'العمولة المخصومة ($pct%)';
+  }
+
+  @override
+  String get taxiCashReceivedBtn => 'تم الاستلام نقدًا';
+
+  @override
+  String get taxiTripStatusCompleted => 'مكتملة';
+
+  @override
+  String get taxiTripStatusCancelled => 'ملغاة';
+
+  @override
+  String get taxiTripStatusNoDriver => 'لم يُعثر على سائق';
+
+  @override
+  String taxiTodayAtTime(String time) {
+    return 'اليوم $time';
+  }
+
+  @override
+  String get taxiTripHistoryTitle => 'سجل الرحلات';
+
+  @override
+  String get taxiTripHistoryEmpty => 'لا توجد رحلات بعد';
+
+  @override
+  String get taxiDefaultClientName => 'زبون';
+
+  @override
+  String taxiTripOngoingBanner(String dropoff) {
+    return 'الرحلة جارية إلى: $dropoff';
+  }
+
+  @override
+  String get taxiEndTripBtn => 'إنهاء الرحلة';
+
+  @override
+  String get taxiTakePhoto => 'التقاط صورة';
+
+  @override
+  String get taxiPickFromGallery => 'اختيار من المعرض';
+
+  @override
+  String get taxiVehicleDocsTitle => 'توثيق المركبة';
+
+  @override
+  String get taxiVehicleDocsDesc =>
+      'أدخل بيانات مركبتك لمراجعتها من طرف الإدارة';
+
+  @override
+  String get taxiVehicleOwnerNameHint => 'اسم صاحب المركبة';
+
+  @override
+  String get taxiAddressHint => 'العنوان';
+
+  @override
+  String get taxiUploading => 'جارٍ الرفع...';
+
+  @override
+  String get taxiLicenseUploadedHint =>
+      'تم رفع صورة رخصة القيادة — اضغط للتغيير';
+
+  @override
+  String get taxiLicenseUploadPrompt => 'رفع صورة رخصة القيادة';
+
+  @override
+  String taxiCarTypePrefix(String type) {
+    return 'نوع السيارة: $type';
+  }
+
+  @override
+  String get taxiPlateNumberHint => 'رقم اللوحة';
+
+  @override
+  String get taxiNotesHint => 'ملاحظات';
+
+  @override
+  String get taxiSubmitForReviewBtn => 'إرسال للمراجعة';
+
+  @override
+  String get taxiWalletTitle => 'المحفظة';
+
+  @override
+  String taxiCommissionRateLabel(String pct) {
+    return 'نسبة العمولة: $pct%';
+  }
+
+  @override
+  String get taxiTopupActionLabel => 'شحن رصيد';
+
+  @override
+  String get taxiWithdrawActionLabel => 'سحب رصيد';
+
+  @override
+  String get taxiTopupReason => 'شحن';
+
+  @override
+  String get taxiWithdrawReason => 'سحب';
+
+  @override
+  String taxiWalletWhatsappMessage(String reason) {
+    return 'مرحبًا، أريد $reason رصيد محفظتي في تطبيق Afrigo Taxi.';
+  }
+
+  @override
+  String get taxiTransactionHistoryLabel => 'سجل الحركات';
+
+  @override
+  String get taxiNoTransactionsYet => 'لا توجد حركات بعد';
+
+  @override
+  String get taxiTxnTypeCommission => 'عمولة رحلة';
+
+  @override
+  String get taxiTxnTypeGeneric => 'حركة';
+
+  @override
+  String get taxiLocationPermanentlyDeniedBanner =>
+      'تعذّر تحديد موقعك — اضغط لفتح الإعدادات وتفعيل صلاحية الموقع';
+
+  @override
+  String get taxiLocationPermDeniedBanner =>
+      'تعذّر تحديد موقعك الحالي — اضغط للسماح بالوصول للموقع';
+
+  @override
+  String get taxiNavTrips => 'الرحلات';
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'core/context_ext.dart';
 import 'screens/account_creating_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/legal_text_screen.dart';
@@ -36,6 +37,7 @@ class AppRoot extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final screen = ref.watch(taxiFlowControllerProvider.select((s) => s.screen));
+    final l10n = context.l10n;
 
     // Was previously only listened to inside HomeScreen, so a failed
     // transition made while on e.g. TripOngoingScreen (exactly where
@@ -67,17 +69,17 @@ class AppRoot extends ConsumerWidget {
       TaxiScreen.notificationsList => const NotificationsListScreen(),
       TaxiScreen.support => const SupportScreen(),
       TaxiScreen.about => LegalTextScreen(
-          title: 'عن التطبيق',
+          title: l10n.taxiLegalAboutTitle,
           body: ref.watch(taxiFlowControllerProvider.select((s) => s.aboutText)),
           onBack: () => ref.read(taxiFlowControllerProvider.notifier).back(),
         ),
       TaxiScreen.terms => LegalTextScreen(
-          title: 'الشروط والأحكام',
+          title: l10n.taxiLegalTermsTitle,
           body: ref.watch(taxiFlowControllerProvider.select((s) => s.termsText)),
           onBack: () => ref.read(taxiFlowControllerProvider.notifier).back(),
         ),
       TaxiScreen.privacy => LegalTextScreen(
-          title: 'سياسة الخصوصية',
+          title: l10n.taxiLegalPrivacyTitle,
           body: ref.watch(taxiFlowControllerProvider.select((s) => s.privacyText)),
           onBack: () => ref.read(taxiFlowControllerProvider.notifier).back(),
         ),

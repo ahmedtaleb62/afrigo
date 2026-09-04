@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../core/context_ext.dart';
 import '../core/push_notifications.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/real_map.dart';
@@ -41,6 +42,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget build(BuildContext context) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final s = ref.watch(taxiFlowControllerProvider);
+    final l10n = context.l10n;
     final now = DateTime.now();
     final todayTrips = s.tripHistory.where((r) {
       if (r['status'] != 'completed') return false;
@@ -61,8 +63,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('الرصيد الحالي', style: TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
-                      Text('${s.resolvedBalance.toStringAsFixed(0)} أوقية', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 20, color: Color(0xFF166534))),
+                      Text(l10n.taxiBalanceLabel, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 11, color: Color(0xFF78716C))),
+                      Text(l10n.taxiAmountMru(s.resolvedBalance.toStringAsFixed(0)), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 20, color: Color(0xFF166534))),
                     ],
                   ),
                   Row(
@@ -118,7 +120,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text('رصيدك غير كافٍ، يرجى الشحن لاستقبال الطلبات', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF991B1B))),
+                    Text(l10n.taxiLowBalanceWarning, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Color(0xFF991B1B))),
                     const SizedBox(height: 8),
                     SizedBox(
                       width: double.infinity,
@@ -131,7 +133,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           textStyle: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12),
                         ),
-                        child: const Text('📞 تواصل مع الشركة'),
+                        child: Text(l10n.taxiContactCompanyBtn),
                       ),
                     ),
                   ],
@@ -148,7 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    s.lowBalance ? 'متصل غير متاح (رصيد منخفض)' : (s.online ? 'متصل — تستقبل الطلبات' : 'غير متصل'),
+                    s.lowBalance ? l10n.taxiStatusOnlineUnavailable : (s.online ? l10n.taxiStatusOnlineReceiving : l10n.statusOffline),
                     style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 14, color: (s.online && !s.lowBalance) ? const Color(0xFF166534) : const Color(0xFF78716C)),
                   ),
                   Opacity(
@@ -177,7 +179,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(12)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [Text('${todayTrips.length}', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18)), const SizedBox(height: 2), const Text('رحلات اليوم', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 11, color: Color(0xFF78716C)))]),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [Text('${todayTrips.length}', style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18)), const SizedBox(height: 2), Text(l10n.taxiTodayTripsLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 11, color: Color(0xFF78716C)))]),
                     ),
                   ),
                   const SizedBox(width: 10),
@@ -185,7 +187,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(color: Colors.white, border: Border.all(color: const Color(0xFFE7E5E4)), borderRadius: BorderRadius.circular(12)),
-                      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [Text(todayEarnings.toStringAsFixed(0), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18)), const SizedBox(height: 2), const Text('أرباح اليوم (أ.م)', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 11, color: Color(0xFF78716C)))]),
+                      child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [Text(todayEarnings.toStringAsFixed(0), style: const TextStyle(fontFamily: 'Poppins', fontWeight: FontWeight.w800, fontSize: 18)), const SizedBox(height: 2), Text(l10n.taxiTodayEarningsLabel, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w600, fontSize: 11, color: Color(0xFF78716C)))]),
                     ),
                   ),
                 ],
@@ -226,7 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text('طلب رحلة جديد', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
+                        Text(l10n.taxiIncomingRideTitle, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16)),
                         Container(
                           width: 36,
                           height: 36,
@@ -237,12 +239,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                     const SizedBox(height: 14),
-                    Align(alignment: Alignment.centerRight, child: Text('من: ${s.incomingRide!.pickupAddress}', style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)))),
+                    Align(alignment: Alignment.centerRight, child: Text(l10n.taxiIncomingRideFrom(s.incomingRide!.pickupAddress), style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)))),
                     const SizedBox(height: 4),
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        'إلى: ${s.incomingRide!.dropoffAddress} · ${s.incomingRide!.distanceKm.toStringAsFixed(1)} كم',
+                        l10n.taxiIncomingRideTo(s.incomingRide!.dropoffAddress, s.incomingRide!.distanceKm.toStringAsFixed(1)),
                         style: const TextStyle(fontFamily: 'Tajawal', fontSize: 13, color: Color(0xFF78716C)),
                       ),
                     ),
@@ -250,7 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Align(
                       alignment: Alignment.centerRight,
                       child: Text(
-                        '${s.incomingRide!.price.toStringAsFixed(0)} أوقية تقديريًا',
+                        l10n.taxiIncomingRideEstimatedPrice(s.incomingRide!.price.toStringAsFixed(0)),
                         style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w800, fontSize: 16, color: Color(0xFF166534)),
                       ),
                     ),
@@ -261,7 +263,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: TextButton(
                             onPressed: controller.rejectIncoming,
                             style: TextButton.styleFrom(backgroundColor: const Color(0xFFFEF2F2), padding: const EdgeInsets.all(15)),
-                            child: const Text('رفض', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFDC2626))),
+                            child: Text(l10n.taxiReject, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Color(0xFFDC2626))),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -269,7 +271,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           child: TextButton(
                             onPressed: controller.acceptIncoming,
                             style: TextButton.styleFrom(backgroundColor: const Color(0xFF16A34A), padding: const EdgeInsets.all(15)),
-                            child: const Text('قبول', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
+                            child: Text(l10n.taxiAccept, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 14, color: Colors.white)),
                           ),
                         ),
                       ],

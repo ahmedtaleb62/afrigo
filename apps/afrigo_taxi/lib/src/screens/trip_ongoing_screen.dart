@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 
+import '../core/context_ext.dart';
 import '../state/taxi_flow_controller.dart';
 import '../widgets/real_map.dart';
 
@@ -13,6 +14,7 @@ class TripOngoingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = ref.read(taxiFlowControllerProvider.notifier);
     final s = ref.watch(taxiFlowControllerProvider);
+    final l10n = context.l10n;
     final dropoff = s.activeRide?.dropoffAddress ?? '...';
     final dropoffLat = s.activeRide?.dropoffLat ?? s.currentLat ?? 18.0858;
     final dropoffLng = s.activeRide?.dropoffLng ?? s.currentLng ?? -15.9785;
@@ -35,7 +37,7 @@ class TripOngoingScreen extends ConsumerWidget {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                 decoration: BoxDecoration(color: const Color(0xFF1C1917), borderRadius: BorderRadius.circular(10)),
-                child: Text('الرحلة جارية إلى: $dropoff', style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
+                child: Text(l10n.taxiTripOngoingBanner(dropoff), style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 12, color: Colors.white)),
               ),
             ),
           ),
@@ -50,7 +52,7 @@ class TripOngoingScreen extends ConsumerWidget {
               child: ElevatedButton(
                 onPressed: controller.endTripDriver,
                 style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626), foregroundColor: Colors.white, padding: const EdgeInsets.all(16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14))),
-                child: const Text('إنهاء الرحلة', style: TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
+                child: Text(l10n.taxiEndTripBtn, style: const TextStyle(fontFamily: 'Tajawal', fontWeight: FontWeight.w700, fontSize: 15)),
               ),
             ),
           ),
