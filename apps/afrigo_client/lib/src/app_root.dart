@@ -137,10 +137,23 @@ class AppRoot extends ConsumerWidget {
         ),
     };
 
-    return Scaffold(
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 180),
-        child: KeyedSubtree(key: ValueKey(screen), child: body),
+    // The whole app is one always-mounted widget switching on `screen` (no
+    // real Navigator routes), so without this the system back
+    // button/gesture has nothing to pop and just closes the Activity --
+    // from ANY screen, not just Home. Only let the system actually exit the
+    // app once we're already at Home; everywhere else, route back through
+    // the app's own hist stack the same way the in-app back arrows do.
+    return PopScope(
+      canPop: screen == ClientScreen.home,
+      onPopInvokedWithResult: (didPop, result) {
+        if (didPop) return;
+        ref.read(clientFlowControllerProvider.notifier).back();
+      },
+      child: Scaffold(
+        body: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: KeyedSubtree(key: ValueKey(screen), child: body),
+        ),
       ),
     );
   }
