@@ -76,7 +76,18 @@ class _RideOriginScreenState extends ConsumerState<RideOriginScreen> {
                 ),
                 Text(l10n.clientRideOriginDragHint, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
                 const SizedBox(height: 16),
-                ClientPrimaryButton(label: l10n.clientRideOriginConfirmBtn, onPressed: () => controller.goTo(ClientScreen.rideDestination)),
+                ClientPrimaryButton(
+                  label: l10n.clientRideOriginConfirmBtn,
+                  // Without this, confirming the instant this screen mounts
+                  // — before `fetchCurrentLocation()` above has resolved —
+                  // silently locks in the Nouakchott-center placeholder as
+                  // the real pickup point for a client who's nowhere near
+                  // it. Once the user deliberately drags the pin
+                  // (`pickupIsUserSet`), that's a real choice and confirming
+                  // immediately is fine either way.
+                  isLoading: s.currentLat == null && !s.pickupIsUserSet,
+                  onPressed: () => controller.goTo(ClientScreen.rideDestination),
+                ),
               ],
             ),
         ),

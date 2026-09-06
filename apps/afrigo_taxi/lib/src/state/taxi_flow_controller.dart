@@ -714,7 +714,15 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return;
-      final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium));
+      // `medium` (Android's "balanced power" priority) can resolve to a
+      // fast but coarse network/cell-tower fix before the GPS chip has
+      // locked onto satellites — in a low-density area that first
+      // resolution can land tens of km off. `high` actually waits for a
+      // real GPS-grade fix; a genuine timeout still falls into the catch
+      // below like any other failure, same placeholder fallback as before.
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 10)),
+      );
       state = state.copyWith(currentLat: pos.latitude, currentLng: pos.longitude);
     } catch (_) {
       // Non-fatal — every caller already falls back to the placeholder.
@@ -814,7 +822,16 @@ class TaxiFlowController extends StateNotifier<TaxiFlowState> {
 
   Future<void> _pushOnlineLocation() async {
     try {
-      final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium));
+      // `high`, not `medium` -- this position becomes `vehicles.current_location`,
+      // which is exactly what `find_nearby_vehicles`'s ST_DWithin search
+      // matches against. A coarse fix here doesn't just mis-draw a map, it
+      // can place an online, verified driver tens of km from where they
+      // actually are, making them invisible to every real nearby ride
+      // request. A genuine timeout still falls into the catch below, same
+      // as before -- this just stops a bad fix from ever being pushed.
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 10)),
+      );
       state = state.copyWith(currentLat: pos.latitude, currentLng: pos.longitude);
       final uid = _sb.auth.currentUser?.id;
       if (uid == null) return;

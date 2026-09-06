@@ -91,6 +91,13 @@ class _LocationPickerMapState extends State<LocationPickerMap> {
     super.didUpdateWidget(old);
     if (_userMoved) return;
     if (widget.initialLat == old.initialLat && widget.initialLng == old.initialLng) return;
+    // A fresher position landing here almost always means some other code
+    // path (e.g. the controller's own fetchCurrentLocation) just got a real
+    // GPS fix — which only happens if permission is actually granted. That
+    // path never calls this widget's own _checkPermission, so without this
+    // the "location unavailable" banner stays stuck forever even once
+    // location is clearly working.
+    _checkPermission();
     _center = LatLng(widget.initialLat, widget.initialLng);
     _programmaticMove = true;
     _map?.animateCamera(CameraUpdate.newLatLng(_center));
@@ -316,6 +323,12 @@ class _LiveMapPreviewState extends State<LiveMapPreview> {
   void didUpdateWidget(LiveMapPreview old) {
     super.didUpdateWidget(old);
     if (widget.lat != old.lat || widget.lng != old.lng) {
+      // Same reasoning as LocationPickerMap: a fresher lat/lng landing here
+      // almost always means the controller's own fetchCurrentLocation just
+      // got a real GPS fix, which only happens if permission is actually
+      // granted -- re-check so the stale "location unavailable" banner
+      // doesn't keep showing after location clearly started working.
+      _checkPermission();
       _map?.animateCamera(CameraUpdate.newLatLng(LatLng(widget.lat, widget.lng)));
     }
   }

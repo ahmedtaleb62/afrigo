@@ -75,6 +75,12 @@ class _LiveMapState extends State<LiveMap> {
   void didUpdateWidget(LiveMap old) {
     super.didUpdateWidget(old);
     if (widget.lat != old.lat || widget.lng != old.lng) {
+      // A fresher lat/lng landing here almost always means the controller's
+      // own fetchCurrentLocation just got a real GPS fix, which only
+      // happens if permission is actually granted -- re-check so the stale
+      // "location unavailable" banner doesn't keep showing after location
+      // clearly started working.
+      _checkPermission();
       _map?.animateCamera(CameraUpdate.newLatLng(LatLng(widget.lat, widget.lng)));
     }
   }

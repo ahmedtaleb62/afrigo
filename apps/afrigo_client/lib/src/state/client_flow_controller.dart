@@ -619,7 +619,19 @@ class ClientFlowController extends StateNotifier<ClientFlowState> {
         permission = await Geolocator.requestPermission();
       }
       if (permission == LocationPermission.denied || permission == LocationPermission.deniedForever) return;
-      final pos = await Geolocator.getCurrentPosition(locationSettings: const LocationSettings(accuracy: LocationAccuracy.medium));
+      // `medium` (Android's "balanced power" priority) can resolve to a fast
+      // but coarse network/cell-tower fix before the GPS chip has locked
+      // onto satellites — in a low-density area (sparse cell towers/no
+      // recent GPS fix) that first resolution can land tens of km off,
+      // which is exactly what reading "Nouakchott" while physically in
+      // Sélibaby looks like. `high` actually waits for a real GPS-grade
+      // fix; the 10s cap just bounds how long that can take (a genuine
+      // timeout still falls into the catch below like any other failure,
+      // same placeholder fallback as before — just no longer silently
+      // wrong, only silently absent).
+      final pos = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(accuracy: LocationAccuracy.high, timeLimit: Duration(seconds: 10)),
+      );
       state = state.copyWith(currentLat: pos.latitude, currentLng: pos.longitude);
     } catch (_) {
       // Non-fatal — every caller already falls back to the placeholder.

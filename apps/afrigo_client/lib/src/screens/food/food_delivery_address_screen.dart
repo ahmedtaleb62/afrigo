@@ -22,6 +22,14 @@ class FoodDeliveryAddressScreen extends ConsumerStatefulWidget {
 }
 
 class _FoodDeliveryAddressScreenState extends ConsumerState<FoodDeliveryAddressScreen> {
+  // `setDropoffLocation` (shared with ride-destination/parcel-dropoff
+  // search, which have no placeholder-race risk of their own) doesn't
+  // track isUserAction the way `pickupIsUserSet` does, so `s.dropoffLat`
+  // goes non-null the instant this screen's automatic mount-resolve fires
+  // — before a real GPS fix can land. Tracked locally instead of touching
+  // that shared state, so this guard can't affect the other two flows.
+  bool _userMovedPin = false;
+
   @override
   void initState() {
     super.initState();
@@ -45,7 +53,10 @@ class _FoodDeliveryAddressScreenState extends ConsumerState<FoodDeliveryAddressS
           child: LocationPickerMap(
             initialLat: lat,
             initialLng: lng,
-            onChanged: controller.setDropoffLocation,
+            onChanged: (lat, lng, address, {required isUserAction}) {
+              if (isUserAction && !_userMovedPin) setState(() => _userMovedPin = true);
+              controller.setDropoffLocation(lat, lng, address, isUserAction: isUserAction);
+            },
             overlay: Positioned(top: context.topGap(12), right: 16, child: BackCircleButton(onTap: controller.back, onLight: true)),
           ),
         ),
@@ -70,7 +81,14 @@ class _FoodDeliveryAddressScreenState extends ConsumerState<FoodDeliveryAddressS
               ),
               Text(l10n.clientFoodMapDragHint, style: const TextStyle(fontFamily: 'Tajawal', fontSize: 12, color: Color(0xFF78716C))),
               const SizedBox(height: 16),
-              ClientPrimaryButton(label: l10n.clientFoodConfirmDeliveryAddressButton, onPressed: controller.back),
+              ClientPrimaryButton(
+                label: l10n.clientFoodConfirmDeliveryAddressButton,
+                // See `ride_origin_screen.dart` — without this, confirming
+                // before the real GPS fix lands silently locks in the
+                // Nouakchott-center placeholder as the delivery address.
+                isLoading: s.currentLat == null && !_userMovedPin,
+                onPressed: controller.back,
+              ),
             ],
           ),
         ),

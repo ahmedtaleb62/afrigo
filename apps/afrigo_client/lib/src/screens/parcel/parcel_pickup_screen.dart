@@ -68,7 +68,14 @@ class _ParcelPickupScreenState extends ConsumerState<ParcelPickupScreen> {
                     ],
                   ),
                 ),
-                ClientPrimaryButton(label: l10n.clientParcelConfirmPickupBtn, onPressed: () => controller.goTo(ClientScreen.parcelDropoff)),
+                ClientPrimaryButton(
+                  label: l10n.clientParcelConfirmPickupBtn,
+                  // See `ride_origin_screen.dart` — without this, confirming
+                  // before the real GPS fix lands silently locks in the
+                  // Nouakchott-center placeholder as the pickup point.
+                  isLoading: s.currentLat == null && !s.pickupIsUserSet,
+                  onPressed: () => controller.goTo(ClientScreen.parcelDropoff),
+                ),
               ],
             ),
         ),
